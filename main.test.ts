@@ -1,5 +1,3 @@
-import { expect, it, describe } from 'vite-plus/test';
-
 import { app } from './app';
 
 describe('get /', () => {

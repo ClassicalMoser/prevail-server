@@ -3,7 +3,7 @@
     "target": "es2023",
     "module": "esnext",
     "lib": ["ES2023"],
-    "types": ["node"],
+    "types": ["node", "vitest/globals"],
     "skipLibCheck": true,
     "paths": {
       "@domain/*": ["./domain/*"],
@@ -13,7 +13,9 @@
       "@application/*": ["./application/*"],
       "@application": ["./application/index.ts"],
       "@infrastructure/*": ["./infrastructure/*"],
-      "@infrastructure": ["./infrastructure/index.ts"]
+      "@infrastructure": ["./infrastructure/index.ts"],
+      "@testing/*": ["./testing/*"],
+      "@testing": ["./testing/index.ts"]
     },
 
     /* Bundler mode */

@@ -1,12 +1,23 @@
+// Import { serve } from '@hono/node-server';
+// Import { app } from './app';
 import { serve } from '@hono/node-server';
-import { app } from './app';
-import dotenv from 'dotenv';
 import process from 'node:process';
+import { app } from './app';
 
-dotenv.config({ path: '.env' });
-const port = Number(process.env.PORT ?? 3000);
+const port = Number(process.env.PORT);
 
-serve({ fetch: app.fetch, port }, () => {
+const startServer = (): void => {
   // oxlint-disable-next-line no-console
-  console.log(`Listening on http://localhost:${port}`);
-});
+  console.log(`Server is running on port ${port}.`);
+  // oxlint-disable-next-line no-console
+  console.log(`Listening to some good tunes on http://localhost:${port}`);
+
+  serve({ fetch: app.fetch, port }, () => {
+    // oxlint-disable-next-line no-console
+    console.log(`Server is running on port ${port}.`);
+    // oxlint-disable-next-line no-console
+    console.log(`Listening on http://localhost:${port}`);
+  });
+};
+
+startServer();

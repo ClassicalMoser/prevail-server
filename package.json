@@ -4,12 +4,13 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "node --env-file=.env --watch --import tsx main.ts",
-    "start": "node --env-file=.env --import tsx main.ts",
-    "check": "vp check",
-    "fmt": "vp fmt",
-    "lint": "vp lint",
-    "test": "vp test"
+    "dev": "tsdown && (tsdown --watch & node --env-file=.env --watch dist/main.js)",
+    "build": "tsdown",
+    "start": "node --env-file=.env dist/main.js",
+    "check": "pnpm check",
+    "fmt": "oxfmt .",
+    "lint": "oxlint .",
+    "test": "vitest"
   },
   "dependencies": {
     "@hono/node-server": "^2.0.4",
@@ -19,7 +20,6 @@
   },
   "devDependencies": {
     "@types/node": "^25.9.1",
-    "dotenv": "^17.4.2",
     "eslint-plugin-command": "^3.5.2",
     "eslint-plugin-import-boundaries": "^0.8.1",
     "eslint-plugin-jsonc": "^3.2.0",
@@ -28,9 +28,10 @@
     "eslint-plugin-yml": "^3.4.0",
     "oxfmt": "^0.53.0",
     "oxlint": "^1.68.0",
+    "tsdown": "^0.22.1",
     "tsx": "^4.22.4",
     "typescript": "~6.0.3",
-    "vite-plus": "~0.1.24"
+    "vitest": "^4.1.8"
   },
   "packageManager": "pnpm@11.5.1"
 }
