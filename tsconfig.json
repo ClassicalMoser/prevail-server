@@ -9,12 +9,16 @@
     "paths": {
       "@domain/*": ["./src/domain/*"],
       "@domain": ["./src/domain/index.ts"],
+      "@ports/*": ["./src/ports/*"],
+      "@ports": ["./src/ports/index.ts"],
       "@interface/*": ["./src/interface/*"],
       "@interface": ["./src/interface/index.ts"],
       "@application/*": ["./src/application/*"],
       "@application": ["./src/application/index.ts"],
       "@infrastructure/*": ["./src/infrastructure/*"],
       "@infrastructure": ["./src/infrastructure/index.ts"],
+      "@composition/*": ["./src/composition/*"],
+      "@composition": ["./src/composition/index.ts"],
       "@testing/*": ["./src/testing/*"],
       "@testing": ["./src/testing/index.ts"]
     },
@@ -33,7 +37,12 @@
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["**/*.ts", "vite.config.ts", "boundaries.ts"],
+  "include": [
+    "**/*.ts",
+    "vite.config.ts",
+    "boundaries.ts",
+    "src/application/use_cases/cards/get-command-cards"
+  ],
   "exclude": [
     "node_modules",
     "dist",

@@ -1,15 +1,18 @@
-import { app } from './composition/app';
+import { app } from '@composition';
 
 describe('get /', () => {
   it('should return 200', { timeout: 10_000 }, async () => {
     expect.hasAssertions();
-    const res = await app.request('http://localhost/');
-    await expect(res.text()).resolves.toBe('Hello, world!');
+    const res = await app.inject({ method: 'GET', url: 'http://localhost/' });
+    expect(res.statusCode).toBe(200);
   });
 
   it('should return 404', { timeout: 10_000 }, async () => {
     expect.hasAssertions();
-    const res = await app.request('http://localhost/unknown');
-    expect(res.status).toBe(404);
+    const res = await app.inject({
+      method: 'GET',
+      url: 'http://localhost/unknown',
+    });
+    expect(res.statusCode).toBe(404);
   });
 });

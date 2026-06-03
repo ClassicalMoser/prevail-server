@@ -1,15 +1,14 @@
-import { Hono } from 'hono';
-import { dbRequest, sql } from '@infrastructure';
+import FastifyInstance from 'fastify';
+import { createRoutes } from '@interface';
+import { createCommandCardStorage } from '@infrastructure';
 
-const app = new Hono();
+const app = FastifyInstance();
 
-app.get('/', (c) => c.text('Hello, world!'));
-app.get('/db', async (): Promise<void> => {
-  await dbRequest();
-});
-app.get('/health', async (c) => {
-  const result = await sql`SELECT current_database(), version()`;
-  return c.json(result[0]);
-});
+const commandCardStorageRoutes = await createCommandCardStorage();
+
+const routes = await createRoutes(commandCardStorageRoutes);
+for (const route of routes) {
+  app.get(route.url, route.handler);
+}
 
 export { app };

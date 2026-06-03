@@ -1,9 +1,8 @@
 import { sql } from './sql';
 
-const dbRequest = async (): Promise<void> => {
+const dbRequest = async (): Promise<unknown> => {
   const result = await sql`SELECT version()`;
-  // oxlint-disable-next-line no-console
-  console.log(result);
+  return result;
 };
 
 export { dbRequest };

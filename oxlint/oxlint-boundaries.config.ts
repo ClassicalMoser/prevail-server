@@ -10,7 +10,7 @@ const config: OxlintConfig = {
         'import-boundaries/enforce': [
           'error',
           {
-            rootDir: '.',
+            rootDir: 'src',
             boundaries,
           },
         ],
@@ -29,7 +29,7 @@ const config: OxlintConfig = {
         'import-boundaries/enforce': [
           'error',
           {
-            rootDir: '.',
+            rootDir: 'src',
             boundaries,
             enforceBoundaries: false,
           },

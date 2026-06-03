@@ -159,7 +159,7 @@ const config: OxlintConfig = {
       },
     ],
     'unicode-bom': ['error', 'never'],
-    'unused-imports/no-unused-vars': [
+    'typescript/no-unused-vars': [
       'error',
       {
         args: 'after-used',

@@ -1,1 +1,1 @@
-export { CREATE_COMMAND_CARD_PATH } from './create-command-card';
+export { createCommandCardRoutes } from './command-card-routes';
