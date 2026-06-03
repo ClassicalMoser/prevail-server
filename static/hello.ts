@@ -1,1 +1,1 @@
-console.log("Hello, world!");
+export const hello = (): string => 'Hello, world!';

@@ -1,25 +1,12 @@
-import { serveDir } from "@std/http";
+import { serve } from '@hono/node-server';
+import { app } from './app';
+import dotenv from 'dotenv';
+import process from 'node:process';
 
-const userPagePattern = new URLPattern({ pathname: "/users/:id" });
-const staticPathPattern = new URLPattern({ pathname: "/static/*" });
+dotenv.config({ path: '.env' });
+const port = Number(process.env.PORT ?? 3000);
 
-export default {
-  fetch(req) {
-    const url = new URL(req.url);
-
-    if (url.pathname === "/") {
-      return new Response("Home page");
-    }
-
-    const userPageMatch = userPagePattern.exec(url);
-    if (userPageMatch) {
-      return new Response(userPageMatch.pathname.groups.id);
-    }
-
-    if (staticPathPattern.test(url)) {
-      return serveDir(req);
-    }
-
-    return new Response("Not found", { status: 404 });
-  },
-} satisfies Deno.ServeDefaultExport;
+serve({ fetch: app.fetch, port }, () => {
+  // oxlint-disable-next-line no-console
+  console.log(`Listening on http://localhost:${port}`);
+});
