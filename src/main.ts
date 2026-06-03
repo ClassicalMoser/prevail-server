@@ -2,7 +2,7 @@
 // Import { app } from './app';
 import { serve } from '@hono/node-server';
 import process from 'node:process';
-import { app } from './app';
+import { app } from './composition/app';
 
 const port = Number(process.env.PORT);
 

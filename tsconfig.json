@@ -5,17 +5,18 @@
     "lib": ["ES2023"],
     "types": ["node", "vitest/globals"],
     "skipLibCheck": true,
+    "rootDir": ".",
     "paths": {
-      "@domain/*": ["./domain/*"],
-      "@domain": ["./domain/index.ts"],
-      "@interface/*": ["./interface/*"],
-      "@interface": ["./interface/index.ts"],
-      "@application/*": ["./application/*"],
-      "@application": ["./application/index.ts"],
-      "@infrastructure/*": ["./infrastructure/*"],
-      "@infrastructure": ["./infrastructure/index.ts"],
-      "@testing/*": ["./testing/*"],
-      "@testing": ["./testing/index.ts"]
+      "@domain/*": ["./src/domain/*"],
+      "@domain": ["./src/domain/index.ts"],
+      "@interface/*": ["./src/interface/*"],
+      "@interface": ["./src/interface/index.ts"],
+      "@application/*": ["./src/application/*"],
+      "@application": ["./src/application/index.ts"],
+      "@infrastructure/*": ["./src/infrastructure/*"],
+      "@infrastructure": ["./src/infrastructure/index.ts"],
+      "@testing/*": ["./src/testing/*"],
+      "@testing": ["./src/testing/index.ts"]
     },
 
     /* Bundler mode */

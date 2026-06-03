@@ -2,7 +2,7 @@ import type { UserConfig } from 'tsdown';
 
 const config: UserConfig = {
   clean: true,
-  entry: ['main.ts'],
+  entry: ['src/main.ts'],
   format: ['esm'],
   outDir: 'dist',
   outExtensions: () => ({

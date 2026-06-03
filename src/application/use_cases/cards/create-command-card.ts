@@ -1,4 +1,4 @@
-import { sql } from '@infrastructure';
+import { sql } from '../../../infrastructure';
 
 export const createCommandCard = async (
   name: string,

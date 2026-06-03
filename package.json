@@ -7,7 +7,7 @@
     "dev": "tsdown && (tsdown --watch & node --env-file=.env --watch dist/main.js)",
     "build": "tsdown",
     "start": "node --env-file=.env dist/main.js",
-    "check": "pnpm check",
+    "typecheck": "tsc --noEmit",
     "fmt": "oxfmt .",
     "lint": "oxlint .",
     "test": "vitest"

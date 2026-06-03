@@ -1,4 +1,4 @@
-import { app } from './app';
+import { app } from './composition/app';
 
 describe('get /', () => {
   it('should return 200', { timeout: 10_000 }, async () => {
