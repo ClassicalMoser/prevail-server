@@ -14,6 +14,8 @@ export default defineConfig({
       '@domain/*': path.join(root, 'src/domain/*'),
       '@ports': path.join(root, 'src/ports'),
       '@ports/*': path.join(root, 'src/ports/*'),
+      '@utils': path.join(root, 'src/utils'),
+      '@utils/*': path.join(root, 'src/utils/*'),
       '@interface': path.join(root, 'src/interface'),
       '@interface/*': path.join(root, 'src/interface/*'),
       '@application': path.join(root, 'src/application'),

@@ -1,10 +1,8 @@
-import type {
-  CommandCardStorage,
-  DataErrorSignature,
-  CommandCard,
-} from '@ports';
+import type { CommandCardStorage, DataErrorSignature } from '@ports';
+import type { Card } from '@classicalmoser/prevail-rules/domain';
 
-export const getCommandCards = async (
+export const getAllCommandCards = async (
   commandCardStorage: CommandCardStorage,
-): Promise<DataErrorSignature<CommandCard[]>> =>
-  commandCardStorage.getCommandCards();
+  rulesVersion: string,
+): Promise<DataErrorSignature<Card[]>> =>
+  commandCardStorage.getCurrentCommandCardVersionsByRulesVersion(rulesVersion);

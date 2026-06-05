@@ -18,22 +18,28 @@ export const boundaries: BoundaryConfig[] = [
     allowImportsFrom: ['@domain'],
   },
   {
+    identifier: '@utils',
+    dir: 'utils',
+    alias: '@utils',
+    allowImportsFrom: ['@domain', '@ports'],
+  },
+  {
     identifier: '@application',
     dir: 'application',
     alias: '@application',
-    allowImportsFrom: ['@domain', '@ports'],
+    allowImportsFrom: ['@domain', '@ports', '@utils'],
   },
   {
     identifier: '@infrastructure',
     dir: 'infrastructure',
     alias: '@infrastructure',
-    allowImportsFrom: ['@domain', '@ports'],
+    allowImportsFrom: ['@domain', '@ports', '@utils'],
   },
   {
     identifier: '@interface',
     dir: 'interface',
     alias: '@interface',
-    allowImportsFrom: ['@domain', '@ports', '@application'],
+    allowImportsFrom: ['@domain', '@ports', '@utils'],
   },
   {
     identifier: '@composition',
@@ -42,6 +48,7 @@ export const boundaries: BoundaryConfig[] = [
     allowImportsFrom: [
       '@domain',
       '@ports',
+      '@utils',
       '@application',
       '@infrastructure',
       '@interface',

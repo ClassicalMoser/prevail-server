@@ -6,7 +6,7 @@ interface DataSignature<T> {
 interface ErrorSignature {
   success: false;
   message: string;
-  code: string;
+  status: number;
 }
 
 type DataErrorSignature<T> = DataSignature<T> | ErrorSignature;

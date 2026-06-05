@@ -25,4 +25,8 @@ interface RouteDefinition<
   ) => Promise<TResponse>;
 }
 
-export type { RouteDefinition, RouteRequest, RouteReply };
+// Handlers are contravariant in `request`. Erasing generics here lets each route keep typed params/query/response at its definition site via `satisfies`.
+// oxlint-disable-next-line typescript/no-explicit-any -- heterogeneous route registry
+type RouteRegistry = readonly RouteDefinition<any, any, any, any>[];
+
+export type { RouteDefinition, RouteRegistry, RouteRequest, RouteReply };

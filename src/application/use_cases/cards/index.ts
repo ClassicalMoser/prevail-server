@@ -1,1 +1,1 @@
-export { getCommandCards } from './get-command-cards';
+export { getAllCommandCards } from './get-command-cards';

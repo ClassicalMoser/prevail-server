@@ -11,6 +11,8 @@
       "@domain": ["./src/domain/index.ts"],
       "@ports/*": ["./src/ports/*"],
       "@ports": ["./src/ports/index.ts"],
+      "@utils/*": ["./src/utils/*"],
+      "@utils": ["./src/utils/index.ts"],
       "@interface/*": ["./src/interface/*"],
       "@interface": ["./src/interface/index.ts"],
       "@application/*": ["./src/application/*"],

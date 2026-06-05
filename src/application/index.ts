@@ -1,1 +1,1 @@
-export { getCommandCards } from './use_cases';
+export { createUseCasesRoot } from './use_cases';

@@ -8,6 +8,7 @@ const sql = postgres({
   username: process.env.DB_USERNAME,
   password: process.env.DB_PASSWORD,
   ssl: 'require',
+  prepare: false,
 });
 
 export { sql };
