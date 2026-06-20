@@ -77,6 +77,7 @@ const config: OxlintConfig = {
     'no-useless-assignment': 'off', // Often used for type assertion checks
     'no-underscore-dangle': 'off', // Internally allowed for unused variables
     'sort-imports': 'off', // Superseded by import/sort
+    'func-style': 'off', // Declaration methods have different semantics that function differently in TypeScript.
     'typescript/no-inferrable-types': 'off', // Excessive clarity is preferable to ambiguity
     'import/no-nodejs-modules': 'off', // Codebase is designed only for NPM-compatible environments
     'unicorn/no-array-reduce': 'off', // Reduce is often ideal for this idiom.
@@ -101,7 +102,7 @@ const config: OxlintConfig = {
       'error',
       {
         // Node server uses kebab-case for filenames.
-        case: 'kebab-case',
+        case: 'kebabCase',
       },
     ],
     'accessor-pairs': [
@@ -181,7 +182,7 @@ const config: OxlintConfig = {
     'import/no-duplicates': [
       'error',
       {
-        'prefer-inline': false,
+        preferInline: false,
       },
     ],
   },

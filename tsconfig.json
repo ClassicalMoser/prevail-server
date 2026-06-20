@@ -39,12 +39,7 @@
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": [
-    "**/*.ts",
-    "vite.config.ts",
-    "boundaries.ts",
-    "src/application/use_cases/cards/get-command-cards"
-  ],
+  "include": ["**/*.ts", "vite.config.ts", "boundaries.ts"],
   "exclude": [
     "node_modules",
     "dist",

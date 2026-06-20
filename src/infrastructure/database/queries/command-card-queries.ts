@@ -2,10 +2,23 @@ import type {
   CommandCardVersionDb,
   WriteCommandCardVersionDb,
 } from '../db-types';
-import type postgres from 'postgres';
+import type { Sql } from '../sql-type';
+
+const getAllCommandCardVersionsQuery = async (
+  sql: Sql,
+): Promise<CommandCardVersionDb[]> =>
+  await sql`SELECT
+  ccv.command_card_id,
+  ccv.command_card_version_id,
+  ccv.command_card_name,
+  ccv.command_card_definition,
+  ccv.version_major,
+  ccv.version_minor,
+  ccv.version_patch
+  FROM command_card_versions ccv`;
 
 const getCurrentCommandCardVersionsByRulesVersionQuery = async (
-  sql: postgres.Sql,
+  sql: Sql,
   rulesVersion: string,
 ): Promise<CommandCardVersionDb[]> =>
   await sql`SELECT DISTINCT ON (cc.command_card_id)
@@ -33,13 +46,13 @@ const getCurrentCommandCardVersionsByRulesVersionQuery = async (
       ccv.version_patch DESC`;
 
 const createEmptyCommandCardQuery = async (
-  sql: postgres.Sql,
+  sql: Sql,
 ): Promise<{ command_card_id: string }[]> =>
   await sql`INSERT INTO command_cards DEFAULT VALUES
   RETURNING command_card_id`;
 
 const writeCommandCardVersionQuery = async (
-  sql: postgres.Sql,
+  sql: Sql,
   writeVersion: WriteCommandCardVersionDb,
 ): Promise<CommandCardVersionDb[]> =>
   await sql`INSERT INTO command_card_versions (
@@ -61,13 +74,14 @@ VALUES (
 RETURNING command_card_id,
       command_card_version_id,
       command_card_name,
-      command_card_definition,
       version_major,
       version_minor,
-      version_patch;`;
+      version_patch,
+      command_card_definition`;
 
 export {
   getCurrentCommandCardVersionsByRulesVersionQuery,
   createEmptyCommandCardQuery,
   writeCommandCardVersionQuery,
+  getAllCommandCardVersionsQuery,
 };

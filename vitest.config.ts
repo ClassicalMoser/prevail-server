@@ -7,6 +7,11 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'node',
+    env: {
+      DB_CONNECTION_STRING: 'postgres://test:test@localhost:5432/test',
+      AUTH0_DOMAIN: 'test.auth0.com',
+      AUTH0_AUDIENCE: 'https://api.test',
+    },
   },
   resolve: {
     alias: {

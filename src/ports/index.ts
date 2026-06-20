@@ -1,14 +1,29 @@
-export type { StoragePort, CommandCardStorage } from './storage';
+export type {
+  StoragePort,
+  CommandCardStorage,
+  User,
+  UserStorage,
+} from './storage';
+export type { AuthPort } from './auth';
 export type {
   DataSignature,
   ErrorSignature,
   DataErrorSignature,
 } from './data-error-signature-port';
 export type {
-  RouteDefinition,
+  DeleteRouteHandler,
+  GetRouteHandler,
+  GetRouteRequest,
+  ImplementedGetRoute,
+  ImplementedPostRoute,
+  ImplementedPutRoute,
+  ImplementedPatchRoute,
+  ImplementedDeleteRoute,
+  RegisteredRoute,
+  RouteHandler,
   RouteRegistry,
   RouteRequest,
-  RouteReply,
+  WireRouteRequest,
 } from './routes-port';
 export type { LoggerPort } from './logger-port';
 export type { UseCasesPort, CommandCardUseCasesPort } from './use-cases';

@@ -14,7 +14,6 @@ interface CommandCardVersionDb {
   command_card_id: string;
   command_card_version_id: string;
   command_card_name: string;
-  created_at: Date;
   command_card_definition: PartialCard;
   version_major: number;
   version_minor: number;

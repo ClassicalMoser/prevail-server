@@ -7,6 +7,7 @@ import {
   getCurrentCommandCardVersionsByRulesVersionQuery,
   createEmptyCommandCardQuery,
   writeCommandCardVersionQuery,
+  getAllCommandCardVersionsQuery,
 } from '../queries';
 import type {
   CommandCardVersionDb,
@@ -18,12 +19,34 @@ import {
 } from '../mappers';
 import type { Sql } from '../sql-type';
 import type { Card } from '@classicalmoser/prevail-rules/domain';
-import { handleError } from '@utils/handle-error';
+import { handleError } from '@utils';
 
 const createCommandCardStorage = (
   logger: LoggerPort,
   sql: Sql,
 ): CommandCardStorage => ({
+  getAllCommandCardVersions: async (): Promise<DataErrorSignature<Card[]>> => {
+    try {
+      const unparsedResult: CommandCardVersionDb[] =
+        await getAllCommandCardVersionsQuery(sql);
+      const mappedResult: Card[] = unparsedResult.map((version) =>
+        commandCardVersionMapperToDomain(version),
+      );
+      return {
+        success: true,
+        data: mappedResult,
+      };
+    } catch (error) {
+      return handleError({
+        error,
+        logger,
+        context: 'getting all command card versions from database',
+        message: 'Failed to get all command card versions from database',
+        status: 500,
+      });
+    }
+  },
+
   getCurrentCommandCardVersionsByRulesVersion: async (
     rulesVersion: string,
   ): Promise<DataErrorSignature<Card[]>> => {

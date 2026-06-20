@@ -1,1 +1,1 @@
-export { getAllCommandCards } from './get-command-cards';
+export { createCommandCardUseCases } from './command-card-use-cases';

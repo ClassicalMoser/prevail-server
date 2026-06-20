@@ -4,12 +4,13 @@ import type {
   PartialCard,
 } from '../db-types';
 import type { Card } from '@classicalmoser/prevail-rules/domain';
+import { parseIfJson } from '../parse-if-json';
 
 const commandCardVersionMapperToDomain = (
   version: CommandCardVersionDb,
 ): Card => {
   // Most traits come from the JSON definition field
-  const partialCard: PartialCard = version.command_card_definition;
+  const partialCard: PartialCard = parseIfJson(version.command_card_definition);
   // Combine semver fields into a single version string
   const versionNumber = `${version.version_major}.${version.version_minor}.${version.version_patch}`;
   // Combine all fields into a single card object

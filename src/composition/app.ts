@@ -2,8 +2,9 @@ import FastifyInstance from 'fastify';
 import { createRoutes } from '@interface';
 import type { LoggerPort, StoragePort, UseCasesPort } from '@ports';
 import process from 'node:process';
-import { createDbRoot } from '@infrastructure';
+import { createAuthInfrastructure, createDbRoot } from '@infrastructure';
 import { createUseCasesRoot } from '@application';
+import { registerHttp } from './register-http';
 
 const app = FastifyInstance({ logger: true });
 
@@ -18,29 +19,27 @@ if (!connectionString) {
   throw new Error('DB_CONNECTION_STRING is not set');
 }
 
+const auth0Domain = process.env.AUTH0_DOMAIN;
+if (!auth0Domain) {
+  throw new Error('AUTH0_DOMAIN is not set');
+}
+
+const auth0Audience = process.env.AUTH0_AUDIENCE;
+if (!auth0Audience) {
+  throw new Error('AUTH0_AUDIENCE is not set');
+}
+
 const dbRoot: StoragePort = createDbRoot(logger, connectionString);
+
+const auth = createAuthInfrastructure(logger, {
+  domain: auth0Domain,
+  audience: auth0Audience,
+});
 
 const useCases: UseCasesPort = createUseCasesRoot(dbRoot);
 
 const routes = createRoutes(useCases);
 
-for (const route of routes) {
-  app.route({
-    method: route.method,
-    url: route.url,
-    handler: (request, reply) =>
-      route.handler(
-        {
-          params: request.params,
-          body: request.body,
-          query: request.query,
-        },
-        {
-          send: (payload) => reply.send(payload),
-          status: (code) => reply.status(code),
-        },
-      ),
-  });
-}
+registerHttp(app, auth, routes);
 
 export { app };
