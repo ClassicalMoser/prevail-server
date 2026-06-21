@@ -2,7 +2,11 @@ import FastifyInstance from 'fastify';
 import { createRoutes } from '@interface';
 import type { LoggerPort, StoragePort, UseCasesPort } from '@ports';
 import process from 'node:process';
-import { createAuthInfrastructure, createDbRoot } from '@infrastructure';
+import {
+  commandCardRendererAdapter,
+  createAuthInfrastructure,
+  createDbRoot,
+} from '@infrastructure';
 import { createUseCasesRoot } from '@application';
 import { registerHttp } from './register-http';
 
@@ -36,7 +40,10 @@ const auth = createAuthInfrastructure(logger, {
   audience: auth0Audience,
 });
 
-const useCases: UseCasesPort = createUseCasesRoot(dbRoot);
+const useCases: UseCasesPort = createUseCasesRoot(
+  dbRoot,
+  commandCardRendererAdapter,
+);
 
 const routes = createRoutes(useCases);
 

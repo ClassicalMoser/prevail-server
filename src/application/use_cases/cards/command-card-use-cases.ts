@@ -1,14 +1,17 @@
 import { cardSchema } from '@classicalmoser/prevail-rules/domain';
 import type {
   CertificationResults,
+  CommandCardRendererPort,
   CommandCardStorage,
   CommandCardUseCasesPort,
   DataErrorSignature,
+  PrintCommandCard,
 } from '@ports';
 import type { Card } from '@classicalmoser/prevail-rules/domain';
 
 const createCommandCardUseCases = (
   commandCardStorage: CommandCardStorage,
+  commandCardRenderer: CommandCardRendererPort,
 ): CommandCardUseCasesPort => ({
   getCurrentCommandCards: async (): Promise<DataErrorSignature<Card[]>> =>
     commandCardStorage.getCurrentCommandCards(),
@@ -54,6 +57,12 @@ const createCommandCardUseCases = (
       data: { succeeded, failed },
     };
   },
+  previewCommandCard: async (
+    card: Card,
+  ): Promise<DataErrorSignature<string>> =>
+    commandCardRenderer.renderCommandCard(card as PrintCommandCard, {
+      bleed: false,
+    }),
 });
 
 export { createCommandCardUseCases };

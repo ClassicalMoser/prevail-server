@@ -14,6 +14,7 @@ interface CommandCardUseCasesPort {
   certifyLatestCommandCardVersions: () => Promise<
     DataErrorSignature<CertificationResults>
   >;
+  previewCommandCard: (card: Card) => Promise<DataErrorSignature<string>>;
 }
 
 export type { CertificationResults, CommandCardUseCasesPort };

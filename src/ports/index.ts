@@ -17,10 +17,12 @@ export type {
   DeleteRouteHandler,
   GetRouteHandler,
   GetRouteRequest,
+  MediaRouteHandler,
   RegisteredRoute,
   RouteHandler,
   RouteRegistry,
   RouteRequest,
+  SuccessContentType,
   WireRouteRequest,
 } from './routes-port';
 export type { LoggerPort } from './logger-port';

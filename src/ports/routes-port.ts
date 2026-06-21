@@ -1,4 +1,8 @@
-import type { RouteAuth } from '@classicalmoser/prevail-contracts';
+import type {
+  MediaContentType,
+  MediaPayload,
+  RouteAuth,
+} from '@classicalmoser/prevail-contracts';
 import type {
   DataErrorSignature,
   ErrorSignature,
@@ -54,6 +58,19 @@ type DeleteRouteHandler<TParams, TQuery> = (
   request: GetRouteRequest<TParams, TQuery>,
 ) => Promise<ErrorSignature | NoContentSignature>;
 
+/** Handler for POST routes that return a raw media document on success. */
+type MediaRouteHandler<
+  TParams,
+  TQuery,
+  TBody,
+  TSuccessContentType extends MediaContentType,
+> = (
+  request: RouteRequest<TParams, TQuery, TBody>,
+) => Promise<DataErrorSignature<MediaPayload<TSuccessContentType>>>;
+
+/** MIME type of a route's success response body. */
+type SuccessContentType = MediaContentType | 'application/json';
+
 /**
  * A route ready for registration with the HTTP adapter.
  *
@@ -67,6 +84,8 @@ interface RegisteredRoute {
   auth: RouteAuth;
   /** HTTP status code sent on success (200, 201, or 204). */
   successStatus: 200 | 201 | 204;
+  /** MIME type of the success response body. */
+  successContentType: SuccessContentType;
   invoke: (request: WireRouteRequest) => Promise<RouteInvokeResult>;
 }
 
@@ -77,9 +96,11 @@ export type {
   DeleteRouteHandler,
   GetRouteHandler,
   GetRouteRequest,
+  MediaRouteHandler,
   RegisteredRoute,
   RouteHandler,
   RouteRegistry,
   RouteRequest,
+  SuccessContentType,
   WireRouteRequest,
 };

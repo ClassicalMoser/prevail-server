@@ -1,6 +1,7 @@
 import type {
   DeleteRouteValidators,
   GetRouteValidators,
+  MediaPostRouteValidators,
   PatchRouteValidators,
   PostRouteValidators,
   PutRouteValidators,
@@ -97,7 +98,8 @@ const tryParseBodyRouteRequest = <
   validators:
     | PostRouteValidators<TParams, TQuery, TBody, TReturn>
     | PutRouteValidators<TParams, TQuery, TBody, TReturn>
-    | PatchRouteValidators<TParams, TQuery, TBody, TReturn>,
+    | PatchRouteValidators<TParams, TQuery, TBody, TReturn>
+    | MediaPostRouteValidators<TParams, TQuery, TBody>,
 ): ParseResult<RouteRequest<TParams, TQuery, TBody>> => {
   const paramsResult = validators.params.safeParse(wire.params ?? {});
   if (!paramsResult.success) {
@@ -146,5 +148,9 @@ const tryParseDeleteRequest = <
   };
 };
 
-export { tryParseBodyRouteRequest, tryParseDeleteRequest, tryParseGetRequest };
+export {
+  tryParseBodyRouteRequest,
+  tryParseDeleteRequest,
+  tryParseGetRequest,
+};
 export type { ParseResult };

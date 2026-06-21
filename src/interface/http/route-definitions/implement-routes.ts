@@ -8,6 +8,9 @@ import type {
   CreatedPostRoute,
   DeleteRoute,
   GetRoute,
+  MediaContentType,
+  MediaPayload,
+  MediaPostRoute,
   PatchRoute,
   PostRoute,
   PutRoute,
@@ -16,6 +19,7 @@ import type {
   DataErrorSignature,
   DeleteRouteHandler,
   GetRouteHandler,
+  MediaRouteHandler,
   RegisteredRoute,
   RouteHandler,
   RouteInvokeResult,
@@ -25,6 +29,8 @@ import {
   tryParseDeleteRequest,
   tryParseGetRequest,
 } from './parse-route-request';
+
+const jsonSuccessContentType = 'application/json' as const;
 
 const implementGetRoute = <
   TParams extends Record<string, unknown>,
@@ -38,6 +44,7 @@ const implementGetRoute = <
   path: contract.path,
   auth: contract.auth,
   successStatus: 200,
+  successContentType: jsonSuccessContentType,
   invoke: async (wire): Promise<DataErrorSignature<TReturn>> => {
     const parsed = tryParseGetRequest(wire, contract.validators);
     if (!parsed.ok) {
@@ -70,6 +77,7 @@ const implementPostRoute = <
   path: contract.path,
   auth: contract.auth,
   successStatus: contract.successStatus,
+  successContentType: jsonSuccessContentType,
   invoke: async (wire): Promise<DataErrorSignature<TReturn>> => {
     const parsed = tryParseBodyRouteRequest<TParams, TQuery, TBody, TReturn>(
       wire,
@@ -96,6 +104,7 @@ const implementPutRoute = <
   path: contract.path,
   auth: contract.auth,
   successStatus: 200,
+  successContentType: jsonSuccessContentType,
   invoke: async (wire): Promise<DataErrorSignature<TReturn>> => {
     const parsed = tryParseBodyRouteRequest(wire, contract.validators);
     if (!parsed.ok) {
@@ -119,6 +128,7 @@ const implementPatchRoute = <
   path: contract.path,
   auth: contract.auth,
   successStatus: 200,
+  successContentType: jsonSuccessContentType,
   invoke: async (wire): Promise<DataErrorSignature<TReturn>> => {
     const parsed = tryParseBodyRouteRequest(wire, contract.validators);
     if (!parsed.ok) {
@@ -140,8 +150,44 @@ const implementDeleteRoute = <
   path: contract.path,
   auth: contract.auth,
   successStatus: 204,
+  successContentType: jsonSuccessContentType,
   invoke: async (wire): Promise<RouteInvokeResult> => {
     const parsed = tryParseDeleteRequest(wire, contract.validators);
+    if (!parsed.ok) {
+      return parsed.error;
+    }
+
+    return handler(parsed.value);
+  },
+});
+
+const implementMediaPostRoute = <
+  TParams extends Record<string, unknown>,
+  TQuery extends Record<string, unknown>,
+  TBody,
+  TSuccessContentType extends MediaContentType,
+>(
+  contract: MediaPostRoute<TParams, TQuery, TBody, TSuccessContentType>,
+  {
+    handler,
+  }: {
+    handler: MediaRouteHandler<
+      TParams,
+      TQuery,
+      TBody,
+      TSuccessContentType
+    >;
+  },
+): RegisteredRoute => ({
+  method: contract.method,
+  path: contract.path,
+  auth: contract.auth,
+  successStatus: 200,
+  successContentType: contract.successContentType,
+  invoke: async (
+    wire,
+  ): Promise<DataErrorSignature<MediaPayload<TSuccessContentType>>> => {
+    const parsed = tryParseBodyRouteRequest(wire, contract.validators);
     if (!parsed.ok) {
       return parsed.error;
     }
@@ -153,6 +199,7 @@ const implementDeleteRoute = <
 export {
   implementDeleteRoute,
   implementGetRoute,
+  implementMediaPostRoute,
   implementPatchRoute,
   implementPostRoute,
   implementPutRoute,

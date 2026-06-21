@@ -1,6 +1,7 @@
 export {
   implementDeleteRoute,
   implementGetRoute,
+  implementMediaPostRoute,
   implementPatchRoute,
   implementPostRoute,
   implementPutRoute,

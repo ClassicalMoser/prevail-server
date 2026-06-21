@@ -4,10 +4,12 @@ import {
   createEmptyCommandCardContract,
   getCommandCardByIdContract,
   getCurrentCommandCardsContract,
+  previewCommandCardContract,
 } from '@classicalmoser/prevail-contracts/contracts';
 import type { CommandCardUseCasesPort, RouteRegistry } from '@ports';
 import {
   implementGetRoute,
+  implementMediaPostRoute,
   implementPostRoute,
 } from '@interface/http/route-definitions';
 
@@ -30,6 +32,10 @@ const createCommandCardRoutes = (
   }),
   implementPostRoute(certifyLatestCommandCardVersionsContract, {
     handler: () => commandCardUseCases.certifyLatestCommandCardVersions(),
+  }),
+  implementMediaPostRoute(previewCommandCardContract, {
+    handler: (request) =>
+      commandCardUseCases.previewCommandCard(request.body),
   }),
 ];
 
