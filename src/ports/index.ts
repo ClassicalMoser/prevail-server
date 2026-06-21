@@ -24,4 +24,8 @@ export type {
   WireRouteRequest,
 } from './routes-port';
 export type { LoggerPort } from './logger-port';
-export type { UseCasesPort, CommandCardUseCasesPort } from './use-cases';
+export type {
+  UseCasesPort,
+  CommandCardUseCasesPort,
+  CertificationResults,
+} from './use-cases';
