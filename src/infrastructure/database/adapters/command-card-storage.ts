@@ -25,9 +25,8 @@ import type { Sql } from '../sql-type';
 import type { Card } from '@classicalmoser/prevail-rules/domain';
 import { handleError } from '@utils';
 
-const mapCommandCardVersions = (
-  versions: CommandCardVersionDb[],
-): Card[] => versions.map((version) => commandCardVersionMapperToDomain(version));
+const mapCommandCardVersions = (versions: CommandCardVersionDb[]): Card[] =>
+  versions.map((version) => commandCardVersionMapperToDomain(version));
 
 const createCommandCardStorage = (
   logger: LoggerPort,

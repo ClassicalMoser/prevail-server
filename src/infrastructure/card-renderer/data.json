@@ -1,0 +1,43 @@
+{
+  "card": {
+    "command": {
+      "modifiers": [],
+      "number": 3,
+      "restrictions": {
+        "inspirationRangeRestriction": 1,
+        "traitRestrictions": [],
+        "unitRestrictions": ["Manipular Legion"]
+      },
+      "size": "lines",
+      "type": "movement"
+    },
+    "id": "00000000-0000-4000-8000-000000000012",
+    "initiative": 3,
+    "modifiers": [
+      {
+        "type": "flexibility",
+        "value": 1
+      }
+    ],
+    "name": "Triplex Acies",
+    "roundEffect": {
+      "modifiers": [
+        {
+          "type": "speed",
+          "value": -1
+        }
+      ],
+      "restrictions": {
+        "inspirationRangeRestriction": 1,
+        "traitRestrictions": ["formation"],
+        "unitRestrictions": ["Manipular Legion", "Alae Socii"]
+      }
+    },
+    "unitSupport": {
+      "count": 2,
+      "supportType": "unitType",
+      "unitTypeId": "Manipular Legion"
+    },
+    "version": "1.0.0"
+  }
+}

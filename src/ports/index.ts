@@ -29,3 +29,8 @@ export type {
   CommandCardUseCasesPort,
   CertificationResults,
 } from './use-cases';
+export type {
+  CommandCardRendererPort,
+  PrintCommandCard,
+  RenderDetails,
+} from './card-renderer';
