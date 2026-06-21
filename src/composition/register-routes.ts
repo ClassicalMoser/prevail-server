@@ -1,12 +1,12 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import type {
   AuthPort,
-  DataErrorSignature,
   ErrorSignature,
+  RouteInvokeResult,
   RouteRegistry,
   WireRouteRequest,
 } from '@ports';
-import { extractBearerToken, isErrorSignature } from '@utils';
+import { extractBearerToken, isDataSignature, isErrorSignature } from '@utils';
 
 const unauthorized: ErrorSignature = {
   success: false,
@@ -29,20 +29,31 @@ const toRequestHeaders = (
 };
 
 /**
- * Maps a handler return envelope to the HTTP response.
+ * Maps a handler return envelope to the HTTP wire format.
  *
- * Error envelopes use their `status` field; success envelopes are sent as 200.
+ * Success with body: raw payload only, status from `successStatus` (200 or 201).
+ * Success without body: HTTP 204 only.
+ * Error: `{ message }` with `envelope.status`.
  */
 const sendEnvelope = (
   reply: FastifyReply,
-  envelope: DataErrorSignature<unknown>,
+  envelope: RouteInvokeResult,
+  successStatus: 200 | 201 | 204,
 ): unknown => {
   if (isErrorSignature(envelope)) {
-    reply.status(envelope.status).send(envelope);
+    reply.status(envelope.status).send({ message: envelope.message });
     return envelope;
   }
 
-  reply.status(200).send(envelope);
+  if (successStatus === 204) {
+    reply.status(204).send();
+    return envelope;
+  }
+
+  if (isDataSignature(envelope)) {
+    reply.status(successStatus).send(envelope.data);
+  }
+
   return envelope;
 };
 
@@ -74,17 +85,21 @@ const registerRoutes = (
         if (route.auth.authRequired) {
           const token = extractBearerToken(wireRequest.headers);
           if (token === undefined) {
-            return sendEnvelope(fastifyReply, unauthorized);
+            return sendEnvelope(
+              fastifyReply,
+              unauthorized,
+              route.successStatus,
+            );
           }
 
           const authResult = await authPort.checkToken(token, route.auth);
           if (authResult !== true) {
-            return sendEnvelope(fastifyReply, authResult);
+            return sendEnvelope(fastifyReply, authResult, route.successStatus);
           }
         }
 
         const result = await route.invoke(wireRequest);
-        return sendEnvelope(fastifyReply, result);
+        return sendEnvelope(fastifyReply, result, route.successStatus);
       },
     });
   }

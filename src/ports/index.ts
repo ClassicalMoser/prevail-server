@@ -7,18 +7,16 @@ export type {
 export type { AuthPort } from './auth';
 export type {
   DataSignature,
-  ErrorSignature,
   DataErrorSignature,
+  ErrorSignature,
+  NoContentSignature,
+  RouteInvokeResult,
 } from './data-error-signature-port';
+export { noContentSuccess } from './data-error-signature-port';
 export type {
   DeleteRouteHandler,
   GetRouteHandler,
   GetRouteRequest,
-  ImplementedGetRoute,
-  ImplementedPostRoute,
-  ImplementedPutRoute,
-  ImplementedPatchRoute,
-  ImplementedDeleteRoute,
   RegisteredRoute,
   RouteHandler,
   RouteRegistry,

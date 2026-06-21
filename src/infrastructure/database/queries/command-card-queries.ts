@@ -1,27 +1,16 @@
-import type {
-  CommandCardVersionDb,
-  WriteCommandCardVersionDb,
-} from '../db-types';
+import type { CommandCardVersionDb } from '../db-types';
 import type { Sql } from '../sql-type';
 
-const getAllCommandCardVersionsQuery = async (
+const getCurrentCommandCardsQuery = async (
   sql: Sql,
 ): Promise<CommandCardVersionDb[]> =>
-  await sql`SELECT
-  ccv.command_card_id,
-  ccv.command_card_version_id,
-  ccv.command_card_name,
-  ccv.command_card_definition,
-  ccv.version_major,
-  ccv.version_minor,
-  ccv.version_patch
-  FROM command_card_versions ccv`;
-
-const getCurrentCommandCardVersionsByRulesVersionQuery = async (
-  sql: Sql,
-  rulesVersion: string,
-): Promise<CommandCardVersionDb[]> =>
-  await sql`SELECT DISTINCT ON (cc.command_card_id)
+  await sql`WITH latest_rules AS (
+    SELECT rules_version_id
+    FROM rules_versions
+    ORDER BY version_major DESC, version_minor DESC, version_patch DESC
+    LIMIT 1
+  )
+  SELECT DISTINCT ON (cc.command_card_id)
       cc.command_card_id,
       ccv.command_card_version_id,
       ccv.command_card_name,
@@ -34,54 +23,32 @@ const getCurrentCommandCardVersionsByRulesVersionQuery = async (
       ON ccv.command_card_id = cc.command_card_id
     JOIN command_card_certifications ccc
       ON ccc.command_card_version_id = ccv.command_card_version_id
-    JOIN rules_versions rv
-      ON rv.rules_version_id = ccc.rules_version_id
-    WHERE rv.version_major = split_part(${rulesVersion}, '.', 1)::int
-      AND rv.version_minor = split_part(${rulesVersion}, '.', 2)::int
-      AND rv.version_patch = split_part(${rulesVersion}, '.', 3)::int
+    JOIN latest_rules lr
+      ON lr.rules_version_id = ccc.rules_version_id
     ORDER BY
       cc.command_card_id,
       ccv.version_major DESC,
       ccv.version_minor DESC,
       ccv.version_patch DESC`;
 
-const createEmptyCommandCardQuery = async (
+const getCommandCardByIdQuery = async (
   sql: Sql,
-): Promise<{ command_card_id: string }[]> =>
-  await sql`INSERT INTO command_cards DEFAULT VALUES
-  RETURNING command_card_id`;
-
-const writeCommandCardVersionQuery = async (
-  sql: Sql,
-  writeVersion: WriteCommandCardVersionDb,
+  commandCardId: string,
 ): Promise<CommandCardVersionDb[]> =>
-  await sql`INSERT INTO command_card_versions (
-  command_card_id,
-  command_card_name,
-  version_major,
-  version_minor,
-  version_patch,
-  command_card_definition
-)
-VALUES (
-  ${writeVersion.command_card_id},
-  ${writeVersion.command_card_name},
-  ${writeVersion.version_major},
-  ${writeVersion.version_minor},
-  ${writeVersion.version_patch},
-  ${writeVersion.command_card_definition}
-)
-RETURNING command_card_id,
-      command_card_version_id,
-      command_card_name,
-      version_major,
-      version_minor,
-      version_patch,
-      command_card_definition`;
+  await sql`SELECT
+      ccv.command_card_id,
+      ccv.command_card_version_id,
+      ccv.command_card_name,
+      ccv.command_card_definition,
+      ccv.version_major,
+      ccv.version_minor,
+      ccv.version_patch
+    FROM command_card_versions ccv
+    WHERE ccv.command_card_id = ${commandCardId}
+    ORDER BY
+      ccv.version_major DESC,
+      ccv.version_minor DESC,
+      ccv.version_patch DESC
+    LIMIT 1`;
 
-export {
-  getCurrentCommandCardVersionsByRulesVersionQuery,
-  createEmptyCommandCardQuery,
-  writeCommandCardVersionQuery,
-  getAllCommandCardVersionsQuery,
-};
+export { getCommandCardByIdQuery, getCurrentCommandCardsQuery };

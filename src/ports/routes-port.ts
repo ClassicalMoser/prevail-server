@@ -1,19 +1,16 @@
+import type { RouteAuth } from '@classicalmoser/prevail-contracts';
 import type {
-  DeleteRoute,
-  GetRoute,
-  PatchRoute,
-  PostRoute,
-  PutRoute,
-  RouteAuth,
-} from '@classicalmoser/prevail-contracts';
-import type { DataErrorSignature } from './data-error-signature-port';
+  DataErrorSignature,
+  ErrorSignature,
+  NoContentSignature,
+  RouteInvokeResult,
+} from './data-error-signature-port';
 
 /**
  * Untyped request shape produced by the HTTP adapter (Fastify).
  *
- * Every field is `unknown` because the adapter has not validated or narrowed
- * anything yet. Route-specific parsers (passed to `defineGetRoute`, etc.)
- * are responsible for producing a typed request before the handler runs.
+ * Fields are `unknown` until contract validators parse them inside an
+ * `implement*Route` `invoke` method.
  */
 interface WireRouteRequest {
   params: unknown;
@@ -22,7 +19,7 @@ interface WireRouteRequest {
   headers: Readonly<Record<string, string | undefined>>;
 }
 
-/** Typed request for routes that accept a body (POST, PUT, PATCH). */
+/** Validated request for routes that accept a body (POST, PUT, PATCH). */
 interface RouteRequest<TParams, TQuery, TBody> {
   params: TParams;
   query: TQuery;
@@ -31,10 +28,10 @@ interface RouteRequest<TParams, TQuery, TBody> {
 }
 
 /**
- * Typed request for routes that do not accept a body (GET, DELETE).
+ * Validated request for routes that do not accept a body (GET, DELETE).
  *
- * Omits `body` entirely rather than using `never`, which would prevent the
- * HTTP adapter from passing its wire request through without casts.
+ * Omits `body` rather than using `never`, which would prevent passing a
+ * {@link WireRouteRequest} through without casts.
  */
 interface GetRouteRequest<TParams, TQuery> {
   params: TParams;
@@ -42,76 +39,35 @@ interface GetRouteRequest<TParams, TQuery> {
   headers: Readonly<Record<string, string | undefined>>;
 }
 
+/** Handler for POST, PUT, and PATCH routes. */
 type RouteHandler<TParams, TQuery, TBody, TResponse> = (
   request: RouteRequest<TParams, TQuery, TBody>,
 ) => Promise<DataErrorSignature<TResponse>>;
 
+/** Handler for GET routes. */
 type GetRouteHandler<TParams, TQuery, TResponse> = (
   request: GetRouteRequest<TParams, TQuery>,
 ) => Promise<DataErrorSignature<TResponse>>;
 
-type DeleteRouteHandler<TParams, TQuery, TResponse> = (
+/** Handler for DELETE routes. */
+type DeleteRouteHandler<TParams, TQuery> = (
   request: GetRouteRequest<TParams, TQuery>,
-) => Promise<DataErrorSignature<TResponse>>;
-
-/**
- * Server-side route definition checked against a prevail-contracts route.
- *
- * Use with `satisfies ImplementedGetRoute<...>` at the call site so the
- * handler signature is validated without widening inferred types.
- */
-type ImplementedGetRoute<TParams, TQuery, TResponse> = Pick<
-  GetRoute<TParams, TQuery, TResponse>,
-  'path' | 'auth' | 'method'
-> & {
-  handler: GetRouteHandler<TParams, TQuery, TResponse>;
-};
-
-/** @see ImplementedGetRoute */
-type ImplementedPostRoute<TParams, TQuery, TBody, TResponse> = Pick<
-  PostRoute<TParams, TQuery, TBody, TResponse>,
-  'path' | 'auth' | 'method'
-> & {
-  handler: RouteHandler<TParams, TQuery, TBody, TResponse>;
-};
-
-/** @see ImplementedGetRoute */
-type ImplementedPutRoute<TParams, TQuery, TBody, TResponse> = Pick<
-  PutRoute<TParams, TQuery, TBody, TResponse>,
-  'path' | 'auth' | 'method'
-> & {
-  handler: RouteHandler<TParams, TQuery, TBody, TResponse>;
-};
-
-/** @see ImplementedGetRoute */
-type ImplementedPatchRoute<TParams, TQuery, TBody, TResponse> = Pick<
-  PatchRoute<TParams, TQuery, TBody, TResponse>,
-  'path' | 'auth' | 'method'
-> & {
-  handler: RouteHandler<TParams, TQuery, TBody, TResponse>;
-};
-
-/** @see ImplementedGetRoute */
-type ImplementedDeleteRoute<TParams, TQuery, TResponse> = Pick<
-  DeleteRoute<TParams, TQuery, TResponse>,
-  'path' | 'auth' | 'method'
-> & {
-  handler: DeleteRouteHandler<TParams, TQuery, TResponse>;
-};
+) => Promise<ErrorSignature | NoContentSignature>;
 
 /**
  * A route ready for registration with the HTTP adapter.
  *
- * Handlers on {@link ImplementedGetRoute} and siblings are typed per-route,
- * but the registry must accept heterogeneous routes. `invoke` erases those
- * differences by always accepting a {@link WireRouteRequest}; the route's
- * parser (supplied when calling `defineGetRoute`, etc.) runs inside `invoke`.
+ * Built by `implement*Route` from a prevail-contracts route definition.
+ * `invoke` validates the wire request, runs the handler, and returns an
+ * internal envelope that `registerRoutes` projects to the HTTP wire format.
  */
 interface RegisteredRoute {
   method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
   path: string;
   auth: RouteAuth;
-  invoke: (request: WireRouteRequest) => Promise<DataErrorSignature<unknown>>;
+  /** HTTP status code sent on success (200, 201, or 204). */
+  successStatus: 200 | 201 | 204;
+  invoke: (request: WireRouteRequest) => Promise<RouteInvokeResult>;
 }
 
 /** Collection of routes passed to `registerRoutes`. */
@@ -121,11 +77,6 @@ export type {
   DeleteRouteHandler,
   GetRouteHandler,
   GetRouteRequest,
-  ImplementedDeleteRoute,
-  ImplementedGetRoute,
-  ImplementedPatchRoute,
-  ImplementedPostRoute,
-  ImplementedPutRoute,
   RegisteredRoute,
   RouteHandler,
   RouteRegistry,

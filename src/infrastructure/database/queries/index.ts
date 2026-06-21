@@ -1,6 +1,4 @@
 export {
-  getCurrentCommandCardVersionsByRulesVersionQuery,
-  createEmptyCommandCardQuery,
-  writeCommandCardVersionQuery,
-  getAllCommandCardVersionsQuery,
+  getCommandCardByIdQuery,
+  getCurrentCommandCardsQuery,
 } from './command-card-queries';
