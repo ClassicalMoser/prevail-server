@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@auth0/auth0-api-js": "^1.6.1",
+    "@aws-sdk/client-s3": "^3.1075.0",
     "@classicalmoser/prevail-contracts": "link:../prevail-contracts",
     "@classicalmoser/prevail-rules": "link:../prevail-rules",
     "@fastify/cors": "^11.2.0",

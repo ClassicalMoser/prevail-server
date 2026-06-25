@@ -5,3 +5,4 @@ export {
   commandCardRendererAdapter,
   unitCardRendererAdapter,
 } from './card-renderer';
+export { assetStorageAdapter } from './asset-storage';

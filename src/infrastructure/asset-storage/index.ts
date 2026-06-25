@@ -1,0 +1,1 @@
+export { assetStorageAdapter } from './adapters';

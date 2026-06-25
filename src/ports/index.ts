@@ -41,3 +41,4 @@ export type {
   UnitCardRendererPort,
   RenderDetails,
 } from './card-renderer';
+export type { AssetStorage, AssetType, UploadResult } from './asset-storage';
