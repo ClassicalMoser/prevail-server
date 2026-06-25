@@ -1,8 +1,12 @@
-import type { RouteRegistry, UseCasesPort } from '@ports';
-import { createCommandCardRoutes } from './cards';
+import type { LoggerPort, RouteRegistry, UseCasesPort } from '@ports';
+import { createCommandCardRoutes, createUnitCardRoutes } from './cards';
 
-const createRoutes = (useCases: UseCasesPort): RouteRegistry => [
-  ...createCommandCardRoutes(useCases.commandCardUseCases),
+const createRoutes = (
+  useCases: UseCasesPort,
+  logger: LoggerPort,
+): RouteRegistry => [
+  ...createCommandCardRoutes(useCases.commandCardUseCases, logger),
+  ...createUnitCardRoutes(useCases.unitCardUseCases, logger),
 ];
 
 export { createRoutes };

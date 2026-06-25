@@ -1,0 +1,42 @@
+{
+  "card": {
+    "id": "56834612-0ce9-4971-9de8-a3feb1b22e92",
+    "version": "0.0.1",
+    "name": "Disappointment",
+    "initiative": 1,
+    "modifiers": [
+      {
+        "type": "defense",
+        "value": 1
+      }
+    ],
+    "command": {
+      "size": "lines",
+      "type": "movement",
+      "number": 1,
+      "restrictions": {
+        "inspirationRangeRestriction": 2,
+        "traitRestrictions": ["formation"],
+        "unitRestrictions": []
+      },
+      "modifiers": []
+    },
+    "roundEffect": {
+      "restrictions": {
+        "inspirationRangeRestriction": 2,
+        "traitRestrictions": ["formation"],
+        "unitRestrictions": []
+      },
+      "modifiers": [
+        {
+          "type": "defense",
+          "value": 1
+        }
+      ]
+    },
+    "unitSupport": {
+      "supportType": "generic",
+      "count": 1
+    }
+  }
+}

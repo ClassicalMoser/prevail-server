@@ -1,4 +1,6 @@
 import type {
+  CommandCardCertificationStatusDb,
+  CommandCardListItemDb,
   CommandCardVersionDb,
   WriteCommandCardVersionDb,
 } from '../db-types';
@@ -54,25 +56,94 @@ const getCommandCardByIdQuery = async (
       ccv.version_patch DESC
     LIMIT 1`;
 
-const getLatestCommandCardVersionsQuery = async (
+const getCommandCardsByIdsQuery = async (
   sql: Sql,
+  commandCardIds: string[],
 ): Promise<CommandCardVersionDb[]> =>
-  await sql`SELECT DISTINCT ON (cc.command_card_id)
-      cc.command_card_id,
+  await sql`SELECT DISTINCT ON (ccv.command_card_id)
+      ccv.command_card_id,
       ccv.command_card_version_id,
       ccv.command_card_name,
       ccv.command_card_definition,
       ccv.version_major,
       ccv.version_minor,
       ccv.version_patch
+    FROM command_card_versions ccv
+    WHERE ccv.command_card_id = ANY(${commandCardIds})
+    ORDER BY
+      ccv.command_card_id,
+      ccv.version_major DESC,
+      ccv.version_minor DESC,
+      ccv.version_patch DESC`;
+
+const getLatestCommandCardCertificationsQuery = async (
+  sql: Sql,
+): Promise<CommandCardCertificationStatusDb[]> =>
+  await sql`WITH latest_rules AS (
+    SELECT rules_version_id
+    FROM rules_versions
+    ORDER BY version_major DESC, version_minor DESC, version_patch DESC
+    LIMIT 1
+  )
+  SELECT DISTINCT ON (cc.command_card_id)
+      cc.command_card_id,
+      ccv.command_card_version_id,
+      ccv.command_card_name,
+      ccv.command_card_definition,
+      ccv.version_major,
+      ccv.version_minor,
+      ccv.version_patch,
+      (ccc.command_card_version_id IS NOT NULL) AS certified
     FROM command_cards cc
     JOIN command_card_versions ccv
       ON ccv.command_card_id = cc.command_card_id
+    LEFT JOIN latest_rules lr ON TRUE
+    LEFT JOIN command_card_certifications ccc
+      ON ccc.command_card_version_id = ccv.command_card_version_id
+      AND ccc.rules_version_id = lr.rules_version_id
     ORDER BY
       cc.command_card_id,
       ccv.version_major DESC,
       ccv.version_minor DESC,
       ccv.version_patch DESC`;
+
+const getAllCommandCardsQuery = async (
+  sql: Sql,
+): Promise<CommandCardListItemDb[]> =>
+  await sql`SELECT
+      cc.command_card_id,
+      latest.command_card_name,
+      latest.version_major,
+      latest.version_minor,
+      latest.version_patch
+    FROM command_cards cc
+    LEFT JOIN (
+      SELECT DISTINCT ON (command_card_id)
+        command_card_id,
+        command_card_name,
+        version_major,
+        version_minor,
+        version_patch
+      FROM command_card_versions
+      ORDER BY
+        command_card_id,
+        version_major DESC,
+        version_minor DESC,
+        version_patch DESC
+    ) latest
+      ON latest.command_card_id = cc.command_card_id
+    ORDER BY
+      cc.created_at DESC,
+      cc.command_card_id`;
+
+const deleteEmptyCommandCardsQuery = async (sql: Sql): Promise<void> => {
+  await sql`DELETE FROM command_cards cc
+    WHERE NOT EXISTS (
+      SELECT 1
+      FROM command_card_versions ccv
+      WHERE ccv.command_card_id = cc.command_card_id
+    )`;
+};
 
 const createEmptyCommandCardQuery = async (
   sql: Sql,
@@ -124,28 +195,39 @@ const getLatestRulesVersionIdQuery = async (
     ORDER BY version_major DESC, version_minor DESC, version_patch DESC
     LIMIT 1`;
 
-const insertCommandCardCertificationQuery = async (
+const insertCommandCardCertificationsQuery = async (
   sql: Sql,
-  commandCardVersionId: string,
+  commandCardIds: string[],
   rulesVersionId: string,
 ): Promise<void> => {
   await sql`INSERT INTO command_card_certifications (
       command_card_version_id,
       rules_version_id
     )
-    VALUES (
-      ${commandCardVersionId},
-      ${rulesVersionId}
-    )`;
+    SELECT latest.command_card_version_id, ${rulesVersionId}
+    FROM (
+      SELECT DISTINCT ON (command_card_id) command_card_version_id
+      FROM command_card_versions
+      WHERE command_card_id = ANY(${commandCardIds})
+      ORDER BY
+        command_card_id,
+        version_major DESC,
+        version_minor DESC,
+        version_patch DESC
+    ) latest
+    ON CONFLICT DO NOTHING`;
 };
 
 export {
   commandCardExistsQuery,
   createCommandCardVersionQuery,
   createEmptyCommandCardQuery,
+  deleteEmptyCommandCardsQuery,
   getCommandCardByIdQuery,
+  getCommandCardsByIdsQuery,
   getCurrentCommandCardsQuery,
-  getLatestCommandCardVersionsQuery,
+  getAllCommandCardsQuery,
+  getLatestCommandCardCertificationsQuery,
   getLatestRulesVersionIdQuery,
-  insertCommandCardCertificationQuery,
+  insertCommandCardCertificationsQuery,
 };

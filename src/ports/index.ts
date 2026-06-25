@@ -1,6 +1,9 @@
 export type {
   StoragePort,
   CommandCardStorage,
+  CommandCardCertificationStatus,
+  UnitCardStorage,
+  UnitCardCertificationStatus,
   User,
   UserStorage,
 } from './storage';
@@ -30,9 +33,11 @@ export type {
   UseCasesPort,
   CommandCardUseCasesPort,
   CertificationResults,
+  UnitCardUseCasesPort,
 } from './use-cases';
 export type {
   CommandCardRendererPort,
   PrintCommandCard,
+  UnitCardRendererPort,
   RenderDetails,
 } from './card-renderer';

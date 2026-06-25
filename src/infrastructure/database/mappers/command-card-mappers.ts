@@ -15,7 +15,7 @@ const commandCardVersionMapperToDomain = (
   const versionNumber = `${version.version_major}.${version.version_minor}.${version.version_patch}`;
   // Combine all fields into a single card object
   const card: Card = {
-    id: version.command_card_version_id,
+    id: version.command_card_id,
     name: version.command_card_name,
     ...partialCard,
     version: versionNumber,

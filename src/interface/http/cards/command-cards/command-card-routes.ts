@@ -1,13 +1,21 @@
 import {
-  certifyLatestCommandCardVersionsContract,
+  updateCommandCardCertificationsContract,
   createCommandCardVersionContract,
   createEmptyCommandCardContract,
+  deleteEmptyCommandCardsContract,
+  getAllCommandCardsContract,
   getCommandCardByIdContract,
+  getCommandCardsByIdsContract,
   getCurrentCommandCardsContract,
   previewCommandCardContract,
 } from '@classicalmoser/prevail-contracts/contracts';
-import type { CommandCardUseCasesPort, RouteRegistry } from '@ports';
+import type {
+  CommandCardUseCasesPort,
+  LoggerPort,
+  RouteRegistry,
+} from '@ports';
 import {
+  implementDeleteRoute,
   implementGetRoute,
   implementMediaPostRoute,
   implementPostRoute,
@@ -15,27 +23,37 @@ import {
 
 const createCommandCardRoutes = (
   commandCardUseCases: CommandCardUseCasesPort,
+  logger: LoggerPort,
 ): RouteRegistry => [
-  implementGetRoute(getCurrentCommandCardsContract, {
+  implementGetRoute(getCurrentCommandCardsContract, logger, {
     handler: () => commandCardUseCases.getCurrentCommandCards(),
   }),
-  implementGetRoute(getCommandCardByIdContract, {
+  implementGetRoute(getAllCommandCardsContract, logger, {
+    handler: () => commandCardUseCases.getAllCommandCards(),
+  }),
+  implementGetRoute(getCommandCardByIdContract, logger, {
     handler: (request) =>
       commandCardUseCases.getCommandCardById(request.params.id),
   }),
-  implementPostRoute(createEmptyCommandCardContract, {
+  implementPostRoute(getCommandCardsByIdsContract, logger, {
+    handler: (request) =>
+      commandCardUseCases.getCommandCardsByIds(request.body.ids),
+  }),
+  implementPostRoute(createEmptyCommandCardContract, logger, {
     handler: () => commandCardUseCases.createEmptyCommandCard(),
   }),
-  implementPostRoute(createCommandCardVersionContract, {
+  implementDeleteRoute(deleteEmptyCommandCardsContract, logger, {
+    handler: () => commandCardUseCases.deleteEmptyCommandCards(),
+  }),
+  implementPostRoute(createCommandCardVersionContract, logger, {
     handler: (request) =>
       commandCardUseCases.createCommandCardVersion(request.body),
   }),
-  implementPostRoute(certifyLatestCommandCardVersionsContract, {
-    handler: () => commandCardUseCases.certifyLatestCommandCardVersions(),
+  implementPostRoute(updateCommandCardCertificationsContract, logger, {
+    handler: () => commandCardUseCases.updateCommandCardCertifications(),
   }),
-  implementMediaPostRoute(previewCommandCardContract, {
-    handler: (request) =>
-      commandCardUseCases.previewCommandCard(request.body),
+  implementMediaPostRoute(previewCommandCardContract, logger, {
+    handler: (request) => commandCardUseCases.previewCommandCard(request.body),
   }),
 ];
 

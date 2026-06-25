@@ -19,6 +19,7 @@ import type {
   DataErrorSignature,
   DeleteRouteHandler,
   GetRouteHandler,
+  LoggerPort,
   MediaRouteHandler,
   RegisteredRoute,
   RouteHandler,
@@ -29,6 +30,7 @@ import {
   tryParseDeleteRequest,
   tryParseGetRequest,
 } from './parse-route-request';
+import { handleError } from '@utils';
 
 const jsonSuccessContentType = 'application/json' as const;
 
@@ -38,6 +40,7 @@ const implementGetRoute = <
   TReturn,
 >(
   contract: GetRoute<TParams, TQuery, TReturn>,
+  logger: LoggerPort,
   { handler }: { handler: GetRouteHandler<TParams, TQuery, TReturn> },
 ): RegisteredRoute => ({
   method: contract.method,
@@ -51,7 +54,17 @@ const implementGetRoute = <
       return parsed.error;
     }
 
-    return handler(parsed.value);
+    try {
+      return await handler(parsed.value);
+    } catch (error) {
+      return handleError({
+        error,
+        logger,
+        context: `handling ${contract.method} on ${contract.path}`,
+        message: `Failed to handle ${contract.method} on ${contract.path}`,
+        status: 500,
+      });
+    }
   },
 });
 
@@ -71,6 +84,7 @@ const implementPostRoute = <
   TReturn,
 >(
   contract: PostRouteContract<TParams, TQuery, TBody, TReturn>,
+  logger: LoggerPort,
   { handler }: { handler: RouteHandler<TParams, TQuery, TBody, TReturn> },
 ): RegisteredRoute => ({
   method: contract.method,
@@ -87,7 +101,17 @@ const implementPostRoute = <
       return parsed.error;
     }
 
-    return handler(parsed.value);
+    try {
+      return await handler(parsed.value);
+    } catch (error) {
+      return handleError({
+        error,
+        logger,
+        context: `handling ${contract.method} on ${contract.path}`,
+        message: `Failed to handle ${contract.method} on ${contract.path}`,
+        status: 500,
+      });
+    }
   },
 });
 
@@ -98,6 +122,7 @@ const implementPutRoute = <
   TReturn,
 >(
   contract: PutRoute<TParams, TQuery, TBody, TReturn>,
+  logger: LoggerPort,
   { handler }: { handler: RouteHandler<TParams, TQuery, TBody, TReturn> },
 ): RegisteredRoute => ({
   method: contract.method,
@@ -111,7 +136,17 @@ const implementPutRoute = <
       return parsed.error;
     }
 
-    return handler(parsed.value);
+    try {
+      return await handler(parsed.value);
+    } catch (error) {
+      return handleError({
+        error,
+        logger,
+        context: `handling ${contract.method} on ${contract.path}`,
+        message: `Failed to handle ${contract.method} on ${contract.path}`,
+        status: 500,
+      });
+    }
   },
 });
 
@@ -122,6 +157,7 @@ const implementPatchRoute = <
   TReturn,
 >(
   contract: PatchRoute<TParams, TQuery, TBody, TReturn>,
+  logger: LoggerPort,
   { handler }: { handler: RouteHandler<TParams, TQuery, TBody, TReturn> },
 ): RegisteredRoute => ({
   method: contract.method,
@@ -135,7 +171,17 @@ const implementPatchRoute = <
       return parsed.error;
     }
 
-    return handler(parsed.value);
+    try {
+      return await handler(parsed.value);
+    } catch (error) {
+      return handleError({
+        error,
+        logger,
+        context: `handling ${contract.method} on ${contract.path}`,
+        message: `Failed to handle ${contract.method} on ${contract.path}`,
+        status: 500,
+      });
+    }
   },
 });
 
@@ -144,6 +190,7 @@ const implementDeleteRoute = <
   TQuery extends Record<string, unknown>,
 >(
   contract: DeleteRoute<TParams, TQuery>,
+  logger: LoggerPort,
   { handler }: { handler: DeleteRouteHandler<TParams, TQuery> },
 ): RegisteredRoute => ({
   method: contract.method,
@@ -157,7 +204,17 @@ const implementDeleteRoute = <
       return parsed.error;
     }
 
-    return handler(parsed.value);
+    try {
+      return await handler(parsed.value);
+    } catch (error) {
+      return handleError({
+        error,
+        logger,
+        context: `handling ${contract.method} on ${contract.path}`,
+        message: `Failed to handle ${contract.method} on ${contract.path}`,
+        status: 500,
+      });
+    }
   },
 });
 
@@ -168,15 +225,11 @@ const implementMediaPostRoute = <
   TSuccessContentType extends MediaContentType,
 >(
   contract: MediaPostRoute<TParams, TQuery, TBody, TSuccessContentType>,
+  logger: LoggerPort,
   {
     handler,
   }: {
-    handler: MediaRouteHandler<
-      TParams,
-      TQuery,
-      TBody,
-      TSuccessContentType
-    >;
+    handler: MediaRouteHandler<TParams, TQuery, TBody, TSuccessContentType>;
   },
 ): RegisteredRoute => ({
   method: contract.method,
@@ -192,7 +245,17 @@ const implementMediaPostRoute = <
       return parsed.error;
     }
 
-    return handler(parsed.value);
+    try {
+      return await handler(parsed.value);
+    } catch (error) {
+      return handleError({
+        error,
+        logger,
+        context: `handling ${contract.method} on ${contract.path}`,
+        message: `Failed to handle ${contract.method} on ${contract.path}`,
+        status: 500,
+      });
+    }
   },
 });
 

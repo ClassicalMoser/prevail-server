@@ -3,3 +3,4 @@ export type {
   CertificationResults,
   CommandCardUseCasesPort,
 } from './command-card-use-cases';
+export type { UnitCardUseCasesPort } from './unit-card-use-cases';

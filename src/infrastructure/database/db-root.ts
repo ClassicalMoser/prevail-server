@@ -1,5 +1,5 @@
 import type { LoggerPort, StoragePort } from '@ports';
-import { createCommandCardStorage } from './adapters';
+import { createCommandCardStorage, createUnitCardStorage } from './adapters';
 
 import postgres from 'postgres';
 import type { Sql } from './sql-type';
@@ -11,6 +11,7 @@ const createDbRoot = (
   const sql: Sql = postgres(connectionString);
   return {
     commandCardStorage: createCommandCardStorage(logger, sql),
+    unitCardStorage: createUnitCardStorage(logger, sql),
   };
 };
 

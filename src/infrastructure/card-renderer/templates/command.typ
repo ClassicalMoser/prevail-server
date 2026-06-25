@@ -10,7 +10,7 @@
 -------------------------------------------------------
 // Get the data from json
 
-#let card = json("../data.json").card
+#let card = json("../command-card-data.json").card
 
 // Saving the main data elements to easy-access variables.
 // A bit verbose but saves a lot of lookups and centralizes
@@ -199,7 +199,7 @@
   )
 )
 
-#let display-range(number) = if number != none {
+#let display-range(number) = if number >= 0 {
   box(
     height: 100%,
     [

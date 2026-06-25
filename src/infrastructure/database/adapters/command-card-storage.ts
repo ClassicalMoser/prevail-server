@@ -1,4 +1,5 @@
 import type {
+  CommandCardCertificationStatus,
   CommandCardStorage,
   DataErrorSignature,
   LoggerPort,
@@ -7,22 +8,29 @@ import {
   commandCardExistsQuery,
   createCommandCardVersionQuery,
   createEmptyCommandCardQuery,
+  deleteEmptyCommandCardsQuery,
+  getAllCommandCardsQuery,
   getCommandCardByIdQuery,
+  getCommandCardsByIdsQuery,
   getCurrentCommandCardsQuery,
-  getLatestCommandCardVersionsQuery,
+  getLatestCommandCardCertificationsQuery,
   getLatestRulesVersionIdQuery,
-  insertCommandCardCertificationQuery,
+  insertCommandCardCertificationsQuery,
 } from '../queries';
 import type {
+  CommandCardCertificationStatusDb,
+  CommandCardListItemDb,
   CommandCardVersionDb,
   WriteCommandCardVersionDb,
 } from '../db-types';
 import {
+  commandCardListItemMapper,
   commandCardVersionMapperToDomain,
   writeCommandCardVersionMapper,
 } from '../mappers';
 import type { Sql } from '../sql-type';
 import type { Card } from '@classicalmoser/prevail-rules/domain';
+import type { CardListItem } from '@classicalmoser/prevail-contracts';
 import { handleError } from '@utils';
 
 const mapCommandCardVersions = (versions: CommandCardVersionDb[]): Card[] =>
@@ -46,6 +54,25 @@ const createCommandCardStorage = (
         logger,
         context: 'getting current command cards from database',
         message: 'Failed to get current command cards from database',
+        status: 500,
+      });
+    }
+  },
+
+  getAllCommandCards: async (): Promise<DataErrorSignature<CardListItem[]>> => {
+    try {
+      const unparsedResult: CommandCardListItemDb[] =
+        await getAllCommandCardsQuery(sql);
+      return {
+        success: true,
+        data: unparsedResult.map((row) => commandCardListItemMapper(row)),
+      };
+    } catch (error) {
+      return handleError({
+        error,
+        logger,
+        context: 'getting all command cards from database',
+        message: 'Failed to get all command cards from database',
         status: 500,
       });
     }
@@ -78,6 +105,31 @@ const createCommandCardStorage = (
     }
   },
 
+  getCommandCardsByIds: async (
+    ids: string[],
+  ): Promise<DataErrorSignature<Card[]>> => {
+    try {
+      if (ids.length === 0) {
+        return { success: true, data: [] };
+      }
+
+      const unparsedResult: CommandCardVersionDb[] =
+        await getCommandCardsByIdsQuery(sql, ids);
+      return {
+        success: true,
+        data: mapCommandCardVersions(unparsedResult),
+      };
+    } catch (error) {
+      return handleError({
+        error,
+        logger,
+        context: 'getting command cards by ids from database',
+        message: 'Failed to get command cards by ids from database',
+        status: 500,
+      });
+    }
+  },
+
   createEmptyCommandCard: async (): Promise<DataErrorSignature<string>> => {
     try {
       const unparsedResult: { command_card_id: string }[] =
@@ -92,6 +144,21 @@ const createCommandCardStorage = (
         logger,
         context: 'creating empty command card in database',
         message: 'Failed to create empty command card in database',
+        status: 500,
+      });
+    }
+  },
+
+  deleteEmptyCommandCards: async (): Promise<DataErrorSignature<void>> => {
+    try {
+      await deleteEmptyCommandCardsQuery(sql);
+      return { success: true, data: undefined };
+    } catch (error) {
+      return handleError({
+        error,
+        logger,
+        context: 'deleting empty command cards from database',
+        message: 'Failed to delete empty command cards from database',
         status: 500,
       });
     }
@@ -130,31 +197,39 @@ const createCommandCardStorage = (
     }
   },
 
-  getLatestCommandCardVersions: async (): Promise<
-    DataErrorSignature<Card[]>
+  getLatestCommandCardCertifications: async (): Promise<
+    DataErrorSignature<CommandCardCertificationStatus[]>
   > => {
     try {
-      const unparsedResult: CommandCardVersionDb[] =
-        await getLatestCommandCardVersionsQuery(sql);
+      const rows: CommandCardCertificationStatusDb[] =
+        await getLatestCommandCardCertificationsQuery(sql);
       return {
         success: true,
-        data: mapCommandCardVersions(unparsedResult),
+        data: rows.map((row) => ({
+          card: commandCardVersionMapperToDomain(row),
+          certified: row.certified,
+        })),
       };
     } catch (error) {
       return handleError({
         error,
         logger,
-        context: 'getting latest command card versions from database',
-        message: 'Failed to get latest command card versions from database',
+        context: 'getting latest command card certifications from database',
+        message:
+          'Failed to get latest command card certifications from database',
         status: 500,
       });
     }
   },
 
-  certifyCommandCardVersion: async (
-    commandCardVersionId: string,
+  certifyCommandCardVersions: async (
+    commandCardIds: string[],
   ): Promise<DataErrorSignature<void>> => {
     try {
+      if (commandCardIds.length === 0) {
+        return { success: true, data: undefined };
+      }
+
       const rulesVersionRows = await getLatestRulesVersionIdQuery(sql);
       if (rulesVersionRows.length === 0) {
         return {
@@ -164,9 +239,9 @@ const createCommandCardStorage = (
         };
       }
 
-      await insertCommandCardCertificationQuery(
+      await insertCommandCardCertificationsQuery(
         sql,
-        commandCardVersionId,
+        commandCardIds,
         rulesVersionRows[0].rules_version_id,
       );
 
@@ -175,8 +250,8 @@ const createCommandCardStorage = (
       return handleError({
         error,
         logger,
-        context: 'certifying command card version in database',
-        message: 'Failed to certify command card version in database',
+        context: 'certifying command card versions in database',
+        message: 'Failed to certify command card versions in database',
         status: 500,
       });
     }

@@ -1,0 +1,8 @@
+{
+  "unitType": {
+    "name": "Triplex Acies",
+    "cost": 1,
+    "limit": 1,
+    "routPenalty": 1
+  }
+}

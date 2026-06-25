@@ -28,10 +28,15 @@ const toRequestHeaders = (
   return result;
 };
 
+const jsonContentType = 'application/json' as const;
+
 /**
  * Maps a handler return envelope to the HTTP wire format.
  *
- * Success with body: raw payload with `successContentType` (JSON or media).
+ * Success with JSON body: `JSON.stringify`d payload so primitive values (e.g. a
+ * bare string id) are emitted as valid JSON. Fastify forwards string payloads
+ * verbatim, so without this an unquoted value would be sent as invalid JSON.
+ * Success with media body: raw payload with `successContentType`.
  * Success without body: HTTP 204 only.
  * Error: `{ message }` with `envelope.status`.
  */
@@ -39,25 +44,28 @@ const sendRouteResult = (
   reply: FastifyReply,
   envelope: RouteInvokeResult,
   route: RegisteredRoute,
-): unknown => {
+): FastifyReply => {
   if (isErrorSignature(envelope)) {
-    reply.status(envelope.status).send({ message: envelope.message });
-    return envelope;
+    return reply.status(envelope.status).send({ message: envelope.message });
   }
 
   if (route.successStatus === 204) {
-    reply.status(204).send();
-    return envelope;
+    return reply.status(204).send();
   }
 
   if (isDataSignature(envelope)) {
-    reply
+    const payload =
+      route.successContentType === jsonContentType
+        ? JSON.stringify(envelope.data)
+        : envelope.data;
+
+    return reply
       .type(route.successContentType)
       .status(route.successStatus)
-      .send(envelope.data);
+      .send(payload);
   }
 
-  return envelope;
+  return reply;
 };
 
 /**

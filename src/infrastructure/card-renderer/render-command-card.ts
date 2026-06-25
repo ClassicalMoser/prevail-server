@@ -10,7 +10,7 @@ import type {
 
 const execFile = promisify(execFileCallback);
 
-/** Directory containing templates/, icons/, fonts, and data.json. */
+/** Directory containing templates/, icons/, fonts, and card data JSON files. */
 const cardRendererDir = path.join(
   process.cwd(),
   'src/infrastructure/card-renderer',
@@ -34,7 +34,7 @@ const toRenderErrorMessage = (error: unknown): string => {
 /**
  * Renders a command card to SVG via the Typst CLI.
  *
- * 1. Writes `payload` to `data.json` (read by templates/command.typ)
+ * 1. Writes `payload` to `command-card-data.json` (read by templates/command.typ)
  * 2. Runs `typst compile` against that template
  * 3. Returns the SVG string from stdout
  */
@@ -42,7 +42,7 @@ const renderCommandCard = async (
   card: PrintCommandCard,
   details: RenderDetails,
 ): Promise<DataErrorSignature<string>> => {
-  const dataPath = path.join(cardRendererDir, 'data.json');
+  const dataPath = path.join(cardRendererDir, 'command-card-data.json');
   const detailsPath = path.join(cardRendererDir, 'details.json');
   const templatePath = path.join(cardRendererDir, 'templates/command.typ');
 

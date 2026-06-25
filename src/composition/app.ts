@@ -1,4 +1,5 @@
 import FastifyInstance from 'fastify';
+import cors from '@fastify/cors';
 import { createRoutes } from '@interface';
 import type { LoggerPort, StoragePort, UseCasesPort } from '@ports';
 import process from 'node:process';
@@ -6,9 +7,11 @@ import {
   commandCardRendererAdapter,
   createAuthInfrastructure,
   createDbRoot,
+  unitCardRendererAdapter,
 } from '@infrastructure';
 import { createUseCasesRoot } from '@application';
 import { registerHttp } from './register-http';
+import { createCorsOptions } from './cors-options';
 
 const app = FastifyInstance({ logger: true });
 
@@ -33,6 +36,14 @@ if (!auth0Audience) {
   throw new Error('AUTH0_AUDIENCE is not set');
 }
 
+const clientOrigins = (
+  process.env.CLIENT_ORIGINS ??
+  'http://localhost:1420,http://127.0.0.1:1420,https://app.prevailgame.com'
+)
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter((origin) => origin.length > 0);
+
 const dbRoot: StoragePort = createDbRoot(logger, connectionString);
 
 const auth = createAuthInfrastructure(logger, {
@@ -43,10 +54,15 @@ const auth = createAuthInfrastructure(logger, {
 const useCases: UseCasesPort = createUseCasesRoot(
   dbRoot,
   commandCardRendererAdapter,
+  unitCardRendererAdapter,
 );
 
-const routes = createRoutes(useCases);
+const routes = createRoutes(useCases, logger);
 
-registerHttp(app, auth, routes);
+const configureApp = async (): Promise<void> => {
+  await app.register(cors, createCorsOptions(clientOrigins));
 
-export { app };
+  registerHttp(app, auth, routes);
+};
+
+export { app, configureApp };

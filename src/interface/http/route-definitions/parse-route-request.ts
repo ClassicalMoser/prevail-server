@@ -148,9 +148,5 @@ const tryParseDeleteRequest = <
   };
 };
 
-export {
-  tryParseBodyRouteRequest,
-  tryParseDeleteRequest,
-  tryParseGetRequest,
-};
+export { tryParseBodyRouteRequest, tryParseDeleteRequest, tryParseGetRequest };
 export type { ParseResult };

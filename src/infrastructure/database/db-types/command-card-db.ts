@@ -29,9 +29,14 @@ interface WriteCommandCardVersionDb {
   version_patch: number;
 }
 
+interface CommandCardCertificationStatusDb extends CommandCardVersionDb {
+  certified: boolean;
+}
+
 export type {
   CommandCardDb,
   CommandCardVersionDb,
+  CommandCardCertificationStatusDb,
   WriteCommandCardVersionDb,
   PartialCard,
 };

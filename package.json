@@ -10,12 +10,14 @@
     "typecheck": "tsc --noEmit",
     "fmt": "oxfmt .",
     "lint": "oxlint .",
+    "validate": "oxlint . && oxfmt . && tsc --noEmit",
     "test": "vitest"
   },
   "dependencies": {
     "@auth0/auth0-api-js": "^1.6.1",
     "@classicalmoser/prevail-contracts": "link:../prevail-contracts",
     "@classicalmoser/prevail-rules": "link:../prevail-rules",
+    "@fastify/cors": "^11.2.0",
     "fastify": "^5.8.5",
     "postgres": "^3.4.9"
   },
