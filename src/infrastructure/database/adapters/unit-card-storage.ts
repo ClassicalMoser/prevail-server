@@ -8,6 +8,7 @@ import {
   createEmptyUnitCardQuery,
   createUnitCardVersionQuery,
   deleteEmptyUnitCardsQuery,
+  deleteUnitCardVersionQuery,
   getAllUnitCardsQuery,
   getCurrentUnitCardsQuery,
   getLatestUnitCardCertificationsQuery,
@@ -198,6 +199,34 @@ const createUnitCardStorage = (
         logger,
         context: 'creating unit card version in database',
         message: 'Failed to create unit card version in database',
+        status: 500,
+      });
+    }
+  },
+
+  deleteUnitCardVersion: async (
+    unitType: UnitType,
+  ): Promise<DataErrorSignature<void>> => {
+    try {
+      const majorVersion = Number.parseInt(unitType.version.split('.')[0], 10);
+      const minorVersion = Number.parseInt(unitType.version.split('.')[1], 10);
+      const patchVersion = Number.parseInt(unitType.version.split('.')[2], 10);
+
+      await deleteUnitCardVersionQuery({
+        sql,
+        unitCardId: unitType.id,
+        versionMajor: majorVersion,
+        versionMinor: minorVersion,
+        versionPatch: patchVersion,
+      });
+
+      return { success: true, data: undefined };
+    } catch (error) {
+      return handleError({
+        error,
+        logger,
+        context: 'deleting unit card version from database',
+        message: 'Failed to delete unit card version from database',
         status: 500,
       });
     }

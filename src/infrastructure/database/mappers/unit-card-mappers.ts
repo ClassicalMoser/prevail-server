@@ -17,6 +17,7 @@ const unitCardVersionMapperToDomain = (
   return {
     id: version.unit_card_id,
     name: version.unit_card_name,
+    imageUrl: version.unit_card_artwork_url,
     ...partialUnitType,
     version: versionNumber,
   };
@@ -39,6 +40,7 @@ const writeUnitCardVersionMapper = (
 
   return {
     unit_card_id: unitType.id,
+    unit_card_artwork_url: unitType.imageUrl,
     unit_card_name: unitType.name,
     unit_card_definition: JSON.stringify(definition),
     version_major: majorVersion,

@@ -1,9 +1,11 @@
 import { tempUnits } from '@classicalmoser/prevail-rules/domain';
 import type { UnitType } from '@classicalmoser/prevail-rules/domain';
 import type {
+  AssetStorage,
   UnitCardCertificationStatus,
   UnitCardRendererPort,
   UnitCardStorage,
+  UnitCardUseCasesPort,
 } from '@ports';
 import { createUnitCardUseCases } from './unit-card-use-cases';
 
@@ -30,6 +32,7 @@ const buildStorage = (
   getUnitCardsByIds: vi.fn<UnitCardStorage['getUnitCardsByIds']>(),
   createEmptyUnitCard: vi.fn<UnitCardStorage['createEmptyUnitCard']>(),
   createUnitCardVersion: vi.fn<UnitCardStorage['createUnitCardVersion']>(),
+  deleteUnitCardVersion: vi.fn<UnitCardStorage['deleteUnitCardVersion']>(),
   deleteEmptyUnitCards: vi.fn<UnitCardStorage['deleteEmptyUnitCards']>(),
   getLatestUnitCardCertifications:
     vi.fn<UnitCardStorage['getLatestUnitCardCertifications']>(),
@@ -38,8 +41,106 @@ const buildStorage = (
 });
 
 const stubRenderer: UnitCardRendererPort = {
-  renderUnitCard: vi.fn<UnitCardRendererPort['renderUnitCard']>(),
+  renderUnitCard: vi
+    .fn<UnitCardRendererPort['renderUnitCard']>()
+    .mockResolvedValue({
+      success: true,
+      data: Buffer.from('<svg/>'),
+    }),
 };
+
+const stubAssetStorage: AssetStorage = {
+  putImmutable: vi
+    .fn<AssetStorage['putImmutable']>()
+    .mockResolvedValue({ kind: 'written' }),
+  objectExists: vi.fn<AssetStorage['objectExists']>().mockResolvedValue(true),
+};
+
+interface CreateUseCasesOverrides {
+  unitCardStorage?: UnitCardStorage;
+  unitCardRenderer?: UnitCardRendererPort;
+  assetStorage?: AssetStorage;
+}
+
+const createUseCases = (
+  overrides: CreateUseCasesOverrides = {},
+): UnitCardUseCasesPort =>
+  createUnitCardUseCases({
+    unitCardStorage: overrides.unitCardStorage ?? buildStorage(),
+    unitCardRenderer: overrides.unitCardRenderer ?? stubRenderer,
+    assetStorage: overrides.assetStorage ?? stubAssetStorage,
+  });
+
+describe('createUnitCardVersion', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it(
+    'projects assets after inserting the version row',
+    { timeout: 5000 },
+    async () => {
+      expect.hasAssertions();
+
+      const inserted = { ...validUnitA, version: '1.0.1' };
+      const createVersion = vi
+        .fn<UnitCardStorage['createUnitCardVersion']>()
+        .mockResolvedValue({ success: true, data: inserted });
+
+      const useCases = createUseCases({
+        unitCardStorage: buildStorage({ createUnitCardVersion: createVersion }),
+      });
+
+      const result = await useCases.createUnitCardVersion(validUnitA);
+
+      expect(result).toStrictEqual({ success: true, data: inserted });
+      expect(stubRenderer.renderUnitCard).toHaveBeenCalledTimes(3);
+      expect(stubAssetStorage.putImmutable).toHaveBeenCalledTimes(3);
+    },
+  );
+
+  it(
+    'deletes the version row when projection fails',
+    { timeout: 5000 },
+    async () => {
+      expect.hasAssertions();
+
+      const inserted = { ...validUnitA, version: '1.0.1' };
+      const createVersion = vi
+        .fn<UnitCardStorage['createUnitCardVersion']>()
+        .mockResolvedValue({ success: true, data: inserted });
+      const deleteVersion = vi
+        .fn<UnitCardStorage['deleteUnitCardVersion']>()
+        .mockResolvedValue({ success: true, data: undefined });
+      const renderer: UnitCardRendererPort = {
+        renderUnitCard: vi
+          .fn<UnitCardRendererPort['renderUnitCard']>()
+          .mockResolvedValue({
+            success: false,
+            message: 'render failed',
+            status: 500,
+          }),
+      };
+
+      const useCases = createUseCases({
+        unitCardStorage: buildStorage({
+          createUnitCardVersion: createVersion,
+          deleteUnitCardVersion: deleteVersion,
+        }),
+        unitCardRenderer: renderer,
+      });
+
+      const result = await useCases.createUnitCardVersion(validUnitA);
+
+      expect(result).toStrictEqual({
+        success: false,
+        message: 'render failed',
+        status: 500,
+      });
+      expect(deleteVersion).toHaveBeenCalledWith(inserted);
+    },
+  );
+});
 
 describe('updateUnitCardCertifications', () => {
   it(
@@ -65,18 +166,57 @@ describe('updateUnitCardCertifications', () => {
           data: [status(validUnitA, true), status(validUnitB, true)],
         });
 
-      const useCases = createUnitCardUseCases(
-        buildStorage({
+      const useCases = createUseCases({
+        unitCardStorage: buildStorage({
           getLatestUnitCardCertifications: getStatuses,
           certifyUnitCardVersions: certify,
         }),
-        stubRenderer,
-      );
+      });
 
       const result = await useCases.updateUnitCardCertifications();
 
       expect(certify).toHaveBeenCalledWith([validUnitA.id, validUnitB.id]);
       expect(getStatuses).toHaveBeenCalledTimes(2);
+      expect(result).toStrictEqual({
+        success: true,
+        data: { certified: [validUnitA.id, validUnitB.id], uncertified: [] },
+      });
+    },
+  );
+
+  it(
+    'skips already-certified versions without certifying them again',
+    { timeout: 5000 },
+    async () => {
+      expect.hasAssertions();
+
+      const certify = vi
+        .fn<UnitCardStorage['certifyUnitCardVersions']>()
+        .mockResolvedValue({
+          success: true,
+          data: undefined,
+        });
+      const getStatuses = vi
+        .fn<UnitCardStorage['getLatestUnitCardCertifications']>()
+        .mockResolvedValueOnce({
+          success: true,
+          data: [status(validUnitA, true), status(validUnitB, false)],
+        })
+        .mockResolvedValueOnce({
+          success: true,
+          data: [status(validUnitA, true), status(validUnitB, true)],
+        });
+
+      const useCases = createUseCases({
+        unitCardStorage: buildStorage({
+          getLatestUnitCardCertifications: getStatuses,
+          certifyUnitCardVersions: certify,
+        }),
+      });
+
+      const result = await useCases.updateUnitCardCertifications();
+
+      expect(certify).toHaveBeenCalledWith([validUnitB.id]);
       expect(result).toStrictEqual({
         success: true,
         data: { certified: [validUnitA.id, validUnitB.id], uncertified: [] },
@@ -107,13 +247,12 @@ describe('updateUnitCardCertifications', () => {
           data: [status(validUnitA, true), status(invalidUnit, false)],
         });
 
-      const useCases = createUnitCardUseCases(
-        buildStorage({
+      const useCases = createUseCases({
+        unitCardStorage: buildStorage({
           getLatestUnitCardCertifications: getStatuses,
           certifyUnitCardVersions: certify,
         }),
-        stubRenderer,
-      );
+      });
 
       const result = await useCases.updateUnitCardCertifications();
 
@@ -132,8 +271,8 @@ describe('updateUnitCardCertifications', () => {
       expect.hasAssertions();
 
       const certify = vi.fn<UnitCardStorage['certifyUnitCardVersions']>();
-      const useCases = createUnitCardUseCases(
-        buildStorage({
+      const useCases = createUseCases({
+        unitCardStorage: buildStorage({
           getLatestUnitCardCertifications: vi
             .fn<UnitCardStorage['getLatestUnitCardCertifications']>()
             .mockResolvedValue({
@@ -143,8 +282,7 @@ describe('updateUnitCardCertifications', () => {
             }),
           certifyUnitCardVersions: certify,
         }),
-        stubRenderer,
-      );
+      });
 
       const result = await useCases.updateUnitCardCertifications();
 
@@ -169,8 +307,8 @@ describe('updateUnitCardCertifications', () => {
           success: true,
           data: [status(validUnitA, false)],
         });
-      const useCases = createUnitCardUseCases(
-        buildStorage({
+      const useCases = createUseCases({
+        unitCardStorage: buildStorage({
           getLatestUnitCardCertifications: getStatuses,
           certifyUnitCardVersions: vi
             .fn<UnitCardStorage['certifyUnitCardVersions']>()
@@ -180,8 +318,7 @@ describe('updateUnitCardCertifications', () => {
               status: 500,
             }),
         }),
-        stubRenderer,
-      );
+      });
 
       const result = await useCases.updateUnitCardCertifications();
 
@@ -200,8 +337,8 @@ describe('updateUnitCardCertifications', () => {
     async () => {
       expect.hasAssertions();
 
-      const useCases = createUnitCardUseCases(
-        buildStorage({
+      const useCases = createUseCases({
+        unitCardStorage: buildStorage({
           getLatestUnitCardCertifications: vi
             .fn<UnitCardStorage['getLatestUnitCardCertifications']>()
             .mockResolvedValueOnce({
@@ -217,8 +354,7 @@ describe('updateUnitCardCertifications', () => {
             .fn<UnitCardStorage['certifyUnitCardVersions']>()
             .mockResolvedValue({ success: true, data: undefined }),
         }),
-        stubRenderer,
-      );
+      });
 
       const result = await useCases.updateUnitCardCertifications();
 

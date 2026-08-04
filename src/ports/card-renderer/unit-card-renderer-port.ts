@@ -6,7 +6,7 @@ interface UnitCardRendererPort {
   renderUnitCard: (
     unitType: UnitType,
     details: RenderDetails,
-  ) => Promise<DataErrorSignature<string>>;
+  ) => Promise<DataErrorSignature<Buffer>>;
 }
 
 export type { UnitCardRendererPort };

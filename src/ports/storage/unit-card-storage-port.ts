@@ -18,6 +18,9 @@ interface UnitCardStorage {
   createUnitCardVersion: (
     unitType: UnitType,
   ) => Promise<DataErrorSignature<UnitType>>;
+  deleteUnitCardVersion: (
+    unitType: UnitType,
+  ) => Promise<DataErrorSignature<void>>;
   deleteEmptyUnitCards: () => Promise<DataErrorSignature<void>>;
   getLatestUnitCardCertifications: () => Promise<
     DataErrorSignature<UnitCardCertificationStatus[]>

@@ -1,7 +1,12 @@
-import type { UnitCardRendererPort } from '@ports';
+import type { DataErrorSignature, UnitCardRendererPort } from '@ports';
+import type { UnitCardRendererDeps } from '../card-renderer-deps';
 import { renderUnitCard } from '../render-unit-card';
 
-export const unitCardRendererAdapter: UnitCardRendererPort = {
-  renderUnitCard: async (unitType, details) =>
-    await renderUnitCard(unitType, details),
-};
+const createUnitCardRendererAdapter = (
+  deps: UnitCardRendererDeps,
+): UnitCardRendererPort => ({
+  renderUnitCard: async (unitType, details): Promise<DataErrorSignature<Buffer>> =>
+    await renderUnitCard(unitType, details, deps),
+});
+
+export { createUnitCardRendererAdapter };

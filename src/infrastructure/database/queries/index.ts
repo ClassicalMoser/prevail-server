@@ -2,6 +2,7 @@ export {
   commandCardExistsQuery,
   createCommandCardVersionQuery,
   createEmptyCommandCardQuery,
+  deleteCommandCardVersionQuery,
   deleteEmptyCommandCardsQuery,
   getCommandCardByIdQuery,
   getCommandCardsByIdsQuery,
@@ -14,6 +15,7 @@ export {
 export {
   createEmptyUnitCardQuery,
   createUnitCardVersionQuery,
+  deleteUnitCardVersionQuery,
   deleteEmptyUnitCardsQuery,
   getAllUnitCardsQuery,
   getCurrentUnitCardsQuery,

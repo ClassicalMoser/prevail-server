@@ -1,5 +1,6 @@
 import { unitTypeSchema } from '@classicalmoser/prevail-rules/domain';
 import type {
+  AssetStorage,
   CertificationResults,
   DataErrorSignature,
   ErrorSignature,
@@ -11,31 +12,60 @@ import type {
 import { noContentSuccess } from '@ports';
 import type { CardListItem } from '@classicalmoser/prevail-contracts';
 import type { UnitType } from '@classicalmoser/prevail-rules/domain';
+import {
+  allUnitCardAssetsExist,
+  ensureUnitCardProjection,
+  projectUnitCardVersion,
+} from '@application/composable';
+
+interface UnitCardUseCasesDeps {
+  unitCardStorage: UnitCardStorage;
+  unitCardRenderer: UnitCardRendererPort;
+  assetStorage: AssetStorage;
+}
 
 const createUnitCardUseCases = (
-  unitCardStorage: UnitCardStorage,
-  unitCardRenderer: UnitCardRendererPort,
+  deps: UnitCardUseCasesDeps,
 ): UnitCardUseCasesPort => ({
   getCurrentUnitCards: async (): Promise<DataErrorSignature<UnitType[]>> =>
-    unitCardStorage.getCurrentUnitCards(),
+    deps.unitCardStorage.getCurrentUnitCards(),
   getAllUnitCards: async (): Promise<DataErrorSignature<CardListItem[]>> =>
-    unitCardStorage.getAllUnitCards(),
+    deps.unitCardStorage.getAllUnitCards(),
   getUnitCardById: async (id: string): Promise<DataErrorSignature<UnitType>> =>
-    unitCardStorage.getUnitCardById(id),
+    deps.unitCardStorage.getUnitCardById(id),
   getUnitCardsByIds: async (
     ids: string[],
   ): Promise<DataErrorSignature<UnitType[]>> =>
-    unitCardStorage.getUnitCardsByIds(ids),
+    deps.unitCardStorage.getUnitCardsByIds(ids),
   createEmptyUnitCard: async (): Promise<DataErrorSignature<string>> =>
-    unitCardStorage.createEmptyUnitCard(),
+    deps.unitCardStorage.createEmptyUnitCard(),
   createUnitCardVersion: async (
     unitType: UnitType,
-  ): Promise<DataErrorSignature<UnitType>> =>
-    unitCardStorage.createUnitCardVersion(unitType),
+  ): Promise<DataErrorSignature<UnitType>> => {
+    const insertResult =
+      await deps.unitCardStorage.createUnitCardVersion(unitType);
+    if (!insertResult.success) {
+      return insertResult;
+    }
+
+    const projectResult = await projectUnitCardVersion(
+      {
+        assetStorage: deps.assetStorage,
+        unitCardRenderer: deps.unitCardRenderer,
+      },
+      { ...unitType, ...insertResult.data },
+    );
+    if (!projectResult.success) {
+      await deps.unitCardStorage.deleteUnitCardVersion(insertResult.data);
+      return projectResult;
+    }
+
+    return insertResult;
+  },
   deleteEmptyUnitCards: async (): Promise<
     ErrorSignature | NoContentSignature
   > => {
-    const result = await unitCardStorage.deleteEmptyUnitCards();
+    const result = await deps.unitCardStorage.deleteEmptyUnitCards();
     if (!result.success) {
       return result;
     }
@@ -46,22 +76,53 @@ const createUnitCardUseCases = (
     DataErrorSignature<CertificationResults>
   > => {
     const beforeResult =
-      await unitCardStorage.getLatestUnitCardCertifications();
+      await deps.unitCardStorage.getLatestUnitCardCertifications();
     if (!beforeResult.success) {
       return beforeResult;
     }
 
-    const validUnitCardIds = beforeResult.data
-      .filter(({ card }) => unitTypeSchema.safeParse(card).success)
-      .map(({ card }) => card.id);
+    const uncertifiedStatuses = beforeResult.data.filter(
+      ({ certified }) => !certified,
+    );
+
+    const schemaValidStatuses = uncertifiedStatuses.filter(
+      ({ card }) => unitTypeSchema.safeParse(card).success,
+    );
+
+    const projectionDeps = {
+      assetStorage: deps.assetStorage,
+      unitCardRenderer: deps.unitCardRenderer,
+    };
+
+    const statusesMissingAssets = [];
+    for (const entry of schemaValidStatuses) {
+      if (!(await allUnitCardAssetsExist(deps.assetStorage, entry.card))) {
+        statusesMissingAssets.push(entry);
+      }
+    }
+
+    for (const { card } of statusesMissingAssets) {
+      const healResult = await ensureUnitCardProjection(projectionDeps, card);
+      if (!healResult.success) {
+        return healResult;
+      }
+    }
+
+    const readyToCertify: string[] = [];
+    for (const { card } of schemaValidStatuses) {
+      if (await allUnitCardAssetsExist(deps.assetStorage, card)) {
+        readyToCertify.push(card.id);
+      }
+    }
 
     const certifyResult =
-      await unitCardStorage.certifyUnitCardVersions(validUnitCardIds);
+      await deps.unitCardStorage.certifyUnitCardVersions(readyToCertify);
     if (!certifyResult.success) {
       return certifyResult;
     }
 
-    const afterResult = await unitCardStorage.getLatestUnitCardCertifications();
+    const afterResult =
+      await deps.unitCardStorage.getLatestUnitCardCertifications();
     if (!afterResult.success) {
       return afterResult;
     }
@@ -80,8 +141,22 @@ const createUnitCardUseCases = (
   },
   previewUnitCard: async (
     unitType: UnitType,
-  ): Promise<DataErrorSignature<string>> =>
-    unitCardRenderer.renderUnitCard(unitType, { bleed: false }),
+  ): Promise<DataErrorSignature<string>> => {
+    const renderResult = await deps.unitCardRenderer.renderUnitCard(unitType, {
+      bleed: false,
+      format: 'svg',
+      unitImage: false,
+    });
+    if (!renderResult.success) {
+      return renderResult;
+    }
+
+    return {
+      success: true,
+      data: renderResult.data.toString('utf8'),
+    };
+  },
 });
 
+export type { UnitCardUseCasesDeps };
 export { createUnitCardUseCases };

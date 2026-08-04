@@ -218,10 +218,25 @@ const insertCommandCardCertificationsQuery = async (
     ON CONFLICT DO NOTHING`;
 };
 
+const deleteCommandCardVersionQuery = async (params: {
+  sql: Sql;
+  commandCardId: string;
+  versionMajor: number;
+  versionMinor: number;
+  versionPatch: number;
+}): Promise<void> => {
+  await params.sql`DELETE FROM command_card_versions
+    WHERE command_card_id = ${params.commandCardId}
+      AND version_major = ${params.versionMajor}
+      AND version_minor = ${params.versionMinor}
+      AND version_patch = ${params.versionPatch}`;
+};
+
 export {
   commandCardExistsQuery,
   createCommandCardVersionQuery,
   createEmptyCommandCardQuery,
+  deleteCommandCardVersionQuery,
   deleteEmptyCommandCardsQuery,
   getCommandCardByIdQuery,
   getCommandCardsByIdsQuery,

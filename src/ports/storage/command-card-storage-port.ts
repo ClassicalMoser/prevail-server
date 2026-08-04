@@ -16,6 +16,7 @@ interface CommandCardStorage {
   getCommandCardsByIds: (ids: string[]) => Promise<DataErrorSignature<Card[]>>;
   createEmptyCommandCard: () => Promise<DataErrorSignature<string>>;
   createCommandCardVersion: (card: Card) => Promise<DataErrorSignature<Card>>;
+  deleteCommandCardVersion: (card: Card) => Promise<DataErrorSignature<void>>;
   deleteEmptyCommandCards: () => Promise<DataErrorSignature<void>>;
   getLatestCommandCardCertifications: () => Promise<
     DataErrorSignature<CommandCardCertificationStatus[]>

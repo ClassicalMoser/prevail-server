@@ -11,6 +11,11 @@ export default defineConfig({
       DB_CONNECTION_STRING: 'postgres://test:test@localhost:5432/test',
       AUTH0_DOMAIN: 'test.auth0.com',
       AUTH0_AUDIENCE: 'https://api.test',
+      R2_S3_ENDPOINT: 'https://example.r2.cloudflarestorage.com',
+      R2_ACCESS_KEY_ID: 'test-access-key',
+      R2_SECRET_ACCESS_KEY: 'test-secret-key',
+      R2_BUCKET: 'test-bucket',
+      ALLOWED_MEDIA_ORIGIN: 'https://assets.example.com',
     },
   },
   resolve: {

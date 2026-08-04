@@ -1,16 +1,11 @@
-import { execFile as execFileCallback } from 'node:child_process';
 import { writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { promisify } from 'node:util';
 import type { DataErrorSignature, RenderDetails } from '@ports';
 import type { UnitType } from '@classicalmoser/prevail-rules/domain';
-
-const execFile = promisify(execFileCallback);
-
-const cardRendererDir = path.join(
-  process.cwd(),
-  'src/infrastructure/card-renderer',
-);
+import type { UnitCardRendererDeps } from './card-renderer-deps';
+import { createRenderWorkspace } from './create-render-workspace';
+import { fetchUnitArtwork } from './fetch-unit-artwork';
+import { runTypstCompile, templatePathInWorkspace } from './run-typst-compile';
 
 const toRenderErrorMessage = (error: unknown): string => {
   if (!(error instanceof Error)) {
@@ -27,44 +22,70 @@ const toRenderErrorMessage = (error: unknown): string => {
   return error.message;
 };
 
+const resolveUnitImage = async (
+  workspaceDir: string,
+  imageUrl: string | null,
+  allowedMediaOrigin: string,
+): Promise<DataErrorSignature<boolean>> => {
+  if (imageUrl === null) {
+    return { success: true, data: false };
+  }
+
+  return fetchUnitArtwork(
+    imageUrl,
+    path.join(workspaceDir, 'unit-image.png'),
+    allowedMediaOrigin,
+  );
+};
+
 const renderUnitCard = async (
   unitType: UnitType,
   details: RenderDetails,
-): Promise<DataErrorSignature<string>> => {
-  const dataPath = path.join(cardRendererDir, 'unit-card-data.json');
-  const detailsPath = path.join(cardRendererDir, 'details.json');
-  const templatePath = path.join(cardRendererDir, 'templates/unit.typ');
+  deps: UnitCardRendererDeps,
+): Promise<DataErrorSignature<Buffer>> => {
+  const workspace = await createRenderWorkspace(deps.assetsDir);
 
   try {
-    await writeFile(dataPath, JSON.stringify({ unitType }, undefined, 2));
-    await writeFile(detailsPath, JSON.stringify(details, undefined, 2));
+    const { workspaceDir } = workspace;
 
-    const { stdout } = await execFile(
-      'typst',
-      [
-        'compile',
-        templatePath,
-        '-',
-        '--root',
-        cardRendererDir,
-        '--font-path',
-        cardRendererDir,
-        '--format',
-        'svg',
-      ],
-      {
-        encoding: 'utf8',
-        maxBuffer: 10 * 1024 * 1024,
-      },
+    const unitImageResult = await resolveUnitImage(
+      workspaceDir,
+      unitType.imageUrl,
+      deps.allowedMediaOrigin,
+    );
+    if (!unitImageResult.success) {
+      return unitImageResult;
+    }
+
+    const renderDetails: RenderDetails = {
+      ...details,
+      unitImage: unitImageResult.data,
+    };
+
+    await writeFile(
+      path.join(workspaceDir, 'unit-card-data.json'),
+      JSON.stringify({ unitType }, undefined, 2),
+    );
+    await writeFile(
+      path.join(workspaceDir, 'details.json'),
+      JSON.stringify(renderDetails, undefined, 2),
     );
 
-    return { success: true, data: stdout };
+    const rendered = await runTypstCompile(
+      workspaceDir,
+      templatePathInWorkspace(workspaceDir, 'unit.typ'),
+      renderDetails.format,
+    );
+
+    return { success: true, data: rendered };
   } catch (error) {
     return {
       success: false,
       message: toRenderErrorMessage(error),
       status: 500,
     };
+  } finally {
+    await workspace.cleanup();
   }
 };
 

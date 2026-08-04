@@ -1,20 +1,13 @@
-import { execFile as execFileCallback } from 'node:child_process';
 import { writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { promisify } from 'node:util';
 import type {
   DataErrorSignature,
   PrintCommandCard,
   RenderDetails,
 } from '@ports';
-
-const execFile = promisify(execFileCallback);
-
-/** Directory containing templates/, icons/, fonts, and card data JSON files. */
-const cardRendererDir = path.join(
-  process.cwd(),
-  'src/infrastructure/card-renderer',
-);
+import type { CommandCardRendererDeps } from './card-renderer-deps';
+import { createRenderWorkspace } from './create-render-workspace';
+import { runTypstCompile, templatePathInWorkspace } from './run-typst-compile';
 
 const toRenderErrorMessage = (error: unknown): string => {
   if (!(error instanceof Error)) {
@@ -32,50 +25,45 @@ const toRenderErrorMessage = (error: unknown): string => {
 };
 
 /**
- * Renders a command card to SVG via the Typst CLI.
+ * Renders a command card via the Typst CLI.
  *
- * 1. Writes `payload` to `command-card-data.json` (read by templates/command.typ)
- * 2. Runs `typst compile` against that template
- * 3. Returns the SVG string from stdout
+ * 1. Creates a per-request workspace under the OS temp dir
+ * 2. Writes card payload and render details JSON into that workspace
+ * 3. Runs `typst compile` with `--root` set to the workspace
  */
 const renderCommandCard = async (
   card: PrintCommandCard,
   details: RenderDetails,
-): Promise<DataErrorSignature<string>> => {
-  const dataPath = path.join(cardRendererDir, 'command-card-data.json');
-  const detailsPath = path.join(cardRendererDir, 'details.json');
-  const templatePath = path.join(cardRendererDir, 'templates/command.typ');
+  deps: CommandCardRendererDeps,
+): Promise<DataErrorSignature<Buffer>> => {
+  const workspace = await createRenderWorkspace(deps.assetsDir);
 
   try {
-    await writeFile(dataPath, JSON.stringify({ card }, undefined, 2));
-    await writeFile(detailsPath, JSON.stringify(details, undefined, 2));
-
-    const { stdout } = await execFile(
-      'typst',
-      [
-        'compile',
-        templatePath,
-        '-',
-        '--root',
-        cardRendererDir,
-        '--font-path',
-        cardRendererDir,
-        '--format',
-        'svg',
-      ],
-      {
-        encoding: 'utf8',
-        maxBuffer: 10 * 1024 * 1024,
-      },
+    const { workspaceDir } = workspace;
+    await writeFile(
+      path.join(workspaceDir, 'command-card-data.json'),
+      JSON.stringify({ card }, undefined, 2),
+    );
+    await writeFile(
+      path.join(workspaceDir, 'details.json'),
+      JSON.stringify(details, undefined, 2),
     );
 
-    return { success: true, data: stdout };
+    const rendered = await runTypstCompile(
+      workspaceDir,
+      templatePathInWorkspace(workspaceDir, 'command.typ'),
+      details.format,
+    );
+
+    return { success: true, data: rendered };
   } catch (error) {
     return {
       success: false,
       message: toRenderErrorMessage(error),
       status: 500,
     };
+  } finally {
+    await workspace.cleanup();
   }
 };
 

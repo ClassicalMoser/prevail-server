@@ -6,9 +6,8 @@
  *   1. getCommandCardUnitIds  — collect every unit type ID referenced on a card
  *   2. replaceUnitIdsWithNames — swap those IDs for display names before render
  *
- * The caller is responsible for building the ID→name map (typically a single
- * batch query against unit storage). See buildPlaceholderUnitIdToNameMap for
- * a stand-in until that query exists.
+ * The caller is responsible for building the ID→name map via unit storage.
+ * See buildUnitIdToNameMap. buildPlaceholderUnitIdToNameMap remains for tests.
  */
 import type {
   Card,

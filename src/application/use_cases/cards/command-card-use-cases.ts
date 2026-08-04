@@ -1,5 +1,6 @@
 import { cardSchema } from '@classicalmoser/prevail-rules/domain';
 import type {
+  AssetStorage,
   CertificationResults,
   CommandCardRendererPort,
   CommandCardStorage,
@@ -8,41 +9,80 @@ import type {
   ErrorSignature,
   NoContentSignature,
   PrintCommandCard,
+  UnitCardStorage,
 } from '@ports';
 import { noContentSuccess } from '@ports';
 import type { CardListItem } from '@classicalmoser/prevail-contracts';
 import type { Card } from '@classicalmoser/prevail-rules/domain';
 import {
-  buildPlaceholderUnitIdToNameMap,
+  allCommandCardAssetsExist,
+  buildUnitIdToNameMap,
+  ensureCommandCardProjection,
   getCommandCardUnitIds,
+  projectCommandCardVersion,
   replaceCommandCardUnitIdsWithNames,
 } from '@application/composable';
-import type { UnitIdToNameMap } from '@application/composable';
+
+interface CommandCardUseCasesDeps {
+  commandCardStorage: CommandCardStorage;
+  unitCardStorage: UnitCardStorage;
+  commandCardRenderer: CommandCardRendererPort;
+  assetStorage: AssetStorage;
+}
 
 const createCommandCardUseCases = (
-  commandCardStorage: CommandCardStorage,
-  commandCardRenderer: CommandCardRendererPort,
+  deps: CommandCardUseCasesDeps,
 ): CommandCardUseCasesPort => ({
   getCurrentCommandCards: async (): Promise<DataErrorSignature<Card[]>> =>
-    commandCardStorage.getCurrentCommandCards(),
+    deps.commandCardStorage.getCurrentCommandCards(),
   getAllCommandCards: async (): Promise<DataErrorSignature<CardListItem[]>> =>
-    commandCardStorage.getAllCommandCards(),
+    deps.commandCardStorage.getAllCommandCards(),
   getCommandCardById: async (id: string): Promise<DataErrorSignature<Card>> =>
-    commandCardStorage.getCommandCardById(id),
+    deps.commandCardStorage.getCommandCardById(id),
   getCommandCardsByIds: async (
     ids: string[],
   ): Promise<DataErrorSignature<Card[]>> =>
-    commandCardStorage.getCommandCardsByIds(ids),
+    deps.commandCardStorage.getCommandCardsByIds(ids),
   createEmptyCommandCard: async (): Promise<DataErrorSignature<string>> =>
-    commandCardStorage.createEmptyCommandCard(),
+    deps.commandCardStorage.createEmptyCommandCard(),
   createCommandCardVersion: async (
     card: Card,
-  ): Promise<DataErrorSignature<Card>> =>
-    commandCardStorage.createCommandCardVersion(card),
+  ): Promise<DataErrorSignature<Card>> => {
+    const insertResult =
+      await deps.commandCardStorage.createCommandCardVersion(card);
+    if (!insertResult.success) {
+      return insertResult;
+    }
+
+    const unitIds = getCommandCardUnitIds(insertResult.data);
+    const nameMapResult = await buildUnitIdToNameMap(
+      deps.unitCardStorage,
+      unitIds,
+    );
+    if (!nameMapResult.success) {
+      await deps.commandCardStorage.deleteCommandCardVersion(insertResult.data);
+      return nameMapResult;
+    }
+
+    const projectResult = await projectCommandCardVersion(
+      {
+        assetStorage: deps.assetStorage,
+        commandCardRenderer: deps.commandCardRenderer,
+        unitIdToNameMap: nameMapResult.data,
+      },
+      { ...card, ...insertResult.data },
+    );
+    if (!projectResult.success) {
+      await deps.commandCardStorage.deleteCommandCardVersion(insertResult.data);
+      return projectResult;
+    }
+
+    return insertResult;
+  },
   deleteEmptyCommandCards: async (): Promise<
     ErrorSignature | NoContentSignature
   > => {
-    const result = await commandCardStorage.deleteEmptyCommandCards();
+    const result = await deps.commandCardStorage.deleteEmptyCommandCards();
     if (!result.success) {
       return result;
     }
@@ -53,23 +93,70 @@ const createCommandCardUseCases = (
     DataErrorSignature<CertificationResults>
   > => {
     const beforeResult =
-      await commandCardStorage.getLatestCommandCardCertifications();
+      await deps.commandCardStorage.getLatestCommandCardCertifications();
     if (!beforeResult.success) {
       return beforeResult;
     }
 
-    const validCommandCardIds = beforeResult.data
-      .filter(({ card }) => cardSchema.safeParse(card).success)
-      .map(({ card }) => card.id);
+    const uncertifiedStatuses = beforeResult.data.filter(
+      ({ certified }) => !certified,
+    );
+
+    const schemaValidStatuses = uncertifiedStatuses.filter(
+      ({ card }) => cardSchema.safeParse(card).success,
+    );
+
+    const allUnitIds = [
+      ...new Set(
+        schemaValidStatuses.flatMap(({ card }) => getCommandCardUnitIds(card)),
+      ),
+    ];
+    const nameMapResult = await buildUnitIdToNameMap(
+      deps.unitCardStorage,
+      allUnitIds,
+    );
+    if (!nameMapResult.success) {
+      return nameMapResult;
+    }
+
+    const projectionDeps = {
+      assetStorage: deps.assetStorage,
+      commandCardRenderer: deps.commandCardRenderer,
+      unitIdToNameMap: nameMapResult.data,
+    };
+
+    const statusesMissingAssets = [];
+    for (const entry of schemaValidStatuses) {
+      if (!(await allCommandCardAssetsExist(deps.assetStorage, entry.card))) {
+        statusesMissingAssets.push(entry);
+      }
+    }
+
+    for (const { card } of statusesMissingAssets) {
+      const healResult = await ensureCommandCardProjection(
+        projectionDeps,
+        card,
+      );
+      if (!healResult.success) {
+        return healResult;
+      }
+    }
+
+    const readyToCertify: string[] = [];
+    for (const { card } of schemaValidStatuses) {
+      if (await allCommandCardAssetsExist(deps.assetStorage, card)) {
+        readyToCertify.push(card.id);
+      }
+    }
 
     const certifyResult =
-      await commandCardStorage.certifyCommandCardVersions(validCommandCardIds);
+      await deps.commandCardStorage.certifyCommandCardVersions(readyToCertify);
     if (!certifyResult.success) {
       return certifyResult;
     }
 
     const afterResult =
-      await commandCardStorage.getLatestCommandCardCertifications();
+      await deps.commandCardStorage.getLatestCommandCardCertifications();
     if (!afterResult.success) {
       return afterResult;
     }
@@ -90,16 +177,32 @@ const createCommandCardUseCases = (
     card: Card,
   ): Promise<DataErrorSignature<string>> => {
     const unitIds: string[] = getCommandCardUnitIds(card);
-    const placeholderUnitIdToNameMap: UnitIdToNameMap =
-      buildPlaceholderUnitIdToNameMap(unitIds);
+    const nameMapResult = await buildUnitIdToNameMap(
+      deps.unitCardStorage,
+      unitIds,
+    );
+    if (!nameMapResult.success) {
+      return nameMapResult;
+    }
+
     const cardWithNames: PrintCommandCard = replaceCommandCardUnitIdsWithNames(
       card,
-      placeholderUnitIdToNameMap,
+      nameMapResult.data,
     );
-    return commandCardRenderer.renderCommandCard(cardWithNames, {
-      bleed: false,
-    });
+    const renderResult = await deps.commandCardRenderer.renderCommandCard(
+      cardWithNames,
+      { bleed: false, format: 'svg', unitImage: false },
+    );
+    if (!renderResult.success) {
+      return renderResult;
+    }
+
+    return {
+      success: true,
+      data: renderResult.data.toString('utf8'),
+    };
   },
 });
 
+export type { CommandCardUseCasesDeps };
 export { createCommandCardUseCases };

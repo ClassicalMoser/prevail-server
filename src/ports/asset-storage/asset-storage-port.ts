@@ -8,6 +8,7 @@ interface AssetStorage {
     body: Buffer,
     assetType: AssetType,
   ) => Promise<UploadResult>;
+  objectExists: (key: string) => Promise<boolean>;
 }
 
 export type { AssetStorage, AssetType, UploadResult };

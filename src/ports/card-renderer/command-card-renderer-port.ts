@@ -9,7 +9,7 @@ interface CommandCardRendererPort {
   renderCommandCard: (
     card: PrintCommandCard,
     details: RenderDetails,
-  ) => Promise<DataErrorSignature<string>>;
+  ) => Promise<DataErrorSignature<Buffer>>;
 }
 
 export type { CommandCardRendererPort, PrintCommandCard };

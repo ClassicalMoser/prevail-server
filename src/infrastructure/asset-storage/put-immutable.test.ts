@@ -1,12 +1,11 @@
+import type { S3Client } from '@aws-sdk/client-s3';
 import type { AssetType } from '@ports';
+import { putImmutable } from './put-immutable';
 
-const send = vi.fn();
+const send = vi.fn<NonNullable<S3Client['send']>>();
 
-vi.mock('./r2-client', () => ({
-  r2: { send },
-}));
-
-const { putImmutable } = await import('./put-immutable');
+const client = { send } as unknown as S3Client;
+const bucket = 'test-bucket';
 
 const preconditionFailed = (): Error & {
   $metadata: { httpStatusCode: number };
@@ -18,49 +17,66 @@ const preconditionFailed = (): Error & {
   return error;
 };
 
-describe('putImmutable', () => {
+describe('r2 immutable put', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    process.env.R2_BUCKET = 'test-bucket';
   });
 
-  it('returns written when the object is stored', async () => {
-    expect.hasAssertions();
+  it(
+    'returns written when the object is stored',
+    { timeout: 5000 },
+    async () => {
+      expect.hasAssertions();
 
-    send.mockResolvedValue({});
+      send.mockResolvedValue();
 
-    const result = await putImmutable(
-      'cards/command/svg/id_1.svg',
-      Buffer.from('<svg/>'),
-      'svg',
-    );
+      const result = await putImmutable({
+        client,
+        bucket,
+        key: 'cards/command/svg/id_1.svg',
+        body: Buffer.from('<svg/>'),
+        assetType: 'svg',
+      });
 
-    expect(result).toStrictEqual({ kind: 'written' });
-    expect(send).toHaveBeenCalledOnce();
-  });
+      expect(result).toStrictEqual({ kind: 'written' });
+      expect(send).toHaveBeenCalledTimes(1);
+    },
+  );
 
-  it('returns already-exists on 412 precondition failed', async () => {
-    expect.hasAssertions();
+  it(
+    'returns already-exists on 412 precondition failed',
+    { timeout: 5000 },
+    async () => {
+      expect.hasAssertions();
 
-    send.mockRejectedValue(preconditionFailed());
+      send.mockRejectedValue(preconditionFailed());
 
-    const result = await putImmutable(
-      'cards/command/svg/id_1.svg',
-      Buffer.from('<svg/>'),
-      'svg',
-    );
+      const result = await putImmutable({
+        client,
+        bucket,
+        key: 'cards/command/svg/id_1.svg',
+        body: Buffer.from('<svg/>'),
+        assetType: 'svg',
+      });
 
-    expect(result).toStrictEqual({ kind: 'already-exists' });
-  });
+      expect(result).toStrictEqual({ kind: 'already-exists' });
+    },
+  );
 
-  it('rethrows non-412 errors', async () => {
+  it('rethrows non-412 errors', { timeout: 5000 }, async () => {
     expect.hasAssertions();
 
     const error = new Error('network failure');
     send.mockRejectedValue(error);
 
     await expect(
-      putImmutable('cards/command/svg/id_1.svg', Buffer.from('<svg/>'), 'svg'),
+      putImmutable({
+        client,
+        bucket,
+        key: 'cards/command/svg/id_1.svg',
+        body: Buffer.from('<svg/>'),
+        assetType: 'svg',
+      }),
     ).rejects.toThrow('network failure');
   });
 
@@ -68,16 +84,26 @@ describe('putImmutable', () => {
     ['svg', 'image/svg+xml'],
     ['pdf', 'application/pdf'],
     ['pdf-bleed', 'application/pdf'],
-  ])('sets ContentType for %s', async (assetType, contentType) => {
-    expect.hasAssertions();
+  ])(
+    'sets ContentType for %s',
+    { timeout: 5000 },
+    async (assetType, contentType) => {
+      expect.hasAssertions();
 
-    send.mockResolvedValue({});
+      send.mockResolvedValue();
 
-    await putImmutable('key', Buffer.from('body'), assetType);
+      await putImmutable({
+        client,
+        bucket,
+        key: 'key',
+        body: Buffer.from('body'),
+        assetType,
+      });
 
-    const command = send.mock.calls[0]?.[0] as {
-      input: { ContentType: string };
-    };
-    expect(command.input.ContentType).toBe(contentType);
-  });
+      const command = send.mock.calls[0]?.[0] as {
+        input: { ContentType: string };
+      };
+      expect(command.input.ContentType).toBe(contentType);
+    },
+  );
 });

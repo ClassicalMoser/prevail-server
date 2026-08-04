@@ -18,6 +18,7 @@ const getCurrentUnitCardsQuery = async (
   SELECT DISTINCT ON (uc.unit_card_id)
       uc.unit_card_id,
       ucv.unit_card_version_id,
+      ucv.unit_card_artwork_url,
       ucv.unit_card_name,
       ucv.unit_card_definition,
       ucv.version_major,
@@ -43,6 +44,7 @@ const getUnitCardByIdQuery = async (
   await sql`SELECT
       ucv.unit_card_id,
       ucv.unit_card_version_id,
+      ucv.unit_card_artwork_url,
       ucv.unit_card_name,
       ucv.unit_card_definition,
       ucv.version_major,
@@ -63,6 +65,7 @@ const getUnitCardsByIdsQuery = async (
   await sql`SELECT DISTINCT ON (ucv.unit_card_id)
       ucv.unit_card_id,
       ucv.unit_card_version_id,
+      ucv.unit_card_artwork_url,
       ucv.unit_card_name,
       ucv.unit_card_definition,
       ucv.version_major,
@@ -88,6 +91,7 @@ const getLatestUnitCardCertificationsQuery = async (
   SELECT DISTINCT ON (uc.unit_card_id)
       uc.unit_card_id,
       ucv.unit_card_version_id,
+      ucv.unit_card_artwork_url,
       ucv.unit_card_name,
       ucv.unit_card_definition,
       ucv.version_major,
@@ -164,6 +168,7 @@ const createUnitCardVersionQuery = async (
   await sql`INSERT INTO unit_card_versions (
       unit_card_id,
       unit_card_name,
+      unit_card_artwork_url,
       version_major,
       version_minor,
       version_patch,
@@ -172,6 +177,7 @@ const createUnitCardVersionQuery = async (
     VALUES (
       ${writeVersion.unit_card_id},
       ${writeVersion.unit_card_name},
+      ${writeVersion.unit_card_artwork_url},
       ${writeVersion.version_major},
       ${writeVersion.version_minor},
       ${writeVersion.version_patch},
@@ -179,6 +185,7 @@ const createUnitCardVersionQuery = async (
     )
     RETURNING unit_card_id,
               unit_card_version_id,
+              unit_card_artwork_url,
               unit_card_name,
               unit_card_definition,
               version_major,
@@ -208,9 +215,24 @@ const insertUnitCardCertificationsQuery = async (
     ON CONFLICT DO NOTHING`;
 };
 
+const deleteUnitCardVersionQuery = async (params: {
+  sql: Sql;
+  unitCardId: string;
+  versionMajor: number;
+  versionMinor: number;
+  versionPatch: number;
+}): Promise<void> => {
+  await params.sql`DELETE FROM unit_card_versions
+    WHERE unit_card_id = ${params.unitCardId}
+      AND version_major = ${params.versionMajor}
+      AND version_minor = ${params.versionMinor}
+      AND version_patch = ${params.versionPatch}`;
+};
+
 export {
   createEmptyUnitCardQuery,
   createUnitCardVersionQuery,
+  deleteUnitCardVersionQuery,
   deleteEmptyUnitCardsQuery,
   getAllUnitCardsQuery,
   getCurrentUnitCardsQuery,

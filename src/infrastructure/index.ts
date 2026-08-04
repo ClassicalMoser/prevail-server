@@ -2,7 +2,12 @@ export { createDbRoot } from './database';
 export type { AuthInfrastructureConfig } from './auth';
 export { createAuthInfrastructure } from './auth';
 export {
-  commandCardRendererAdapter,
-  unitCardRendererAdapter,
+  createCommandCardRendererAdapter,
+  createUnitCardRendererAdapter,
 } from './card-renderer';
-export { assetStorageAdapter } from './asset-storage';
+export type {
+  CommandCardRendererDeps,
+  UnitCardRendererDeps,
+} from './card-renderer';
+export { createAssetStorage, createR2Client } from './asset-storage';
+export type { AssetStorageConfig, R2ClientConfig } from './asset-storage';

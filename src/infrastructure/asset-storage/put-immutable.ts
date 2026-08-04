@@ -1,7 +1,15 @@
+import type { S3Client } from '@aws-sdk/client-s3';
 import { PutObjectCommand } from '@aws-sdk/client-s3';
 import type { AssetType, UploadResult } from '@ports';
 import { contentTypeFor } from './content-type-for';
-import { r2 } from './r2-client';
+
+interface PutImmutableParams {
+  client: S3Client;
+  bucket: string;
+  key: string;
+  body: Buffer;
+  assetType: AssetType;
+}
 
 const isPreconditionFailed = (error: unknown): boolean =>
   typeof error === 'object' &&
@@ -11,17 +19,15 @@ const isPreconditionFailed = (error: unknown): boolean =>
     ?.httpStatusCode === 412;
 
 const putImmutable = async (
-  key: string,
-  body: Buffer,
-  assetType: AssetType,
+  params: PutImmutableParams,
 ): Promise<UploadResult> => {
   try {
-    await r2.send(
+    await params.client.send(
       new PutObjectCommand({
-        Bucket: process.env.R2_BUCKET!,
-        Key: key,
-        Body: body,
-        ContentType: contentTypeFor(assetType),
+        Bucket: params.bucket,
+        Key: params.key,
+        Body: params.body,
+        ContentType: contentTypeFor(params.assetType),
         CacheControl: 'public, max-age=31536000, immutable',
         IfNoneMatch: '*',
       }),
@@ -36,4 +42,5 @@ const putImmutable = async (
   }
 };
 
+export type { PutImmutableParams };
 export { putImmutable };

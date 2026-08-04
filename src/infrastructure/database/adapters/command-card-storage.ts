@@ -8,6 +8,7 @@ import {
   commandCardExistsQuery,
   createCommandCardVersionQuery,
   createEmptyCommandCardQuery,
+  deleteCommandCardVersionQuery,
   deleteEmptyCommandCardsQuery,
   getAllCommandCardsQuery,
   getCommandCardByIdQuery,
@@ -192,6 +193,34 @@ const createCommandCardStorage = (
         logger,
         context: 'creating command card version in database',
         message: 'Failed to create command card version in database',
+        status: 500,
+      });
+    }
+  },
+
+  deleteCommandCardVersion: async (
+    card: Card,
+  ): Promise<DataErrorSignature<void>> => {
+    try {
+      const majorVersion = Number.parseInt(card.version.split('.')[0], 10);
+      const minorVersion = Number.parseInt(card.version.split('.')[1], 10);
+      const patchVersion = Number.parseInt(card.version.split('.')[2], 10);
+
+      await deleteCommandCardVersionQuery({
+        sql,
+        commandCardId: card.id,
+        versionMajor: majorVersion,
+        versionMinor: minorVersion,
+        versionPatch: patchVersion,
+      });
+
+      return { success: true, data: undefined };
+    } catch (error) {
+      return handleError({
+        error,
+        logger,
+        context: 'deleting command card version from database',
+        message: 'Failed to delete command card version from database',
         status: 500,
       });
     }

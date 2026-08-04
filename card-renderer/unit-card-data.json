@@ -1,0 +1,21 @@
+{
+  "unitType": {
+    "cost": 10,
+    "id": "92a23063-1ebc-45c7-84e9-adec4bb1ffb4",
+    "imageUrl": null,
+    "limit": 8,
+    "name": "Velites",
+    "routPenalty": 0,
+    "stats": {
+      "attack": 2,
+      "flexibility": 3,
+      "range": 2,
+      "retreat": 1,
+      "reverse": 0,
+      "rout": 3,
+      "speed": 3
+    },
+    "traits": ["javelin"],
+    "version": "1.0.0"
+  }
+}

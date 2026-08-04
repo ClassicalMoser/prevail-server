@@ -1,15 +1,13 @@
 import type { Card } from '@classicalmoser/prevail-rules/domain';
-import type { CardListItem } from '@classicalmoser/prevail-contracts';
+import type {
+  CardListItem,
+  CertificationResults,
+} from '@classicalmoser/prevail-contracts';
 import type {
   DataErrorSignature,
   ErrorSignature,
   NoContentSignature,
 } from '@ports/data-error-signature-port';
-
-interface CertificationResults {
-  certified: string[];
-  uncertified: string[];
-}
 
 interface CommandCardUseCasesPort {
   getCurrentCommandCards: () => Promise<DataErrorSignature<Card[]>>;
@@ -25,4 +23,5 @@ interface CommandCardUseCasesPort {
   previewCommandCard: (card: Card) => Promise<DataErrorSignature<string>>;
 }
 
-export type { CertificationResults, CommandCardUseCasesPort };
+export type { CommandCardUseCasesPort };
+export type { CertificationResults } from '@classicalmoser/prevail-contracts';

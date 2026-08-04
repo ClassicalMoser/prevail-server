@@ -13,6 +13,7 @@ interface UnitCardDb {
 interface UnitCardVersionDb {
   unit_card_id: string;
   unit_card_version_id: string;
+  unit_card_artwork_url: string | null;
   unit_card_name: string;
   unit_card_definition: PartialUnitType;
   version_major: number;
@@ -22,6 +23,7 @@ interface UnitCardVersionDb {
 
 interface WriteUnitCardVersionDb {
   unit_card_id: string;
+  unit_card_artwork_url: string | null;
   unit_card_name: string;
   unit_card_definition: string;
   version_major: number;

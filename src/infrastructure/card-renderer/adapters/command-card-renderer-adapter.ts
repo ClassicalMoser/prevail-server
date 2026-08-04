@@ -1,7 +1,12 @@
-import type { CommandCardRendererPort } from '@ports';
+import type { CommandCardRendererPort, DataErrorSignature } from '@ports';
+import type { CommandCardRendererDeps } from '../card-renderer-deps';
 import { renderCommandCard } from '../render-command-card';
 
-export const commandCardRendererAdapter: CommandCardRendererPort = {
-  renderCommandCard: async (card, details) =>
-    await renderCommandCard(card, details),
-};
+const createCommandCardRendererAdapter = (
+  deps: CommandCardRendererDeps,
+): CommandCardRendererPort => ({
+  renderCommandCard: async (card, details): Promise<DataErrorSignature<Buffer>> =>
+    await renderCommandCard(card, details, deps),
+});
+
+export { createCommandCardRendererAdapter };

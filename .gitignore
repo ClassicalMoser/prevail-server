@@ -24,3 +24,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Card renderer runtime artifacts (per-request workspaces use the OS temp dir)
+var/card-renderer/

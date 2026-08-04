@@ -73,6 +73,7 @@ const config: OxlintConfig = {
     'max-lines-per-function': 'off', // Consider changing if team size increases and arbitrary limits are needed.
     'no-duplicate-imports': 'off', // Superseded by import/no-duplicates
     'no-loop-func': 'off', // The use of "var" is prohibited, so this rule is mostly extraneous.
+    'no-await-in-loop': 'off', // Await is allowed in loops for async operations.
     'no-magic-numbers': 'off', // Ad-hoc numbers are allowed, particularly in tests.
     'no-useless-assignment': 'off', // Often used for type assertion checks
     'no-underscore-dangle': 'off', // Internally allowed for unused variables
@@ -304,6 +305,8 @@ const config: OxlintConfig = {
             withinDescribe: 'it',
           },
         ],
+        'vitest/prefer-to-be-truthy': 'off',
+        'vitest/prefer-to-be-falsy': 'off',
       },
       plugins: ['vitest', 'typescript'],
     },
