@@ -1,4 +1,4 @@
-import { mkdtemp, rm, symlink } from 'node:fs/promises';
+import { cp, mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 
@@ -7,22 +7,21 @@ interface RenderWorkspace {
   cleanup: () => Promise<void>;
 }
 
-const linkAsset = async (
+const copyAsset = async (
   assetsDir: string,
   workspaceDir: string,
   name: string,
 ): Promise<void> => {
-  await symlink(
-    path.join(assetsDir, name),
-    path.join(workspaceDir, name),
-    process.platform === 'win32' ? 'junction' : undefined,
-  );
+  await cp(path.join(assetsDir, name), path.join(workspaceDir, name), {
+    recursive: true,
+  });
 };
 
 /**
  * Creates an isolated Typst project root for one render.
  *
- * Static assets are symlinked from {@link getCardRendererAssetsDir}; runtime
+ * Static assets are copied from the configured assets dir (not symlinked —
+ * Typst resolves symlinks and rejects sources outside `--root`). Runtime
  * JSON and artwork are written directly into `workspaceDir`. Typst `--root`
  * must point at this directory so relative paths in the templates resolve.
  */
@@ -33,9 +32,9 @@ const createRenderWorkspace = async (
     path.join(tmpdir(), 'prevail-card-render-'),
   );
 
-  await linkAsset(assetsDir, workspaceDir, 'templates');
-  await linkAsset(assetsDir, workspaceDir, 'icons');
-  await linkAsset(assetsDir, workspaceDir, 'Cinzel-Regular.ttf');
+  await copyAsset(assetsDir, workspaceDir, 'templates');
+  await copyAsset(assetsDir, workspaceDir, 'icons');
+  await copyAsset(assetsDir, workspaceDir, 'Cinzel-Regular.ttf');
 
   return {
     workspaceDir,

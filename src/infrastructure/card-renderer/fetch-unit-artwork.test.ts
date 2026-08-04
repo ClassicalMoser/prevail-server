@@ -65,37 +65,33 @@ describe('fetchUnitArtwork', () => {
     },
   );
 
-  it(
-    'rejects redirects',
-    { timeout: 5000 },
-    async () => {
-      expect.hasAssertions();
+  it('rejects redirects', { timeout: 5000 }, async () => {
+    expect.hasAssertions();
 
-      vi.stubGlobal(
-        'fetch',
-        vi.fn().mockResolvedValue({
-          ok: false,
-          status: 302,
-          statusText: 'Found',
-          headers: {
-            get: vi.fn<(name: string) => string | null>(),
-          },
-        }),
-      );
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: false,
+        status: 302,
+        statusText: 'Found',
+        headers: {
+          get: vi.fn<(name: string) => string | null>(),
+        },
+      }),
+    );
 
-      const result = await fetchUnitArtwork(
-        'https://assets.example.com/redirect.png',
-        '/tmp/unit-image.png',
-        allowedOrigin,
-      );
+    const result = await fetchUnitArtwork(
+      'https://assets.example.com/redirect.png',
+      '/tmp/unit-image.png',
+      allowedOrigin,
+    );
 
-      expect(result).toStrictEqual({
-        success: false,
-        message: 'Redirects are not allowed for unit artwork',
-        status: 400,
-      });
-    },
-  );
+    expect(result).toStrictEqual({
+      success: false,
+      message: 'Redirects are not allowed for unit artwork',
+      status: 400,
+    });
+  });
 
   it(
     'returns an error when the response is not ok',
