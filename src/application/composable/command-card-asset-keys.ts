@@ -1,4 +1,4 @@
-import type { Card } from '@classicalmoser/prevail-rules/domain';
+import type { CommandCard } from '@classicalmoser/prevail-rules/domain';
 import type { AssetType } from '@ports';
 
 interface CommandCardAssetTarget {
@@ -31,7 +31,7 @@ const commandCardAssetKey = (
   }
 };
 
-const commandCardAssetTargets = (card: Card): CommandCardAssetTarget[] =>
+const commandCardAssetTargets = (card: CommandCard): CommandCardAssetTarget[] =>
   COMMAND_CARD_ASSET_TYPES.map((type) => ({
     type,
     key: commandCardAssetKey(card.id, card.version, type),

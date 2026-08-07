@@ -10,7 +10,7 @@
  * See buildUnitIdToNameMap. buildPlaceholderUnitIdToNameMap remains for tests.
  */
 import type {
-  Card,
+  CommandCard,
   RoundEffect,
   UnitSupport,
 } from '@classicalmoser/prevail-rules/domain';
@@ -51,7 +51,7 @@ const replaceUnitIdsWithNames = (
  *
  * Returns a deduplicated list suitable for a single batch name lookup.
  */
-const getCommandCardUnitIds = (card: Card): string[] => {
+const getCommandCardUnitIds = (card: CommandCard): string[] => {
   const commandUnitRestrictionIds = card.command.restrictions.unitRestrictions;
   const roundEffectUnitRestrictionIds =
     card.roundEffect?.restrictions.unitRestrictions ?? [];
@@ -117,7 +117,7 @@ const replaceRoundEffectUnitIds = (
  * values in restriction and support fields differ.
  */
 const replaceCommandCardUnitIdsWithNames = (
-  card: Card,
+  card: CommandCard,
   unitIdToNameMap: UnitIdToNameMap,
 ): PrintCommandCard => {
   const command = card.command;

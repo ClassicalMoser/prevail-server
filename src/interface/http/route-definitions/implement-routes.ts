@@ -55,7 +55,7 @@ const implementGetRoute = <
     }
 
     try {
-      return await handler(parsed.value);
+      return await handler(parsed.value, wire.auth);
     } catch (error) {
       return handleError({
         error,
@@ -102,7 +102,7 @@ const implementPostRoute = <
     }
 
     try {
-      return await handler(parsed.value);
+      return await handler(parsed.value, wire.auth);
     } catch (error) {
       return handleError({
         error,
@@ -137,7 +137,7 @@ const implementPutRoute = <
     }
 
     try {
-      return await handler(parsed.value);
+      return await handler(parsed.value, wire.auth);
     } catch (error) {
       return handleError({
         error,
@@ -172,7 +172,7 @@ const implementPatchRoute = <
     }
 
     try {
-      return await handler(parsed.value);
+      return await handler(parsed.value, wire.auth);
     } catch (error) {
       return handleError({
         error,
@@ -205,7 +205,7 @@ const implementDeleteRoute = <
     }
 
     try {
-      return await handler(parsed.value);
+      return await handler(parsed.value, wire.auth);
     } catch (error) {
       return handleError({
         error,
@@ -246,7 +246,7 @@ const implementMediaPostRoute = <
     }
 
     try {
-      return await handler(parsed.value);
+      return await handler(parsed.value, wire.auth);
     } catch (error) {
       return handleError({
         error,

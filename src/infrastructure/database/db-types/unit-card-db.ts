@@ -2,7 +2,7 @@ import type { UnitType } from '@classicalmoser/prevail-rules/domain';
 
 type PartialUnitType = Pick<
   UnitType,
-  'traits' | 'stats' | 'cost' | 'limit' | 'routPenalty'
+  'traits' | 'stats' | 'cost' | 'limit' | 'morale'
 >;
 
 interface UnitCardDb {

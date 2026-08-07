@@ -1,4 +1,4 @@
-import { cardSchema } from '@classicalmoser/prevail-rules/domain';
+import { commandCardSchema } from '@classicalmoser/prevail-rules/domain';
 import type {
   AssetStorage,
   CertificationResults,
@@ -13,7 +13,7 @@ import type {
 } from '@ports';
 import { noContentSuccess } from '@ports';
 import type { CardListItem } from '@classicalmoser/prevail-contracts';
-import type { Card } from '@classicalmoser/prevail-rules/domain';
+import type { CommandCard } from '@classicalmoser/prevail-rules/domain';
 import {
   allCommandCardAssetsExist,
   buildUnitIdToNameMap,
@@ -33,21 +33,21 @@ interface CommandCardUseCasesDeps {
 const createCommandCardUseCases = (
   deps: CommandCardUseCasesDeps,
 ): CommandCardUseCasesPort => ({
-  getCurrentCommandCards: async (): Promise<DataErrorSignature<Card[]>> =>
+  getCurrentCommandCards: async (): Promise<DataErrorSignature<CommandCard[]>> =>
     deps.commandCardStorage.getCurrentCommandCards(),
   getAllCommandCards: async (): Promise<DataErrorSignature<CardListItem[]>> =>
     deps.commandCardStorage.getAllCommandCards(),
-  getCommandCardById: async (id: string): Promise<DataErrorSignature<Card>> =>
+  getCommandCardById: async (id: string): Promise<DataErrorSignature<CommandCard>> =>
     deps.commandCardStorage.getCommandCardById(id),
   getCommandCardsByIds: async (
     ids: string[],
-  ): Promise<DataErrorSignature<Card[]>> =>
+  ): Promise<DataErrorSignature<CommandCard[]>> =>
     deps.commandCardStorage.getCommandCardsByIds(ids),
   createEmptyCommandCard: async (): Promise<DataErrorSignature<string>> =>
     deps.commandCardStorage.createEmptyCommandCard(),
   createCommandCardVersion: async (
-    card: Card,
-  ): Promise<DataErrorSignature<Card>> => {
+    card: CommandCard,
+  ): Promise<DataErrorSignature<CommandCard>> => {
     const insertResult =
       await deps.commandCardStorage.createCommandCardVersion(card);
     if (!insertResult.success) {
@@ -103,7 +103,7 @@ const createCommandCardUseCases = (
     );
 
     const schemaValidStatuses = uncertifiedStatuses.filter(
-      ({ card }) => cardSchema.safeParse(card).success,
+      ({ card }) => commandCardSchema.safeParse(card).success,
     );
 
     const allUnitIds = [
@@ -174,7 +174,7 @@ const createCommandCardUseCases = (
     };
   },
   previewCommandCard: async (
-    card: Card,
+    card: CommandCard,
   ): Promise<DataErrorSignature<string>> => {
     const unitIds: string[] = getCommandCardUnitIds(card);
     const nameMapResult = await buildUnitIdToNameMap(

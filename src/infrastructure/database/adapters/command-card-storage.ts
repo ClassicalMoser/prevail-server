@@ -30,18 +30,18 @@ import {
   writeCommandCardVersionMapper,
 } from '../mappers';
 import type { Sql } from '../sql-type';
-import type { Card } from '@classicalmoser/prevail-rules/domain';
+import type { CommandCard } from '@classicalmoser/prevail-rules/domain';
 import type { CardListItem } from '@classicalmoser/prevail-contracts';
 import { handleError } from '@utils';
 
-const mapCommandCardVersions = (versions: CommandCardVersionDb[]): Card[] =>
+const mapCommandCardVersions = (versions: CommandCardVersionDb[]): CommandCard[] =>
   versions.map((version) => commandCardVersionMapperToDomain(version));
 
 const createCommandCardStorage = (
   logger: LoggerPort,
   sql: Sql,
 ): CommandCardStorage => ({
-  getCurrentCommandCards: async (): Promise<DataErrorSignature<Card[]>> => {
+  getCurrentCommandCards: async (): Promise<DataErrorSignature<CommandCard[]>> => {
     try {
       const unparsedResult: CommandCardVersionDb[] =
         await getCurrentCommandCardsQuery(sql);
@@ -79,7 +79,7 @@ const createCommandCardStorage = (
     }
   },
 
-  getCommandCardById: async (id: string): Promise<DataErrorSignature<Card>> => {
+  getCommandCardById: async (id: string): Promise<DataErrorSignature<CommandCard>> => {
     try {
       const unparsedResult: CommandCardVersionDb[] =
         await getCommandCardByIdQuery(sql, id);
@@ -108,7 +108,7 @@ const createCommandCardStorage = (
 
   getCommandCardsByIds: async (
     ids: string[],
-  ): Promise<DataErrorSignature<Card[]>> => {
+  ): Promise<DataErrorSignature<CommandCard[]>> => {
     try {
       if (ids.length === 0) {
         return { success: true, data: [] };
@@ -166,8 +166,8 @@ const createCommandCardStorage = (
   },
 
   createCommandCardVersion: async (
-    card: Card,
-  ): Promise<DataErrorSignature<Card>> => {
+    card: CommandCard,
+  ): Promise<DataErrorSignature<CommandCard>> => {
     try {
       const existingCard = await commandCardExistsQuery(sql, card.id);
       if (existingCard.length === 0) {
@@ -199,7 +199,7 @@ const createCommandCardStorage = (
   },
 
   deleteCommandCardVersion: async (
-    card: Card,
+    card: CommandCard,
   ): Promise<DataErrorSignature<void>> => {
     try {
       const majorVersion = Number.parseInt(card.version.split('.')[0], 10);

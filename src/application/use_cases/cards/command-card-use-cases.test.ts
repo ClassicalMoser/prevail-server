@@ -2,7 +2,7 @@ import {
   tempCommandCards,
   tempUnits,
 } from '@classicalmoser/prevail-rules/domain';
-import type { Card } from '@classicalmoser/prevail-rules/domain';
+import type { CommandCard } from '@classicalmoser/prevail-rules/domain';
 import type {
   AssetStorage,
   CommandCardCertificationStatus,
@@ -21,11 +21,11 @@ const validCardB = tempCommandCards[5];
 // Drop a required nested field so the domain schema rejects it.
 const invalidCard = {
   ...tempCommandCards[2],
-  command: undefined as unknown as Card['command'],
+  command: undefined as unknown as CommandCard['command'],
 };
 
 const status = (
-  card: Card,
+  card: CommandCard,
   certified: boolean,
 ): CommandCardCertificationStatus => ({ card, certified });
 

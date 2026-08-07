@@ -32,8 +32,7 @@
 #let traits = unit.traits
 // The seven combat stats
 #let stats = unit.stats
-// Morale is the rout penalty
-#let morale = unit.routPenalty
+#let morale = unit.morale
 
 -------------------------------------------------------
 

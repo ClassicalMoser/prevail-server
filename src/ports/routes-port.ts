@@ -10,6 +10,11 @@ import type {
   RouteInvokeResult,
 } from './data-error-signature-port';
 
+/** Auth identity attached after a successful `AuthPort.checkToken`. */
+interface RequestAuth {
+  subject: string;
+}
+
 /**
  * Untyped request shape produced by the HTTP adapter (Fastify).
  *
@@ -21,6 +26,8 @@ interface WireRouteRequest {
   query: unknown;
   body: unknown;
   headers: Readonly<Record<string, string | undefined>>;
+  /** Present when the route required auth and verification succeeded. */
+  auth?: RequestAuth;
 }
 
 /** Validated request for routes that accept a body (POST, PUT, PATCH). */
@@ -46,16 +53,19 @@ interface GetRouteRequest<TParams, TQuery> {
 /** Handler for POST, PUT, and PATCH routes. */
 type RouteHandler<TParams, TQuery, TBody, TResponse> = (
   request: RouteRequest<TParams, TQuery, TBody>,
+  auth: RequestAuth | undefined,
 ) => Promise<DataErrorSignature<TResponse>>;
 
 /** Handler for GET routes. */
 type GetRouteHandler<TParams, TQuery, TResponse> = (
   request: GetRouteRequest<TParams, TQuery>,
+  auth: RequestAuth | undefined,
 ) => Promise<DataErrorSignature<TResponse>>;
 
 /** Handler for DELETE routes. */
 type DeleteRouteHandler<TParams, TQuery> = (
   request: GetRouteRequest<TParams, TQuery>,
+  auth: RequestAuth | undefined,
 ) => Promise<ErrorSignature | NoContentSignature>;
 
 /** Handler for POST routes that return a raw media document on success. */
@@ -66,6 +76,7 @@ type MediaRouteHandler<
   TSuccessContentType extends MediaContentType,
 > = (
   request: RouteRequest<TParams, TQuery, TBody>,
+  auth: RequestAuth | undefined,
 ) => Promise<DataErrorSignature<MediaPayload<TSuccessContentType>>>;
 
 /** MIME type of a route's success response body. */
@@ -98,6 +109,7 @@ export type {
   GetRouteRequest,
   MediaRouteHandler,
   RegisteredRoute,
+  RequestAuth,
   RouteHandler,
   RouteRegistry,
   RouteRequest,

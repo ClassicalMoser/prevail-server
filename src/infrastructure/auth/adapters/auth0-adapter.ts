@@ -58,10 +58,7 @@ const createAuth0Adapter = (
   });
 
   return {
-    checkToken: async (
-      token: string,
-      required: AuthRequired,
-    ): Promise<true | ErrorSignature> => {
+    checkToken: async (token: string, required: AuthRequired) => {
       try {
         const claims = await apiClient.verifyAccessToken({
           accessToken: token,
@@ -77,7 +74,7 @@ const createAuth0Adapter = (
           return forbidden;
         }
 
-        return true;
+        return { subject: claims.sub };
       } catch (error) {
         if (
           error instanceof VerifyAccessTokenError ||

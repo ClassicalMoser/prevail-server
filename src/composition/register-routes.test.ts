@@ -4,7 +4,7 @@ import type { AuthPort, RegisteredRoute } from '@ports';
 import { registerRoutes } from './register-routes';
 
 const allowAllAuth: AuthPort = {
-  checkToken: async () => true,
+  checkToken: async () => ({ subject: 'test-subject' }),
 };
 
 const buildApp = (route: RegisteredRoute): FastifyInstance => {

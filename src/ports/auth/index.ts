@@ -1,1 +1,1 @@
-export type { AuthPort } from './auth-port';
+export type { AuthPort, AuthSuccess } from './auth-port';

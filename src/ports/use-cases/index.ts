@@ -4,3 +4,4 @@ export type {
   CommandCardUseCasesPort,
 } from './command-card-use-cases';
 export type { UnitCardUseCasesPort } from './unit-card-use-cases';
+export type { OwnedArmyUseCasesPort } from './owned-army-use-cases';

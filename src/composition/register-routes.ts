@@ -86,7 +86,7 @@ const registerRoutes = (
       method: route.method,
       url: route.path,
       handler: async (fastifyRequest, fastifyReply) => {
-        const wireRequest: WireRouteRequest = {
+        let wireRequest: WireRouteRequest = {
           params: fastifyRequest.params,
           body: fastifyRequest.body,
           query: fastifyRequest.query,
@@ -100,9 +100,14 @@ const registerRoutes = (
           }
 
           const authResult = await authPort.checkToken(token, route.auth);
-          if (authResult !== true) {
+          if ('success' in authResult) {
             return sendRouteResult(fastifyReply, authResult, route);
           }
+
+          wireRequest = {
+            ...wireRequest,
+            auth: { subject: authResult.subject },
+          };
         }
 
         const result = await route.invoke(wireRequest);

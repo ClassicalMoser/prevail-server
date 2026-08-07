@@ -1,7 +1,7 @@
-import type { Card } from '@classicalmoser/prevail-rules/domain';
+import type { CommandCard } from '@classicalmoser/prevail-rules/domain';
 
 type PartialCard = Pick<
-  Card,
+  CommandCard,
   'initiative' | 'modifiers' | 'command' | 'roundEffect' | 'unitSupport'
 >;
 

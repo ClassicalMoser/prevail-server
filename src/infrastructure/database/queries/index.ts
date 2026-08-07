@@ -25,3 +25,21 @@ export {
   insertUnitCardCertificationsQuery,
   unitCardExistsQuery,
 } from './unit-card-queries';
+export {
+  archiveArmyQuery,
+  createArmyQuery,
+  deleteArmyCommandCardsQuery,
+  deleteArmyUnitCardsQuery,
+  getArmyCommandCardsQuery,
+  getArmyUnitCardsQuery,
+  getOwnedArmiesQuery,
+  getOwnedArmyRowQuery,
+  insertArmyCommandCardQuery,
+  insertArmyUnitCardQuery,
+  updateArmyQuery,
+} from './army-queries';
+export {
+  createUserByAuthSubQuery,
+  getUserByAuthSubQuery,
+  getUserByIdQuery,
+} from './user-queries';

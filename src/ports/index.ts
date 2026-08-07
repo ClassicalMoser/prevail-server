@@ -4,10 +4,11 @@ export type {
   CommandCardCertificationStatus,
   UnitCardStorage,
   UnitCardCertificationStatus,
+  OwnedArmyStorage,
   User,
   UserStorage,
 } from './storage';
-export type { AuthPort } from './auth';
+export type { AuthPort, AuthSuccess } from './auth';
 export type {
   DataSignature,
   DataErrorSignature,
@@ -22,6 +23,7 @@ export type {
   GetRouteRequest,
   MediaRouteHandler,
   RegisteredRoute,
+  RequestAuth,
   RouteHandler,
   RouteRegistry,
   RouteRequest,
@@ -34,6 +36,7 @@ export type {
   CommandCardUseCasesPort,
   CertificationResults,
   UnitCardUseCasesPort,
+  OwnedArmyUseCasesPort,
 } from './use-cases';
 export type {
   CommandCardRendererPort,

@@ -3,13 +3,13 @@ import type {
   WriteCommandCardVersionDb,
   PartialCard,
 } from '../db-types';
-import type { Card } from '@classicalmoser/prevail-rules/domain';
-import { cardSchema } from '@classicalmoser/prevail-rules/domain';
+import type { CommandCard } from '@classicalmoser/prevail-rules/domain';
+import { commandCardSchema } from '@classicalmoser/prevail-rules/domain';
 import { parseIfJson } from '../parse-if-json';
 
 const commandCardVersionMapperToDomain = (
   version: CommandCardVersionDb,
-): Card => {
+): CommandCard => {
   const partialCard: PartialCard = parseIfJson(version.command_card_definition);
   const versionNumber = `${version.version_major}.${version.version_minor}.${version.version_patch}`;
   return {
@@ -21,9 +21,9 @@ const commandCardVersionMapperToDomain = (
 };
 
 const writeCommandCardVersionMapper = (
-  card: Card,
+  card: CommandCard,
 ): WriteCommandCardVersionDb => {
-  const validatedCard = cardSchema.parse(card);
+  const validatedCard = commandCardSchema.parse(card);
   const majorVersion = Number.parseInt(validatedCard.version.split('.')[0], 10);
   const minorVersion = Number.parseInt(validatedCard.version.split('.')[1], 10);
   const patchVersion = Number.parseInt(validatedCard.version.split('.')[2], 10);

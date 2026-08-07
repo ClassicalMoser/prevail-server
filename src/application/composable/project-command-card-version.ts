@@ -1,4 +1,4 @@
-import type { Card } from '@classicalmoser/prevail-rules/domain';
+import type { CommandCard } from '@classicalmoser/prevail-rules/domain';
 import type {
   AssetStorage,
   CommandCardRendererPort,
@@ -24,7 +24,7 @@ const toUploadError = (error: unknown): DataErrorSignature<void> => ({
 
 const projectCommandCardAsset = async (
   deps: CommandCardProjectionDeps,
-  card: Card,
+  card: CommandCard,
   target: CommandCardAssetTarget,
 ): Promise<DataErrorSignature<void>> => {
   const printCard = replaceCommandCardUnitIdsWithNames(
@@ -53,7 +53,7 @@ const projectCommandCardAsset = async (
 
 const projectCommandCardVersion = async (
   deps: CommandCardProjectionDeps,
-  card: Card,
+  card: CommandCard,
 ): Promise<DataErrorSignature<void>> => {
   for (const target of commandCardAssetTargets(card)) {
     const result = await projectCommandCardAsset(deps, card, target);
@@ -67,7 +67,7 @@ const projectCommandCardVersion = async (
 
 const findMissingCommandCardAssetTargets = async (
   assetStorage: AssetStorage,
-  card: Card,
+  card: CommandCard,
 ): Promise<CommandCardAssetTarget[]> => {
   const missing: CommandCardAssetTarget[] = [];
 
@@ -82,7 +82,7 @@ const findMissingCommandCardAssetTargets = async (
 
 const allCommandCardAssetsExist = async (
   assetStorage: AssetStorage,
-  card: Card,
+  card: CommandCard,
 ): Promise<boolean> => {
   for (const target of commandCardAssetTargets(card)) {
     if (!(await assetStorage.objectExists(target.key))) {
@@ -95,7 +95,7 @@ const allCommandCardAssetsExist = async (
 
 const ensureCommandCardProjection = async (
   deps: CommandCardProjectionDeps,
-  card: Card,
+  card: CommandCard,
 ): Promise<DataErrorSignature<void>> => {
   const missing = await findMissingCommandCardAssetTargets(
     deps.assetStorage,

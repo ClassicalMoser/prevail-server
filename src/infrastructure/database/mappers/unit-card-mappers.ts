@@ -35,7 +35,7 @@ const writeUnitCardVersionMapper = (
     stats: unitType.stats,
     cost: unitType.cost,
     limit: unitType.limit,
-    routPenalty: unitType.routPenalty,
+    morale: unitType.morale,
   };
 
   return {

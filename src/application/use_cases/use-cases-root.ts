@@ -5,6 +5,7 @@ import type {
   UnitCardRendererPort,
   UseCasesPort,
 } from '@ports';
+import { createOwnedArmyUseCases } from './armies';
 import { createCommandCardUseCases, createUnitCardUseCases } from './cards';
 
 interface UseCasesRootDeps {
@@ -25,6 +26,9 @@ const createUseCasesRoot = (deps: UseCasesRootDeps): UseCasesPort => ({
     unitCardStorage: deps.storagePort.unitCardStorage,
     unitCardRenderer: deps.unitCardRenderer,
     assetStorage: deps.assetStorage,
+  }),
+  ownedArmyUseCases: createOwnedArmyUseCases({
+    ownedArmyStorage: deps.storagePort.ownedArmyStorage,
   }),
 });
 

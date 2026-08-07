@@ -17,3 +17,10 @@ export type {
   UnitCardCertificationStatusDb,
   WriteUnitCardVersionDb,
 } from './unit-card-db';
+export type {
+  ArmyDb,
+  ArmyListItemDb,
+  ArmyUnitCardDb,
+  ArmyCommandCardDb,
+} from './army-db';
+export type { UserDb } from './user-db';

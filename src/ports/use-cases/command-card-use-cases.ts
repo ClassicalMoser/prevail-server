@@ -1,4 +1,4 @@
-import type { Card } from '@classicalmoser/prevail-rules/domain';
+import type { CommandCard } from '@classicalmoser/prevail-rules/domain';
 import type {
   CardListItem,
   CertificationResults,
@@ -10,17 +10,17 @@ import type {
 } from '@ports/data-error-signature-port';
 
 interface CommandCardUseCasesPort {
-  getCurrentCommandCards: () => Promise<DataErrorSignature<Card[]>>;
+  getCurrentCommandCards: () => Promise<DataErrorSignature<CommandCard[]>>;
   getAllCommandCards: () => Promise<DataErrorSignature<CardListItem[]>>;
-  getCommandCardById: (id: string) => Promise<DataErrorSignature<Card>>;
-  getCommandCardsByIds: (ids: string[]) => Promise<DataErrorSignature<Card[]>>;
+  getCommandCardById: (id: string) => Promise<DataErrorSignature<CommandCard>>;
+  getCommandCardsByIds: (ids: string[]) => Promise<DataErrorSignature<CommandCard[]>>;
   createEmptyCommandCard: () => Promise<DataErrorSignature<string>>;
-  createCommandCardVersion: (card: Card) => Promise<DataErrorSignature<Card>>;
+  createCommandCardVersion: (card: CommandCard) => Promise<DataErrorSignature<CommandCard>>;
   deleteEmptyCommandCards: () => Promise<ErrorSignature | NoContentSignature>;
   updateCommandCardCertifications: () => Promise<
     DataErrorSignature<CertificationResults>
   >;
-  previewCommandCard: (card: Card) => Promise<DataErrorSignature<string>>;
+  previewCommandCard: (card: CommandCard) => Promise<DataErrorSignature<string>>;
 }
 
 export type { CommandCardUseCasesPort };

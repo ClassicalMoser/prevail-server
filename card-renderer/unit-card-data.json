@@ -5,7 +5,7 @@
     "imageUrl": null,
     "limit": 8,
     "name": "Velites",
-    "routPenalty": 0,
+    "morale": 0,
     "stats": {
       "attack": 2,
       "flexibility": 3,
