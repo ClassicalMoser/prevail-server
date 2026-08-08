@@ -101,8 +101,7 @@ const unitInstanceKey = (unit: {
   playerSide: string;
   unitType: { id: string };
   instanceNumber: number;
-}): string =>
-  `${unit.playerSide}:${unit.unitType.id}:${unit.instanceNumber}`;
+}): string => `${unit.playerSide}:${unit.unitType.id}:${unit.instanceNumber}`;
 
 /** Greedy cover: fill each grant's slots with unused eligible units. */
 const pickAssignUnitSupport = (
@@ -128,13 +127,12 @@ const pickAssignUnitSupport = (
       grant.eligibleUnits.filter((unit) => !covered.has(unitInstanceKey(unit))),
       random,
     ).slice(0, grant.unitSupport.count);
-    if (available.length === 0) {
-      continue;
+    if (available.length > 0) {
+      for (const unit of available) {
+        covered.add(unitInstanceKey(unit));
+      }
+      assignments.push({ cardId: grant.card.id, units: [...available] });
     }
-    for (const unit of available) {
-      covered.add(unitInstanceKey(unit));
-    }
-    assignments.push({ cardId: grant.card.id, units: [...available] });
   }
 
   return {
@@ -180,31 +178,36 @@ const pickMoveUnit = (input: {
   if (moveUnits.player !== actingPlayer) {
     return undefined;
   }
-  const unit = pickOne(moveUnits.units, random);
-  if (unit === undefined) {
+
+  const match = shuffleCopy([...moveUnits.units], random)
+    .map((unit) => {
+      try {
+        return {
+          destinations: [...getLegalUnitMoves(unit, state)],
+          unit,
+        };
+      } catch {
+        return { destinations: [] as UnitWithPlacement['placement'][], unit };
+      }
+    })
+    .map(({ destinations, unit }) => ({
+      to: pickOne(destinations, random),
+      unit,
+    }))
+    .find((entry) => entry.to !== undefined);
+
+  if (match?.to === undefined) {
     return undefined;
   }
-  let destinations: UnitWithPlacement['placement'][] | undefined = undefined;
-  try {
-    destinations = [...getLegalUnitMoves(unit, state)];
-  } catch {
-    destinations = undefined;
-  }
-  if (destinations === undefined) {
-    return undefined;
-  }
-  const to = pickOne(destinations, random);
-  if (to === undefined) {
-    return undefined;
-  }
+
   return {
     choiceType: 'moveUnit',
     eventNumber: options.expectedEventNumber,
     eventType: PLAYER_CHOICE_EVENT_TYPE,
     moveCommander: false,
     player: actingPlayer,
-    to,
-    unit,
+    to: match.to,
+    unit: match.unit,
   };
 };
 

@@ -202,15 +202,24 @@ const createGameSessionUseCases = (
       if (state === undefined) {
         return;
       }
+      // `winner` is set by the terminal `gameOver` effect (including draws).
+      if (state.winner !== undefined) {
+        return;
+      }
 
       const options = getLegalPlayerChoiceOptions(state);
       if (options === null) {
         // Player-choice router returns null for game effects *or* when
         // getExpectedEvent throws. Only drain effects when one is expected.
-        let expected;
+        let expected: ReturnType<typeof getExpectedEvent> | undefined =
+          undefined;
         try {
           expected = getExpectedEvent(state);
-        } catch {
+        } catch (error) {
+          console.error('takeBotTurns: getExpectedEvent failed', {
+            error,
+            gameId,
+          });
           return;
         }
         if (expected.actionType !== 'gameEffect') {
@@ -223,34 +232,37 @@ const createGameSessionUseCases = (
         if (!advanced.result) {
           return;
         }
-        continue;
-      }
-      if (options.playerSource === meta.humanSide) {
+      } else if (options.playerSource === meta.humanSide) {
         return;
-      }
+      } else {
+        const choice = selectRandomPlayerChoice({
+          actingPlayer: botSide,
+          options,
+          state,
+        });
+        if (choice === undefined) {
+          console.error('takeBotTurns: no bot choice for', {
+            choiceType: options.choiceType,
+            gameId,
+            playerSource: options.playerSource,
+          });
+          return;
+        }
 
-      const choice = selectRandomPlayerChoice({
-        actingPlayer: botSide,
-        options,
-        state,
-      });
-      if (choice === undefined) {
-        return;
-      }
+        if (submittedPriorTurn && botTurnGapMs > 0) {
+          await delay(botTurnGapMs);
+        }
 
-      if (submittedPriorTurn && botTurnGapMs > 0) {
-        await delay(botTurnGapMs);
+        const result = await runner.handlePlayerChoiceSubmission(
+          gameId,
+          meta.gameMode,
+          choice,
+        );
+        if (!result.result) {
+          return;
+        }
+        submittedPriorTurn = true;
       }
-
-      const result = await runner.handlePlayerChoiceSubmission(
-        gameId,
-        meta.gameMode,
-        choice,
-      );
-      if (!result.result) {
-        return;
-      }
-      submittedPriorTurn = true;
     }
   };
 

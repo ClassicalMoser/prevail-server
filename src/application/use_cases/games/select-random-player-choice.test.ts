@@ -11,16 +11,18 @@ import {
   createEmptyGameState,
   createUnitInstance,
   getLegalPlayerChoiceOptions,
-  isValidAssignUnitSupportEvent,
-  isValidIssueCommandEvent,
   tempCommandCards,
   tempUnits,
   updateBoardState,
   updatePhaseState,
   updatePlayerCardState,
+  validatePlayerChoice,
 } from '@classicalmoser/prevail-rules/domain';
 import { selectRandomPlayerChoice } from './select-random-player-choice';
 import type { RandomSource } from './select-random-player-choice';
+
+/* Domain wire values use null for refuse commits and empty card slots. */
+/* eslint-disable unicorn/no-null -- protocol nulls in fixtures */
 
 /** Always picks the first candidate (index 0). */
 const firstAlways: RandomSource = {
@@ -49,6 +51,30 @@ const issuePhase = (
   remainingUnitsSecondPlayer: [],
   step: 'firstPlayerIssueCommands',
 });
+
+/** Transforms empty state starts with empty hands; keep both non-empty for endgame. */
+const seedPlayableIssueState = (
+  state: ReturnType<typeof createEmptyGameState>,
+): ReturnType<typeof createEmptyGameState> => {
+  let next = { ...state, currentInitiative: 'black' as const };
+  next = updatePlayerCardState(next, 'black', {
+    awaitingPlay: null,
+    burnt: [],
+    discarded: [],
+    inHand: [tempCommandCards[0]!],
+    inPlay: tempCommandCards[1]!,
+    played: [],
+  });
+  next = updatePlayerCardState(next, 'white', {
+    awaitingPlay: null,
+    burnt: [],
+    discarded: [],
+    inHand: [tempCommandCards[2]!],
+    inPlay: tempCommandCards[3]!,
+    played: [],
+  });
+  return next;
+};
 
 describe('selectRandomPlayerChoice function', () => {
   it(
@@ -229,19 +255,15 @@ describe('selectRandomPlayerChoice function', () => {
         placement: { coordinate: 'E-5' as const, facing: 'north' as const },
         unit: createUnitInstance('black', unitType, 1),
       };
-      let state = createEmptyGameState('mini');
+      let state = seedPlayableIssueState(createEmptyGameState('mini'));
       let board = addUnitToBoard(state.boardState, unit);
       board = addCommanderToBoard(board, 'black', 'E-5');
       state = updateBoardState(state, board);
       state = updatePhaseState(state, issuePhase([command]));
 
-      const options: LegalPlayerChoiceOptions = {
-        canDoneIssuing: true,
-        choiceType: 'issueCommand',
-        expectedEventNumber: 0,
-        issueCommands: { commands: [command], player: 'black' },
-        playerSource: 'black',
-      };
+      const options = getLegalPlayerChoiceOptions(state);
+      assert.ok(options !== null);
+      assert.ok(options.choiceType === 'issueCommand');
 
       const choice = selectRandomPlayerChoice({
         actingPlayer: 'black',
@@ -257,7 +279,7 @@ describe('selectRandomPlayerChoice function', () => {
         player: 'black',
         units: [unit.unit],
       });
-      expect(isValidIssueCommandEvent(choice, state)).toStrictEqual({
+      expect(validatePlayerChoice(choice, state)).toStrictEqual({
         result: true,
       });
     },
@@ -441,6 +463,16 @@ describe('selectRandomPlayerChoice function', () => {
 
       let state = createEmptyGameState('mini');
       state = { ...state, currentInitiative: 'white' };
+      // Transforms empty state has empty hands; keep black non-empty so
+      // empty-hand endgame does not preempt assignUnitSupport.
+      state = updatePlayerCardState(state, 'black', {
+        awaitingPlay: null,
+        burnt: [],
+        discarded: [],
+        inHand: [tempCommandCards[2]!],
+        inPlay: null,
+        played: [],
+      });
       state = updatePlayerCardState(state, 'white', {
         awaitingPlay: null,
         burnt: [],
@@ -493,7 +525,7 @@ describe('selectRandomPlayerChoice function', () => {
       );
       expect(coveredKeys).toHaveLength(2);
       expect(new Set(coveredKeys).size).toBe(2);
-      expect(isValidAssignUnitSupportEvent(choice, state)).toStrictEqual({
+      expect(validatePlayerChoice(choice, state)).toStrictEqual({
         result: true,
       });
     },
@@ -525,20 +557,16 @@ describe('selectRandomPlayerChoice function', () => {
         placement: { coordinate: 'E-4' as const, facing: 'north' as const },
         unit: createUnitInstance('black', unitType, 2),
       };
-      let state = createEmptyGameState('mini');
+      let state = seedPlayableIssueState(createEmptyGameState('mini'));
       let board = addUnitToBoard(state.boardState, start);
       board = addUnitToBoard(board, west);
       board = addCommanderToBoard(board, 'black', 'E-5');
       state = updateBoardState(state, board);
       state = updatePhaseState(state, issuePhase([command]));
 
-      const options: LegalPlayerChoiceOptions = {
-        canDoneIssuing: true,
-        choiceType: 'issueCommand',
-        expectedEventNumber: 0,
-        issueCommands: { commands: [command], player: 'black' },
-        playerSource: 'black',
-      };
+      const options = getLegalPlayerChoiceOptions(state);
+      assert.ok(options !== null);
+      assert.ok(options.choiceType === 'issueCommand');
 
       const choice = selectRandomPlayerChoice({
         actingPlayer: 'black',
@@ -551,7 +579,7 @@ describe('selectRandomPlayerChoice function', () => {
       assert.ok(choice.choiceType === 'issueCommand');
       expect(choice.units[0]).toMatchObject({ instanceNumber: 1 });
       expect(choice.units.at(-1)).toMatchObject({ instanceNumber: 2 });
-      expect(isValidIssueCommandEvent(choice, state)).toStrictEqual({
+      expect(validatePlayerChoice(choice, state)).toStrictEqual({
         result: true,
       });
     },

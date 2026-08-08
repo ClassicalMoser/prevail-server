@@ -286,7 +286,7 @@ describe('createGameSessionUseCases vs-bot create', () => {
           runtimeRef.current?.fanoutEvent(gameId, event);
         },
         onRoundSnapshotSaved: (gameId, round, state) => {
-          void runtimeRef.current?.fanoutRoundSnapshot(gameId, round, state);
+          runtimeRef.current?.fanoutRoundSnapshot(gameId, round, state);
         },
       });
       const runtime = createGameSessionUseCases({
