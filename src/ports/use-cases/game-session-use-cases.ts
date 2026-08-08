@@ -34,10 +34,13 @@ interface GameSessionUseCasesPort {
     subject: string;
     playerChoice: PlayerChoiceEvent;
   }) => Promise<DataErrorSignature<void>>;
-  /** Registers a seat connection for projected event / snapshot fanout. */
+  /**
+   * Registers a seat connection for projected event / snapshot fanout and
+   * immediately sends that seat its current `roundSnapshot`.
+   */
   registerSeatConnection: (
     connection: GameSeatConnection,
-  ) => DataErrorSignature<void>;
+  ) => Promise<DataErrorSignature<void>>;
   /** Removes a seat connection from fanout. */
   unregisterSeatConnection: (connection: GameSeatConnection) => void;
   /** Resolves which subject owns a seat for a game. */

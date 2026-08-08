@@ -41,7 +41,8 @@ const createSeatHandlers = (
       side,
       subject: context.auth.subject,
     };
-    const registered = gameSessionUseCases.registerSeatConnection(connection);
+    const registered =
+      await gameSessionUseCases.registerSeatConnection(connection);
     if (!registered.success) {
       return {
         ok: false,

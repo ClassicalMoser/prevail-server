@@ -82,25 +82,29 @@ describe('game session event fanout', () => {
       const blackMessages: GameSessionOutbound[] = [];
 
       expect(
-        runtime.registerSeatConnection({
-          gameId,
-          send: (message) => {
-            whiteMessages.push(message);
-          },
-          side: 'white',
-          subject: 'human-sub',
-        }).success,
+        (
+          await runtime.registerSeatConnection({
+            gameId,
+            send: (message) => {
+              whiteMessages.push(message);
+            },
+            side: 'white',
+            subject: 'human-sub',
+          })
+        ).success,
       ).toBe(true);
 
       expect(
-        runtime.registerSeatConnection({
-          gameId,
-          send: (message) => {
-            blackMessages.push(message);
-          },
-          side: 'black',
-          subject: 'bot:prevail',
-        }).success,
+        (
+          await runtime.registerSeatConnection({
+            gameId,
+            send: (message) => {
+              blackMessages.push(message);
+            },
+            side: 'black',
+            subject: 'bot:prevail',
+          })
+        ).success,
       ).toBe(true);
 
       const choice: ChooseCardEvent = {

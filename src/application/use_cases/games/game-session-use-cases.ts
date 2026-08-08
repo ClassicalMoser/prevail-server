@@ -25,7 +25,13 @@ import type {
 import { randomUUID } from 'node:crypto';
 import { selectRandomPlayerChoice } from './select-random-player-choice';
 
+/** Seat-auth identity for the bot (WS subject check). Not a Game player id. */
 const BOT_SUBJECT = 'bot:prevail';
+/**
+ * Wire `Game.whitePlayer` / `Game.blackPlayer` id for the bot seat.
+ * Client seat contracts parse these with `z.uuid()`.
+ */
+const BOT_PLAYER_ID = '00000000-0000-4000-8000-0000000000b0';
 const VS_BOT_GAME_MODE = 'mini' as const satisfies GameModeName;
 const MAX_BOT_TURNS_PER_BURST = 64;
 
@@ -99,6 +105,31 @@ const createGameSessionUseCases = (
     }
   };
 
+  const loadAuthoritativeGame = async (
+    gameId: string,
+    gameMode: GameModeName,
+  ): Promise<GameForVisibility<'authoritative'> | undefined> => {
+    const gameResult = await deps.enginePorts.gameStorage.getGame(
+      gameId,
+      gameMode,
+    );
+    if (gameResult === undefined || !gameResult.result) {
+      return undefined;
+    }
+    return gameResult.data as GameForVisibility<'authoritative'>;
+  };
+
+  const sendRoundSnapshotToConnection = (
+    connection: GameSeatConnection,
+    authoritative: GameForVisibility<'authoritative'>,
+  ): void => {
+    const visibility = connection.side === 'white' ? 'whiteSeen' : 'blackSeen';
+    connection.send({
+      payload: projectGameForVisibility(authoritative, visibility),
+      type: 'roundSnapshot',
+    });
+  };
+
   const fanoutRoundSnapshot = async (
     gameId: string,
     _roundNumber: number,
@@ -108,14 +139,10 @@ const createGameSessionUseCases = (
     if (meta === undefined) {
       return;
     }
-    const gameResult = await deps.enginePorts.gameStorage.getGame(
-      gameId,
-      meta.gameMode,
-    );
-    if (gameResult === undefined || !gameResult.result) {
+    const authoritative = await loadAuthoritativeGame(gameId, meta.gameMode);
+    if (authoritative === undefined) {
       return;
     }
-    const authoritative = gameResult.data as GameForVisibility<'authoritative'>;
     for (const side of ['white', 'black'] as const) {
       const visibility = side === 'white' ? 'whiteSeen' : 'blackSeen';
       sendToSeat(gameId, side, {
@@ -146,14 +173,8 @@ const createGameSessionUseCases = (
     gameId: string,
     gameMode: GameModeName,
   ): Promise<GameState | undefined> => {
-    const gameResult = await deps.enginePorts.gameStorage.getGame(
-      gameId,
-      gameMode,
-    );
-    if (gameResult === undefined || !gameResult.result) {
-      return undefined;
-    }
-    return gameResult.data.gameState;
+    const authoritative = await loadAuthoritativeGame(gameId, gameMode);
+    return authoritative?.gameState;
   };
 
   /**
@@ -232,15 +253,22 @@ const createGameSessionUseCases = (
       body.humanSide === 'black' ? humanArmy.data : botArmy.data;
 
     const gameId = randomUUID();
+    // Auth0 `sub` is not a UUID; keep it in session meta for seat auth and put
+    // schema-valid UUIDs on the Game player fields the client parses.
+    const humanPlayerId = randomUUID();
+    const whitePlayerId =
+      body.humanSide === 'white' ? humanPlayerId : BOT_PLAYER_ID;
+    const blackPlayerId =
+      body.humanSide === 'black' ? humanPlayerId : BOT_PLAYER_ID;
     const gameState = createEmptyGameState(VS_BOT_GAME_MODE);
     const game: GameForVisibility<'authoritative'> = {
       blackArmy,
-      blackPlayer: body.humanSide === 'black' ? subject : BOT_SUBJECT,
+      blackPlayer: blackPlayerId,
       gameMode: VS_BOT_GAME_MODE,
       gameState: gameState as GameForVisibility<'authoritative'>['gameState'],
       id: gameId,
       whiteArmy,
-      whitePlayer: body.humanSide === 'white' ? subject : BOT_SUBJECT,
+      whitePlayer: whitePlayerId,
     };
 
     const saveResult = await deps.enginePorts.gameStorage.saveNewGame(game);
@@ -329,9 +357,9 @@ const createGameSessionUseCases = (
       return { data: undefined, success: true };
     });
 
-  const registerSeatConnection = (
+  const registerSeatConnection = async (
     connection: GameSeatConnection,
-  ): DataErrorSignature<void> => {
+  ): Promise<DataErrorSignature<void>> => {
     const meta = metaByGameId.get(connection.gameId);
     if (meta === undefined) {
       return { message: 'Game not found', status: 404, success: false };
@@ -345,7 +373,17 @@ const createGameSessionUseCases = (
         success: false,
       };
     }
+
+    const authoritative = await loadAuthoritativeGame(
+      connection.gameId,
+      meta.gameMode,
+    );
+    if (authoritative === undefined) {
+      return { message: 'Game not found', status: 404, success: false };
+    }
+
     getConnections(connection.gameId).add(connection);
+    sendRoundSnapshotToConnection(connection, authoritative);
     return { data: undefined, success: true };
   };
 
