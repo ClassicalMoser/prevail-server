@@ -2,7 +2,7 @@
 
 This directory is the **hexagonal application**: domain is the core, ports define the edges, application implements use cases against those ports, infrastructure and interface adapt the outside world, and composition wires everything at startup.
 
-HTTP route contracts and permissions live in **`@classicalmoser/prevail-contracts`**. Shared game rules live in **`@classicalmoser/prevail-rules`** and sit in the same dependency *direction* as local domain — outer layers may import rules directly; local `src/domain` holds server-specific domain that rules does not own.
+HTTP route contracts and permissions live in **`@classicalmoser/prevail-contracts`**. Shared game rules live in **`@classicalmoser/prevail-rules`** and sit in the same dependency _direction_ as local domain — outer layers may import rules directly; local `src/domain` holds server-specific domain that rules does not own.
 
 ## Purpose
 
@@ -82,7 +82,7 @@ application, infrastructure, interface
 composition (may use all)
 ```
 
-Dependency *direction* matters: outer layers depend inward. Direct `prevail-rules` imports from application, ports, or infrastructure are allowed — do not add heavy `@domain` aliasing just to re-export rules types.
+Dependency _direction_ matters: outer layers depend inward. Direct `prevail-rules` imports from application, ports, or infrastructure are allowed — do not add heavy `@domain` aliasing just to re-export rules types.
 
 **Classic violations that must stay absent:**
 

@@ -1,8 +1,8 @@
-import type { ArmyWriteBody } from '@classicalmoser/prevail-contracts';
 import type {
   DataErrorSignature,
   LoggerPort,
   OwnedArmyStorage,
+  OwnedArmyWrite,
   UserStorage,
 } from '@ports';
 import type {
@@ -17,7 +17,6 @@ import type {
   UnitCardVersionDb,
 } from '../db-types';
 import {
-  armyDisplayName,
   buildCommandCards,
   buildUnitCounts,
   commandCardVersionMapperToDomain,
@@ -83,15 +82,15 @@ const hydrateArmy = async (sql: Sql, row: ArmyDb): Promise<Army> => {
 const replaceArmyComposition = async (
   sql: Sql,
   armyId: string,
-  body: ArmyWriteBody,
+  army: Pick<OwnedArmyWrite, 'units' | 'commandCards'>,
 ): Promise<void> => {
   await deleteArmyUnitCardsQuery(sql, armyId);
   await deleteArmyCommandCardsQuery(sql, armyId);
 
-  for (const row of toArmyUnitCardRows(armyId, body.units)) {
+  for (const row of toArmyUnitCardRows(armyId, army.units)) {
     await insertArmyUnitCardQuery(sql, row);
   }
-  for (const row of toArmyCommandCardRows(armyId, body.commandCards)) {
+  for (const row of toArmyCommandCardRows(armyId, army.commandCards)) {
     await insertArmyCommandCardQuery(sql, row);
   }
 };
@@ -116,10 +115,9 @@ const createOwnedArmyStorage = (
           ownerAuthSub,
           listRow.army_id,
         );
-        if (rows.length === 0) {
-          continue;
+        if (rows.length > 0) {
+          armies.push(await hydrateArmy(sql, rows[0]));
         }
-        armies.push(await hydrateArmy(sql, rows[0]));
       }
       return { success: true, data: armies };
     } catch (error) {
@@ -168,6 +166,7 @@ const createOwnedArmyStorage = (
 
   createOwnedArmy: async (
     ownerAuthSub: string,
+    armyName: string,
   ): Promise<DataErrorSignature<string>> => {
     try {
       const userResult = await userStorage.ensureByAuthSub(ownerAuthSub);
@@ -177,7 +176,7 @@ const createOwnedArmyStorage = (
 
       const rows: ArmyDb[] = await createArmyQuery(sql, {
         userId: userResult.data.userId,
-        armyName: 'Untitled army',
+        armyName,
       });
 
       return {
@@ -198,7 +197,7 @@ const createOwnedArmyStorage = (
   updateOwnedArmy: async (
     ownerAuthSub: string,
     armyId: string,
-    body: ArmyWriteBody,
+    write: OwnedArmyWrite,
   ): Promise<DataErrorSignature<void>> => {
     try {
       const userResult = await userStorage.ensureByAuthSub(ownerAuthSub);
@@ -209,7 +208,7 @@ const createOwnedArmyStorage = (
       const updatedRows: ArmyDb[] = await updateArmyQuery(sql, {
         armyId,
         userId: userResult.data.userId,
-        armyName: armyDisplayName(body.units),
+        armyName: write.armyName,
       });
       if (updatedRows.length === 0) {
         return {
@@ -219,7 +218,7 @@ const createOwnedArmyStorage = (
         };
       }
 
-      await replaceArmyComposition(sql, armyId, body);
+      await replaceArmyComposition(sql, armyId, write);
 
       return { success: true, data: undefined };
     } catch (error) {

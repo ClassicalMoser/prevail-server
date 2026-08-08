@@ -1,6 +1,6 @@
 import type { UnitType } from '@classicalmoser/prevail-rules/domain';
-import type { CardListItem } from '@classicalmoser/prevail-contracts';
 import type { DataErrorSignature } from '@ports/data-error-signature-port';
+import type { CatalogCardListItem } from './catalog-card-list-item';
 
 /** The latest version of a unit card and whether it is certified for the
  * latest rules version. Keyed on the stable unit card (entity) id. */
@@ -11,7 +11,7 @@ interface UnitCardCertificationStatus {
 
 interface UnitCardStorage {
   getCurrentUnitCards: () => Promise<DataErrorSignature<UnitType[]>>;
-  getAllUnitCards: () => Promise<DataErrorSignature<CardListItem[]>>;
+  getAllUnitCards: () => Promise<DataErrorSignature<CatalogCardListItem[]>>;
   getUnitCardById: (id: string) => Promise<DataErrorSignature<UnitType>>;
   getUnitCardsByIds: (ids: string[]) => Promise<DataErrorSignature<UnitType[]>>;
   createEmptyUnitCard: () => Promise<DataErrorSignature<string>>;

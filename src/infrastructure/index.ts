@@ -12,7 +12,4 @@ export type {
 export { createAssetStorage, createR2Client } from './asset-storage';
 export type { AssetStorageConfig, R2ClientConfig } from './asset-storage';
 export type { InMemoryEnginePortHooks } from './game-engine';
-export {
-  createInMemoryEnginePorts,
-  findGameMode,
-} from './game-engine';
+export { createInMemoryEnginePorts } from './game-engine';

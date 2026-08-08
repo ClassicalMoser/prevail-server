@@ -1,41 +1,30 @@
 import type { CommandCard } from '@classicalmoser/prevail-rules/domain';
 import type { AssetType } from '@ports';
+import type { CardAssetTarget } from './card-asset-keys';
+import {
+  CARD_ASSET_TYPES,
+  cardAssetKey,
+  cardAssetTargets,
+} from './card-asset-keys';
 
-interface CommandCardAssetTarget {
-  type: AssetType;
-  key: string;
-}
+type CommandCardAssetTarget = CardAssetTarget;
 
-const COMMAND_CARD_ASSET_TYPES: AssetType[] = ['svg', 'pdf', 'pdf-bleed'];
+const COMMAND_CARD_ASSET_TYPES: AssetType[] = CARD_ASSET_TYPES;
 
 const commandCardAssetKey = (
   cardId: string,
   version: string,
   assetType: AssetType,
-): string => {
-  const base = `${cardId}_${version}`;
-  switch (assetType) {
-    case 'svg': {
-      return `cards/command/svg/${base}.svg`;
-    }
-    case 'pdf': {
-      return `cards/command/print/${base}.pdf`;
-    }
-    case 'pdf-bleed': {
-      return `cards/command/print/${base}.bleed.pdf`;
-    }
-    default: {
-      const _exhaustive: never = assetType;
-      return _exhaustive;
-    }
-  }
-};
+): string =>
+  cardAssetKey({
+    kind: 'command',
+    cardId,
+    version,
+    assetType,
+  });
 
 const commandCardAssetTargets = (card: CommandCard): CommandCardAssetTarget[] =>
-  COMMAND_CARD_ASSET_TYPES.map((type) => ({
-    type,
-    key: commandCardAssetKey(card.id, card.version, type),
-  }));
+  cardAssetTargets('command', card);
 
 export type { CommandCardAssetTarget };
 export {

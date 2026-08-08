@@ -1,5 +1,9 @@
-import type { ArmyWriteBody, EmptyObject } from '@classicalmoser/prevail-contracts';
+import type {
+  ArmyWriteBody,
+  EmptyObject,
+} from '@classicalmoser/prevail-contracts';
 import type { Army } from '@classicalmoser/prevail-rules/domain';
+import { UNTITLED_ARMY_NAME, armyDisplayName } from '@domain';
 import type {
   DataErrorSignature,
   ErrorSignature,
@@ -7,16 +11,11 @@ import type {
   OwnedArmyStorage,
   OwnedArmyUseCasesPort,
 } from '@ports';
-import { noContentSuccess } from '@ports';
+import { mapVoidToEmptyObject, mapVoidToNoContent } from '@ports';
 
 interface OwnedArmyUseCasesDeps {
   ownedArmyStorage: OwnedArmyStorage;
 }
-
-const emptyObjectSuccess = (): DataErrorSignature<EmptyObject> => ({
-  success: true,
-  data: {},
-});
 
 const createOwnedArmyUseCases = (
   deps: OwnedArmyUseCasesDeps,
@@ -35,37 +34,28 @@ const createOwnedArmyUseCases = (
   createOwnedArmy: async (
     ownerAuthSub: string,
   ): Promise<DataErrorSignature<string>> =>
-    deps.ownedArmyStorage.createOwnedArmy(ownerAuthSub),
+    deps.ownedArmyStorage.createOwnedArmy(ownerAuthSub, UNTITLED_ARMY_NAME),
 
   updateOwnedArmy: async (
     ownerAuthSub: string,
     armyId: string,
     body: ArmyWriteBody,
-  ): Promise<DataErrorSignature<EmptyObject>> => {
-    const result = await deps.ownedArmyStorage.updateOwnedArmy(
-      ownerAuthSub,
-      armyId,
-      body,
-    );
-    if (!result.success) {
-      return result;
-    }
-    return emptyObjectSuccess();
-  },
+  ): Promise<DataErrorSignature<EmptyObject>> =>
+    mapVoidToEmptyObject(
+      await deps.ownedArmyStorage.updateOwnedArmy(ownerAuthSub, armyId, {
+        armyName: armyDisplayName(body.units),
+        units: body.units,
+        commandCards: body.commandCards,
+      }),
+    ),
 
   archiveOwnedArmy: async (
     ownerAuthSub: string,
     armyId: string,
-  ): Promise<ErrorSignature | NoContentSignature> => {
-    const result = await deps.ownedArmyStorage.archiveOwnedArmy(
-      ownerAuthSub,
-      armyId,
-    );
-    if (!result.success) {
-      return result;
-    }
-    return noContentSuccess();
-  },
+  ): Promise<ErrorSignature | NoContentSignature> =>
+    mapVoidToNoContent(
+      await deps.ownedArmyStorage.archiveOwnedArmy(ownerAuthSub, armyId),
+    ),
 });
 
 export type { OwnedArmyUseCasesDeps };

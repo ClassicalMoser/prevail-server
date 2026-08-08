@@ -32,26 +32,26 @@ Wire JSON errors are always `{ message }` — the internal `{ success, status }`
 
 ## Outbound Ports
 
-| Port | Role |
-|------|------|
-| `StoragePort` | Facade over storage slices |
-| `CommandCardStorage` / `UnitCardStorage` | Catalog card persistence |
-| `OwnedArmyStorage` | Player army persistence |
-| `UserStorage` | Auth0 `sub` → local user |
-| `AuthPort` | Bearer verify → `{ subject }` or error |
-| `CommandCardRendererPort` / `UnitCardRendererPort` | Typst preview |
-| `AssetStorage` | Immutable R2 objects |
-| `LoggerPort` | Structured logging without Fastify types |
+| Port                                               | Role                                     |
+| -------------------------------------------------- | ---------------------------------------- |
+| `StoragePort`                                      | Facade over storage slices               |
+| `CommandCardStorage` / `UnitCardStorage`           | Catalog card persistence                 |
+| `OwnedArmyStorage`                                 | Player army persistence                  |
+| `UserStorage`                                      | Auth0 `sub` → local user                 |
+| `AuthPort`                                         | Bearer verify → `{ subject }` or error   |
+| `CommandCardRendererPort` / `UnitCardRendererPort` | Typst preview                            |
+| `AssetStorage`                                     | Immutable R2 objects                     |
+| `LoggerPort`                                       | Structured logging without Fastify types |
 
 **Naming:** storage slices are `*Storage`; service-style ports often end in `Port`.
 
 ## Inbound Ports
 
-| Port | Role |
-|------|------|
-| `*UseCasesPort` | Application API for a feature |
-| `UseCasesPort` | Aggregate of feature use-case ports |
-| `RegisteredRoute` / `RouteRegistry` | HTTP driving-adapter contract |
+| Port                                | Role                                |
+| ----------------------------------- | ----------------------------------- |
+| `*UseCasesPort`                     | Application API for a feature       |
+| `UseCasesPort`                      | Aggregate of feature use-case ports |
+| `RegisteredRoute` / `RouteRegistry` | HTTP driving-adapter contract       |
 
 `routes-port.ts` intentionally speaks HTTP vocabulary (`method`, `path`, `WireRouteRequest`) — it is the port for the Fastify adapter, not domain language.
 

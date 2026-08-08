@@ -6,23 +6,23 @@ ADRs capture **why** we chose a shape for the live-game / vs-bot slice, not just
 
 Each ADR uses a light Nygard-style template:
 
-| Section | Purpose |
-|---------|---------|
-| Status | Accepted / Superseded / Deprecated |
-| Context | Forces that made a decision necessary |
-| Decision | What we chose |
-| Consequences | What becomes easier / harder |
-| Tradeoffs | Explicit alternatives we rejected |
-| Follow-ups | Real next work (not “accepted for now” choices) |
+| Section      | Purpose                                         |
+| ------------ | ----------------------------------------------- |
+| Status       | Accepted / Superseded / Deprecated              |
+| Context      | Forces that made a decision necessary           |
+| Decision     | What we chose                                   |
+| Consequences | What becomes easier / harder                    |
+| Tradeoffs    | Explicit alternatives we rejected               |
+| Follow-ups   | Real next work (not “accepted for now” choices) |
 
 ## Index
 
-| ADR | Title |
-|-----|--------|
-| [0001](./0001-event-stream-round-reconcile.md) | Event-stream + round-reconcile over WebSocket |
-| [0002](./0002-in-memory-session-hosting.md) | In-memory engine ports and session fanout wiring |
-| [0003](./0003-vs-bot-entry-and-random-bot.md) | Vs-bot create contract and random bot actor |
-| [0004](./0004-contract-driven-ws-seats.md) | Contract-driven seat-bound WebSocket routes |
+| ADR                                            | Title                                            |
+| ---------------------------------------------- | ------------------------------------------------ |
+| [0001](./0001-event-stream-round-reconcile.md) | Event-stream + round-reconcile over WebSocket    |
+| [0002](./0002-in-memory-session-hosting.md)    | In-memory engine ports and session fanout wiring |
+| [0003](./0003-vs-bot-entry-and-random-bot.md)  | Vs-bot create contract and random bot actor      |
+| [0004](./0004-contract-driven-ws-seats.md)     | Contract-driven seat-bound WebSocket routes      |
 
 ## Accepted for now (not debt)
 

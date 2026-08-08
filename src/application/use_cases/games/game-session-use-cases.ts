@@ -2,7 +2,7 @@ import { createGameRunner } from '@classicalmoser/prevail-rules/application';
 import type { EnginePorts } from '@classicalmoser/prevail-rules/application';
 import type { CreateVsBotGameBody } from '@classicalmoser/prevail-contracts';
 import {
-  createEmptyGameState,
+  createInitialGameState,
   getLegalPlayerChoiceOptions,
   projectEventForVisibility,
   projectGameForVisibility,
@@ -23,6 +23,7 @@ import type {
   OwnedArmyStorage,
 } from '@ports';
 import { randomUUID } from 'node:crypto';
+import { setTimeout as delay } from 'node:timers/promises';
 import { selectRandomPlayerChoice } from './select-random-player-choice';
 
 /** Seat-auth identity for the bot (WS subject check). Not a Game player id. */
@@ -33,7 +34,8 @@ const BOT_SUBJECT = 'bot:prevail';
  */
 const BOT_PLAYER_ID = '00000000-0000-4000-8000-0000000000b0';
 const VS_BOT_GAME_MODE = 'mini' as const satisfies GameModeName;
-const MAX_BOT_TURNS_PER_BURST = 64;
+/** Pace consecutive bot submissions so the human can follow along. */
+const DEFAULT_BOT_TURN_GAP_MS = 1000;
 
 interface GameSessionMeta {
   gameMode: GameModeName;
@@ -44,6 +46,8 @@ interface GameSessionMeta {
 interface GameSessionUseCasesDeps {
   enginePorts: EnginePorts;
   ownedArmyStorage: OwnedArmyStorage;
+  /** Gap between consecutive bot submits. Defaults to 1s; use `0` in tests. */
+  botTurnGapMs?: number;
 }
 
 /** Session API plus fanout hooks for engine port wiring. */
@@ -58,6 +62,17 @@ interface GameSessionRuntime extends GameSessionUseCasesPort {
 
 const otherSide = (side: PlayerSide): PlayerSide =>
   side === 'white' ? 'black' : 'white';
+
+const sendGameSnapshotToConnection = (
+  connection: GameSeatConnection,
+  authoritative: GameForVisibility<'authoritative'>,
+): void => {
+  const visibility = connection.side === 'white' ? 'whiteSeen' : 'blackSeen';
+  connection.send({
+    payload: projectGameForVisibility(authoritative, visibility),
+    type: 'gameSnapshot',
+  });
+};
 
 const createGameSessionUseCases = (
   deps: GameSessionUseCasesDeps,
@@ -119,17 +134,6 @@ const createGameSessionUseCases = (
     return gameResult.data as GameForVisibility<'authoritative'>;
   };
 
-  const sendRoundSnapshotToConnection = (
-    connection: GameSeatConnection,
-    authoritative: GameForVisibility<'authoritative'>,
-  ): void => {
-    const visibility = connection.side === 'white' ? 'whiteSeen' : 'blackSeen';
-    connection.send({
-      payload: projectGameForVisibility(authoritative, visibility),
-      type: 'roundSnapshot',
-    });
-  };
-
   const fanoutRoundSnapshot = async (
     gameId: string,
     _roundNumber: number,
@@ -147,7 +151,7 @@ const createGameSessionUseCases = (
       const visibility = side === 'white' ? 'whiteSeen' : 'blackSeen';
       sendToSeat(gameId, side, {
         payload: projectGameForVisibility(authoritative, visibility),
-        type: 'roundSnapshot',
+        type: 'gameSnapshot',
       });
     }
   };
@@ -177,9 +181,12 @@ const createGameSessionUseCases = (
     return authoritative?.gameState;
   };
 
+  const botTurnGapMs = deps.botTurnGapMs ?? DEFAULT_BOT_TURN_GAP_MS;
+
   /**
    * While the next expected choice belongs to the bot (or bothPlayers with a
-   * bot sample available), submit a random legal choice.
+   * bot sample available), submit a random legal choice, pausing between
+   * consecutive submits so play stays watchable.
    */
   const takeBotTurns = async (gameId: string): Promise<void> => {
     const meta = metaByGameId.get(gameId);
@@ -187,8 +194,9 @@ const createGameSessionUseCases = (
       return;
     }
     const botSide = otherSide(meta.humanSide);
+    let submittedPriorTurn = false;
 
-    for (let i = 0; i < MAX_BOT_TURNS_PER_BURST; i += 1) {
+    for (;;) {
       const state = await loadAuthoritativeState(gameId, meta.gameMode);
       if (state === undefined) {
         return;
@@ -202,9 +210,17 @@ const createGameSessionUseCases = (
         return;
       }
 
-      const choice = selectRandomPlayerChoice(options, state, botSide);
-      if (choice === null) {
+      const choice = selectRandomPlayerChoice({
+        actingPlayer: botSide,
+        options,
+        state,
+      });
+      if (choice === undefined) {
         return;
+      }
+
+      if (submittedPriorTurn && botTurnGapMs > 0) {
+        await delay(botTurnGapMs);
       }
 
       const result = await runner.handlePlayerChoiceSubmission(
@@ -215,6 +231,7 @@ const createGameSessionUseCases = (
       if (!result.result) {
         return;
       }
+      submittedPriorTurn = true;
     }
   };
 
@@ -260,7 +277,11 @@ const createGameSessionUseCases = (
       body.humanSide === 'white' ? humanPlayerId : BOT_PLAYER_ID;
     const blackPlayerId =
       body.humanSide === 'black' ? humanPlayerId : BOT_PLAYER_ID;
-    const gameState = createEmptyGameState(VS_BOT_GAME_MODE);
+    const gameState = createInitialGameState({
+      blackArmy,
+      gameMode: VS_BOT_GAME_MODE,
+      whiteArmy,
+    });
     const game: GameForVisibility<'authoritative'> = {
       blackArmy,
       blackPlayer: blackPlayerId,
@@ -280,10 +301,12 @@ const createGameSessionUseCases = (
       };
     }
 
+    // processEvent appends with `gameState.currentRoundNumber` (0 during
+    // pre-round setup), not `currentRoundState.roundNumber` (1).
     const streamResult =
       await deps.enginePorts.eventStreamStorage.newEventStream(
         gameId,
-        game.gameState.currentRoundState.roundNumber,
+        game.gameState.currentRoundNumber,
       );
     if (!streamResult.result) {
       return {
@@ -383,7 +406,47 @@ const createGameSessionUseCases = (
     }
 
     getConnections(connection.gameId).add(connection);
-    sendRoundSnapshotToConnection(connection, authoritative);
+    sendGameSnapshotToConnection(connection, authoritative);
+    // Resume bot if it stalled mid-burst (e.g. before a rules fix / reconnect).
+    if (connection.side === meta.humanSide) {
+      await takeBotTurns(connection.gameId);
+    }
+    return { data: undefined, success: true };
+  };
+
+  const sendGameSnapshot = async (
+    connection: GameSeatConnection,
+  ): Promise<DataErrorSignature<void>> => {
+    const meta = metaByGameId.get(connection.gameId);
+    if (meta === undefined) {
+      return { message: 'Game not found', status: 404, success: false };
+    }
+    const expectedSubject =
+      connection.side === meta.humanSide ? meta.humanSubject : BOT_SUBJECT;
+    if (connection.subject !== expectedSubject) {
+      return {
+        message: 'Seat not assigned to this player',
+        status: 403,
+        success: false,
+      };
+    }
+    if (!getConnections(connection.gameId).has(connection)) {
+      return {
+        message: 'Seat connection is not registered',
+        status: 400,
+        success: false,
+      };
+    }
+
+    const authoritative = await loadAuthoritativeGame(
+      connection.gameId,
+      meta.gameMode,
+    );
+    if (authoritative === undefined) {
+      return { message: 'Game not found', status: 404, success: false };
+    }
+
+    sendGameSnapshotToConnection(connection, authoritative);
     return { data: undefined, success: true };
   };
 
@@ -408,6 +471,7 @@ const createGameSessionUseCases = (
     fanoutRoundSnapshot,
     getSeatSubject,
     registerSeatConnection,
+    sendGameSnapshot,
     submitPlayerChoice,
     unregisterSeatConnection,
   };

@@ -1,5 +1,4 @@
 export {
-  armyDisplayName,
   buildCommandCards,
   buildUnitCounts,
   toArmy,
@@ -19,3 +18,5 @@ export {
   writeUnitCardVersionMapper,
 } from './unit-card-mappers';
 export { userMapperToDomain } from './user-mappers';
+export { formatVersionTriple, parseVersionTriple } from './version-mappers';
+export type { VersionTriple } from './version-mappers';

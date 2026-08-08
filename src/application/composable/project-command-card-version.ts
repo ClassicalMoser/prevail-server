@@ -4,8 +4,14 @@ import type {
   CommandCardRendererPort,
   DataErrorSignature,
 } from '@ports';
-import type { CommandCardAssetTarget } from './command-card-asset-keys';
+import type { CardAssetTarget } from './card-asset-keys';
 import { commandCardAssetTargets } from './command-card-asset-keys';
+import type { ProjectCardAssetsOps } from './project-card-assets';
+import {
+  allCardAssetsExist,
+  ensureCardProjection,
+  projectCardVersion,
+} from './project-card-assets';
 import { renderDetailsForAssetType } from './render-details-for-asset-type';
 import type { UnitIdToNameMap } from './replace-command-card-ids-with-names';
 import { replaceCommandCardUnitIdsWithNames } from './replace-command-card-ids-with-names';
@@ -16,101 +22,43 @@ interface CommandCardProjectionDeps {
   unitIdToNameMap: UnitIdToNameMap;
 }
 
-const toUploadError = (error: unknown): DataErrorSignature<void> => ({
-  success: false,
-  message: error instanceof Error ? error.message : 'Failed to upload asset',
-  status: 500,
-});
-
-const projectCommandCardAsset = async (
+const commandCardProjectOps = (
   deps: CommandCardProjectionDeps,
-  card: CommandCard,
-  target: CommandCardAssetTarget,
-): Promise<DataErrorSignature<void>> => {
-  const printCard = replaceCommandCardUnitIdsWithNames(
-    card,
-    deps.unitIdToNameMap,
-  );
-  const renderResult = await deps.commandCardRenderer.renderCommandCard(
-    printCard,
-    renderDetailsForAssetType(target.type),
-  );
-  if (!renderResult.success) {
-    return renderResult;
-  }
-
-  try {
-    await deps.assetStorage.putImmutable(
-      target.key,
-      renderResult.data,
-      target.type,
+): ProjectCardAssetsOps<CommandCard> => ({
+  assetStorage: deps.assetStorage,
+  targets: commandCardAssetTargets,
+  render: async (
+    card: CommandCard,
+    target: CardAssetTarget,
+  ): Promise<DataErrorSignature<Buffer>> => {
+    const printCard = replaceCommandCardUnitIdsWithNames(
+      card,
+      deps.unitIdToNameMap,
     );
-    return { success: true, data: undefined };
-  } catch (error: unknown) {
-    return toUploadError(error);
-  }
-};
+    return deps.commandCardRenderer.renderCommandCard(
+      printCard,
+      renderDetailsForAssetType(target.type),
+    );
+  },
+});
 
 const projectCommandCardVersion = async (
   deps: CommandCardProjectionDeps,
   card: CommandCard,
-): Promise<DataErrorSignature<void>> => {
-  for (const target of commandCardAssetTargets(card)) {
-    const result = await projectCommandCardAsset(deps, card, target);
-    if (!result.success) {
-      return result;
-    }
-  }
-
-  return { success: true, data: undefined };
-};
-
-const findMissingCommandCardAssetTargets = async (
-  assetStorage: AssetStorage,
-  card: CommandCard,
-): Promise<CommandCardAssetTarget[]> => {
-  const missing: CommandCardAssetTarget[] = [];
-
-  for (const target of commandCardAssetTargets(card)) {
-    if (!(await assetStorage.objectExists(target.key))) {
-      missing.push(target);
-    }
-  }
-
-  return missing;
-};
+): Promise<DataErrorSignature<void>> =>
+  projectCardVersion(commandCardProjectOps(deps), card);
 
 const allCommandCardAssetsExist = async (
   assetStorage: AssetStorage,
   card: CommandCard,
-): Promise<boolean> => {
-  for (const target of commandCardAssetTargets(card)) {
-    if (!(await assetStorage.objectExists(target.key))) {
-      return false;
-    }
-  }
-
-  return true;
-};
+): Promise<boolean> =>
+  allCardAssetsExist({ assetStorage, targets: commandCardAssetTargets }, card);
 
 const ensureCommandCardProjection = async (
   deps: CommandCardProjectionDeps,
   card: CommandCard,
-): Promise<DataErrorSignature<void>> => {
-  const missing = await findMissingCommandCardAssetTargets(
-    deps.assetStorage,
-    card,
-  );
-
-  for (const target of missing) {
-    const result = await projectCommandCardAsset(deps, card, target);
-    if (!result.success) {
-      return result;
-    }
-  }
-
-  return { success: true, data: undefined };
-};
+): Promise<DataErrorSignature<void>> =>
+  ensureCardProjection(commandCardProjectOps(deps), card);
 
 export type { CommandCardProjectionDeps };
 export {

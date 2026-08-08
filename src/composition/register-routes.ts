@@ -1,4 +1,4 @@
-import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
+import type { FastifyInstance, FastifyReply } from 'fastify';
 import type {
   AuthPort,
   ErrorSignature,
@@ -6,26 +6,17 @@ import type {
   RouteInvokeResult,
   WireRouteRequest,
 } from '@ports';
-import { extractBearerToken, isDataSignature, isErrorSignature } from '@utils';
+import {
+  extractBearerToken,
+  isDataSignature,
+  isErrorSignature,
+  normalizeRequestHeaders,
+} from '@utils';
 
 const unauthorized: ErrorSignature = {
   success: false,
   message: 'Unauthorized',
   status: 401,
-};
-
-const toRequestHeaders = (
-  headers: FastifyRequest['headers'],
-): Readonly<Record<string, string | undefined>> => {
-  const result: Record<string, string | undefined> = {};
-
-  for (const [key, value] of Object.entries(headers)) {
-    if (value !== undefined) {
-      result[key] = Array.isArray(value) ? value[0] : value;
-    }
-  }
-
-  return result;
 };
 
 const jsonContentType = 'application/json' as const;
@@ -90,7 +81,7 @@ const registerRoutes = (
           params: fastifyRequest.params,
           body: fastifyRequest.body,
           query: fastifyRequest.query,
-          headers: toRequestHeaders(fastifyRequest.headers),
+          headers: normalizeRequestHeaders(fastifyRequest.headers),
         };
 
         if (route.auth.authRequired) {

@@ -11,6 +11,7 @@ A Node.js / Fastify backend for **Prevail: Ancient Battles**. It exposes HTTP AP
 - **Creates human-vs-bot games** at `POST /games/vs-bot` (in-memory engine ports for now)
 
 Architecture decisions and known debt for the live-game slice: [`docs/adr/`](./docs/adr/README.md).
+
 - **Persists** command cards, unit cards, and player-owned armies in Postgres
 - **Authenticates** Auth0 bearer tokens and maps `sub` → local `users`
 - **Renders** card preview SVGs via Typst and stores immutable assets in Cloudflare R2
@@ -70,22 +71,22 @@ Path aliases (`@ports`, `@application`, `@infrastructure`, …) are defined in `
 
 Required at process start (see `src/composition/app.ts`):
 
-| Variable | Purpose |
-|----------|---------|
-| `DB_CONNECTION_STRING` | Postgres connection string |
-| `AUTH0_DOMAIN` | Auth0 tenant domain |
-| `AUTH0_AUDIENCE` | API audience |
-| `R2_S3_ENDPOINT` | Cloudflare R2 S3 API endpoint |
-| `R2_ACCESS_KEY_ID` / `R2_SECRET_ACCESS_KEY` | R2 credentials |
-| `R2_BUCKET` | Asset bucket name |
-| `ALLOWED_MEDIA_ORIGIN` | Allowed origin for unit-card media URLs |
+| Variable                                    | Purpose                                 |
+| ------------------------------------------- | --------------------------------------- |
+| `DB_CONNECTION_STRING`                      | Postgres connection string              |
+| `AUTH0_DOMAIN`                              | Auth0 tenant domain                     |
+| `AUTH0_AUDIENCE`                            | API audience                            |
+| `R2_S3_ENDPOINT`                            | Cloudflare R2 S3 API endpoint           |
+| `R2_ACCESS_KEY_ID` / `R2_SECRET_ACCESS_KEY` | R2 credentials                          |
+| `R2_BUCKET`                                 | Asset bucket name                       |
+| `ALLOWED_MEDIA_ORIGIN`                      | Allowed origin for unit-card media URLs |
 
 Optional:
 
-| Variable | Default / notes |
-|----------|-----------------|
-| `CLIENT_ORIGINS` | Comma-separated CORS origins (localhost + production defaults) |
-| `CARD_RENDERER_ASSETS_DIR` | Typst assets directory (defaults to `./card-renderer`) |
+| Variable                   | Default / notes                                                |
+| -------------------------- | -------------------------------------------------------------- |
+| `CLIENT_ORIGINS`           | Comma-separated CORS origins (localhost + production defaults) |
+| `CARD_RENDERER_ASSETS_DIR` | Typst assets directory (defaults to `./card-renderer`)         |
 
 Use a `.env` file with `node --env-file=.env` (see `pnpm start` / `pnpm dev`).
 

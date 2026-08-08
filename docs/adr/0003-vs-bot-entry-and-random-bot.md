@@ -64,12 +64,12 @@ the selector/bootstrap — do not paper over with user-facing `choiceRejected` f
 
 ## Tradeoffs
 
-| Alternative | Why not (for now) |
-|-------------|-------------------|
-| Hardcoded tiny starter for bot seat | Conflicts with client’s dual-army picker; rules bot army coming later |
-| Single `armyId` body | Cleaner API; requires client change now |
-| Bot policy inside `prevail-rules` | Rules stay pure/kernel; server owns I/O and process loop (army builder may still land in rules) |
-| Full enumeration of every legal event in rules | Ideal for bots; large rules change — deferred |
+| Alternative                                    | Why not (for now)                                                                               |
+| ---------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| Hardcoded tiny starter for bot seat            | Conflicts with client’s dual-army picker; rules bot army coming later                           |
+| Single `armyId` body                           | Cleaner API; requires client change now                                                         |
+| Bot policy inside `prevail-rules`              | Rules stay pure/kernel; server owns I/O and process loop (army builder may still land in rules) |
+| Full enumeration of every legal event in rules | Ideal for bots; large rules change — deferred                                                   |
 
 ## Follow-ups
 

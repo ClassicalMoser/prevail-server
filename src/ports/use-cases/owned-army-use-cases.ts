@@ -1,4 +1,7 @@
-import type { ArmyWriteBody, EmptyObject } from '@classicalmoser/prevail-contracts';
+import type {
+  ArmyWriteBody,
+  EmptyObject,
+} from '@classicalmoser/prevail-contracts';
 import type { Army } from '@classicalmoser/prevail-rules/domain';
 import type {
   DataErrorSignature,
@@ -7,9 +10,7 @@ import type {
 } from '@ports/data-error-signature-port';
 
 interface OwnedArmyUseCasesPort {
-  getOwnedArmies: (
-    ownerAuthSub: string,
-  ) => Promise<DataErrorSignature<Army[]>>;
+  getOwnedArmies: (ownerAuthSub: string) => Promise<DataErrorSignature<Army[]>>;
   getOwnedArmyById: (
     ownerAuthSub: string,
     armyId: string,

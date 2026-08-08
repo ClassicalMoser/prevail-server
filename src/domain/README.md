@@ -15,9 +15,9 @@ application  →  domain (+ may use prevail-rules)
 ```
 
 - **Rules package:** pure game entities, schemas, and rules-engine logic (`Army`, `CommandCard`, `UnitType`, validation, transforms, …).
-- **Server domain:** concepts and policies that are about *this process* and that rules correctly does not own (identity/ownership language, catalog vs owned resources, archive semantics as domain decisions, pure list-naming policy, …).
+- **Server domain:** concepts and policies that are about _this process_ and that rules correctly does not own (identity/ownership language, catalog vs owned resources, archive semantics as domain decisions, pure list-naming policy, …).
 
-**Direct imports from `prevail-rules` anywhere in the codebase are fine.** There is no requirement to funnel rules types through an `@domain` re-export barrel. What matters is dependency *direction*: outer layers must not be imported by domain; domain must not import ports, application, infrastructure, or interface. Avoid heavy-handed aliasing — import the package (or `@domain` modules) where the types are actually defined.
+**Direct imports from `prevail-rules` anywhere in the codebase are fine.** There is no requirement to funnel rules types through an `@domain` re-export barrel. What matters is dependency _direction_: outer layers must not be imported by domain; domain must not import ports, application, infrastructure, or interface. Avoid heavy-handed aliasing — import the package (or `@domain` modules) where the types are actually defined.
 
 ## What belongs here
 
@@ -30,7 +30,7 @@ Examples of **legitimate server domain** (even when thin):
 
 Keep Auth0, postgres, Fastify, and R2 **out** of this folder — those stay in infrastructure / interface.
 
-## What does *not* belong here
+## What does _not_ belong here
 
 - Re-implementing the rules engine or duplicating entity schemas “for convenience”
 - HTTP DTOs from `prevail-contracts` (map at the interface edge)

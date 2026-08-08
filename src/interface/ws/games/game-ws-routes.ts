@@ -25,6 +25,15 @@ type SeatChoiceResult = Awaited<
   >
 >;
 
+type SeatSnapshotResult = Awaited<
+  ReturnType<
+    InGameSeatWsHandler<
+      GameWsParams,
+      PlayerChoiceEvent
+    >['onRequestGameSnapshot']
+  >
+>;
+
 const createSeatHandlers = (
   side: 'white' | 'black',
   gameSessionUseCases: GameSessionUseCasesPort,
@@ -62,6 +71,24 @@ const createSeatHandlers = (
       side,
       subject: context.auth.subject,
     });
+    if (!result.success) {
+      return {
+        choiceRejected: {
+          errorReason: result.message,
+          result: false,
+        },
+        ok: false,
+      };
+    }
+    return { ok: true };
+  },
+  onRequestGameSnapshot: async (
+    _context: WsSeatConnectionContext<GameWsParams>,
+    handle: unknown,
+  ): Promise<SeatSnapshotResult> => {
+    const result = await gameSessionUseCases.sendGameSnapshot(
+      handle as GameSeatConnection,
+    );
     if (!result.success) {
       return {
         choiceRejected: {

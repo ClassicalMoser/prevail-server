@@ -62,8 +62,14 @@ interface InGameSeatWsHandler<
     choice: TInboundPlayerChoice,
     connectionHandle: unknown,
   ) => Promise<
-    | { ok: true }
-    | { ok: false; choiceRejected: FailValidationResult }
+    { ok: true } | { ok: false; choiceRejected: FailValidationResult }
+  >;
+  /** Client asked for the current seat-visible game (resync). */
+  onRequestGameSnapshot: (
+    context: WsSeatConnectionContext<TParams>,
+    connectionHandle: unknown,
+  ) => Promise<
+    { ok: true } | { ok: false; choiceRejected: FailValidationResult }
   >;
   onClose: (
     context: WsSeatConnectionContext<TParams>,

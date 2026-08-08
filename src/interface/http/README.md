@@ -71,12 +71,12 @@ Permissions use the shared `cards:*` namespace for both families.
 
 CQRS-shaped (see contract comments):
 
-| Method | Path | Success |
-|--------|------|---------|
-| GET | `/armies`, `/armies/id/:id` | `Army` / `Army[]` (auth required) |
-| POST | `/armies` | **201** uuid — read via GET |
-| PUT | `/armies/id/:id` | **200** `{}` — body is `ArmyWriteBody` (`Omit<Army,'id'>`) |
-| DELETE | `/armies/id/:id` | **204** archive |
+| Method | Path                        | Success                                                    |
+| ------ | --------------------------- | ---------------------------------------------------------- |
+| GET    | `/armies`, `/armies/id/:id` | `Army` / `Army[]` (auth required)                          |
+| POST   | `/armies`                   | **201** uuid — read via GET                                |
+| PUT    | `/armies/id/:id`            | **200** `{}` — body is `ArmyWriteBody` (`Omit<Army,'id'>`) |
+| DELETE | `/armies/id/:id`            | **204** archive                                            |
 
 Identity for updates is the path `:id` only. Empty create bodies must be JSON `{}` (`emptyObjectSchema`).
 

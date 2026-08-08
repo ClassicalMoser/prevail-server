@@ -39,44 +39,28 @@ const toArmyCommandCardRows = (
 const buildUnitCounts = (
   rows: ArmyUnitCardDb[],
   unitTypesById: ReadonlyMap<string, UnitType>,
-): UnitCount[] => {
-  const units: UnitCount[] = [];
-  for (const row of rows) {
+): UnitCount[] =>
+  rows.flatMap((row) => {
     const unitType = unitTypesById.get(row.unit_card_id);
     if (unitType === undefined) {
-      continue;
+      return [];
     }
-    units.push({ unitType, count: row.quantity });
-  }
-  return units;
-};
+    return [{ unitType, count: row.quantity }];
+  });
 
 const buildCommandCards = (
   rows: ArmyCommandCardDb[],
   cardsById: ReadonlyMap<string, CommandCard>,
-): CommandCard[] => {
-  const cards: CommandCard[] = [];
-  for (const row of rows) {
+): CommandCard[] =>
+  rows.flatMap((row) => {
     const card = cardsById.get(row.command_card_id);
     if (card === undefined) {
-      continue;
+      return [];
     }
-    cards.push(card);
-  }
-  return cards;
-};
-
-/** Display name for DB `army_name` — not part of domain Army. */
-const armyDisplayName = (units: readonly UnitCount[]): string => {
-  const firstUnitName = units[0]?.unitType.name;
-  if (firstUnitName !== undefined) {
-    return `${firstUnitName} list`;
-  }
-  return 'Untitled army';
-};
+    return [card];
+  });
 
 export {
-  armyDisplayName,
   buildCommandCards,
   buildUnitCounts,
   toArmy,

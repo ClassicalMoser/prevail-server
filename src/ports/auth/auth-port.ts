@@ -6,11 +6,11 @@ interface AuthSuccess {
   subject: string;
 }
 
-export interface AuthPort {
+interface AuthPort {
   checkToken: (
     token: string,
     required: AuthRequired,
   ) => Promise<AuthSuccess | ErrorSignature>;
 }
 
-export type { AuthSuccess };
+export type { AuthPort, AuthSuccess };

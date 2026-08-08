@@ -6,3 +6,4 @@ export {
   implementPostRoute,
   implementPutRoute,
 } from './implement-routes';
+export { missingAuth, requireSubject } from './require-auth';

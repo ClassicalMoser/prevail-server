@@ -1,19 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 import websocket from '@fastify/websocket';
 import type { AuthPort, WsRouteRegistry } from '@ports';
-import { extractAccessToken } from '@utils';
-
-const toRequestHeaders = (
-  headers: Record<string, string | string[] | undefined>,
-): Readonly<Record<string, string | undefined>> => {
-  const result: Record<string, string | undefined> = {};
-  for (const [key, value] of Object.entries(headers)) {
-    if (value !== undefined) {
-      result[key] = Array.isArray(value) ? value[0] : value;
-    }
-  }
-  return result;
-};
+import { extractAccessToken, normalizeRequestHeaders } from '@utils';
 
 const rawToText = (raw: Buffer | ArrayBuffer | Buffer[]): string => {
   if (Buffer.isBuffer(raw)) {
@@ -23,6 +11,33 @@ const rawToText = (raw: Buffer | ArrayBuffer | Buffer[]): string => {
     return Buffer.concat(raw).toString('utf8');
   }
   return Buffer.from(raw).toString('utf8');
+};
+
+interface SeatAuth {
+  subject: string;
+}
+
+const authenticateUpgrade = async (input: {
+  authPort: AuthPort;
+  headers: Readonly<Record<string, string | undefined>>;
+  query: Record<string, string | string[] | undefined>;
+  route: WsRouteRegistry[number];
+  close: (code: number, reason: string) => void;
+}): Promise<SeatAuth | 'closed' | 'anonymous'> => {
+  if (!input.route.auth.authRequired) {
+    return 'anonymous';
+  }
+  const token = extractAccessToken(input.headers, input.query);
+  if (token === undefined) {
+    input.close(1008, 'Unauthorized');
+    return 'closed';
+  }
+  const authResult = await input.authPort.checkToken(token, input.route.auth);
+  if ('success' in authResult) {
+    input.close(1008, authResult.message);
+    return 'closed';
+  }
+  return { subject: authResult.subject };
 };
 
 /**
@@ -37,28 +52,23 @@ const registerWs = async (
 
   for (const route of routes) {
     app.get(route.path, { websocket: true }, async (socket, request) => {
-      const headers = toRequestHeaders(
+      const headers = normalizeRequestHeaders(
         request.headers as Record<string, string | string[] | undefined>,
       );
 
-      let auth: { subject: string } | undefined = undefined;
-      if (route.auth.authRequired) {
-        const query = request.query as Record<
-          string,
-          string | string[] | undefined
-        >;
-        const token = extractAccessToken(headers, query);
-        if (token === undefined) {
-          socket.close(1008, 'Unauthorized');
-          return;
-        }
-        const authResult = await authPort.checkToken(token, route.auth);
-        if ('success' in authResult) {
-          socket.close(1008, authResult.message);
-          return;
-        }
-        auth = { subject: authResult.subject };
+      const authOutcome = await authenticateUpgrade({
+        authPort,
+        close: (code, reason) => {
+          socket.close(code, reason);
+        },
+        headers,
+        query: request.query as Record<string, string | string[] | undefined>,
+        route,
+      });
+      if (authOutcome === 'closed') {
+        return;
       }
+      const auth = authOutcome === 'anonymous' ? undefined : authOutcome;
 
       const messageHandlers: ((raw: string) => void)[] = [];
       const closeHandlers: (() => void)[] = [];

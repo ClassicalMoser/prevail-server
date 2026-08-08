@@ -20,13 +20,13 @@ main.ts
 
 ## Layout
 
-| File | Role |
-|------|------|
-| `app.ts` | Env validation, adapter construction, Fastify instance |
-| `register-http.ts` | Thin entry to `registerRoutes` |
-| `register-routes.ts` | Auth gate + wire mapping + `sendRouteResult` |
-| `register-ws.ts` | `@fastify/websocket` + auth gate + seat mount |
-| `cors-options.ts` | Allowed origins / methods / headers |
+| File                 | Role                                                   |
+| -------------------- | ------------------------------------------------------ |
+| `app.ts`             | Env validation, adapter construction, Fastify instance |
+| `register-http.ts`   | Thin entry to `registerRoutes`                         |
+| `register-routes.ts` | Auth gate + wire mapping + `sendRouteResult`           |
+| `register-ws.ts`     | `@fastify/websocket` + auth gate + seat mount          |
+| `cors-options.ts`    | Allowed origins / methods / headers                    |
 
 ## Fastify’s role
 

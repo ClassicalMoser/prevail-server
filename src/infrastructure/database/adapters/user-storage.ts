@@ -1,9 +1,4 @@
-import type {
-  DataErrorSignature,
-  LoggerPort,
-  User,
-  UserStorage,
-} from '@ports';
+import type { DataErrorSignature, LoggerPort, User, UserStorage } from '@ports';
 import type { UserDb } from '../db-types';
 import { userMapperToDomain } from '../mappers';
 import {
@@ -37,9 +32,7 @@ const createUserStorage = (logger: LoggerPort, sql: Sql): UserStorage => ({
     }
   },
 
-  getByAuthSub: async (
-    authSub: string,
-  ): Promise<DataErrorSignature<User>> => {
+  getByAuthSub: async (authSub: string): Promise<DataErrorSignature<User>> => {
     try {
       const rows: UserDb[] = await getUserByAuthSubQuery(sql, authSub);
       if (rows.length === 0) {

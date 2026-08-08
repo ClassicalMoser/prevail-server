@@ -8,8 +8,6 @@ import { createGameWsRoutes } from './games';
 const createWsRoutes = (
   gameSessionUseCases: GameSessionUseCasesPort,
   logger: LoggerPort,
-): WsRouteRegistry => [
-  ...createGameWsRoutes(gameSessionUseCases, logger),
-];
+): WsRouteRegistry => [...createGameWsRoutes(gameSessionUseCases, logger)];
 
 export { createWsRoutes };

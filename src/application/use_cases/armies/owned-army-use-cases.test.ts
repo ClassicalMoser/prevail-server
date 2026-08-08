@@ -33,98 +33,102 @@ const createUseCases = (
   createOwnedArmyUseCases({ ownedArmyStorage: storage });
 
 describe('getOwnedArmies', () => {
-  it('returns armies from storage for the owner', async () => {
-    expect.hasAssertions();
+  it(
+    'returns armies from storage for the owner',
+    { timeout: 5000 },
+    async () => {
+      expect.hasAssertions();
 
-    const armies = [emptyArmy('a'), emptyArmy('b')];
-    const storage = buildStorage({
-      getOwnedArmies: vi.fn().mockResolvedValue({ success: true, data: armies }),
-    });
-    const useCases = createUseCases(storage);
+      const armies = [emptyArmy('a'), emptyArmy('b')];
+      const getOwnedArmies = vi
+        .fn<OwnedArmyStorage['getOwnedArmies']>()
+        .mockResolvedValue({ success: true, data: armies });
+      const storage = buildStorage({ getOwnedArmies });
+      const useCases = createUseCases(storage);
 
-    const result = await useCases.getOwnedArmies(ownerAuthSub);
+      const result = await useCases.getOwnedArmies(ownerAuthSub);
 
-    expect(result).toStrictEqual({ success: true, data: armies });
-    expect(storage.getOwnedArmies).toHaveBeenCalledWith(ownerAuthSub);
-  });
+      expect(result).toStrictEqual({ success: true, data: armies });
+      expect(getOwnedArmies).toHaveBeenCalledWith(ownerAuthSub);
+    },
+  );
 });
 
 describe('getOwnedArmyById', () => {
-  it('returns the army when found', async () => {
+  it('returns the army when found', { timeout: 5000 }, async () => {
     expect.hasAssertions();
 
     const army = emptyArmy('army-1');
-    const storage = buildStorage({
-      getOwnedArmyById: vi
-        .fn()
-        .mockResolvedValue({ success: true, data: army }),
-    });
+    const getOwnedArmyById = vi
+      .fn<OwnedArmyStorage['getOwnedArmyById']>()
+      .mockResolvedValue({ success: true, data: army });
+    const storage = buildStorage({ getOwnedArmyById });
     const useCases = createUseCases(storage);
 
     const result = await useCases.getOwnedArmyById(ownerAuthSub, 'army-1');
 
     expect(result).toStrictEqual({ success: true, data: army });
-    expect(storage.getOwnedArmyById).toHaveBeenCalledWith(
-      ownerAuthSub,
-      'army-1',
-    );
+    expect(getOwnedArmyById).toHaveBeenCalledWith(ownerAuthSub, 'army-1');
   });
 });
 
 describe('createOwnedArmy', () => {
-  it('returns the storage-assigned army id', async () => {
+  it('returns the storage-assigned army id', { timeout: 5000 }, async () => {
     expect.hasAssertions();
 
-    const storage = buildStorage({
-      createOwnedArmy: vi
-        .fn()
-        .mockResolvedValue({ success: true, data: 'new-id' }),
-    });
+    const createOwnedArmy = vi
+      .fn<OwnedArmyStorage['createOwnedArmy']>()
+      .mockResolvedValue({ success: true, data: 'new-id' });
+    const storage = buildStorage({ createOwnedArmy });
     const useCases = createUseCases(storage);
 
     const result = await useCases.createOwnedArmy(ownerAuthSub);
 
     expect(result).toStrictEqual({ success: true, data: 'new-id' });
-    expect(storage.createOwnedArmy).toHaveBeenCalledWith(ownerAuthSub);
+    expect(createOwnedArmy).toHaveBeenCalledWith(ownerAuthSub, 'Untitled army');
   });
 });
 
 describe('updateOwnedArmy', () => {
-  it('returns empty object on success (read via GET)', async () => {
+  it(
+    'returns empty object on success (read via GET)',
+    { timeout: 5000 },
+    async () => {
+      expect.hasAssertions();
+
+      const body = emptyWriteBody();
+      const updateOwnedArmy = vi
+        .fn<OwnedArmyStorage['updateOwnedArmy']>()
+        .mockResolvedValue({ success: true, data: undefined });
+      const storage = buildStorage({ updateOwnedArmy });
+      const useCases = createUseCases(storage);
+
+      const result = await useCases.updateOwnedArmy(
+        ownerAuthSub,
+        'army-1',
+        body,
+      );
+
+      expect(result).toStrictEqual({ success: true, data: {} });
+      expect(updateOwnedArmy).toHaveBeenCalledWith(ownerAuthSub, 'army-1', {
+        armyName: 'Untitled army',
+        units: body.units,
+        commandCards: body.commandCards,
+      });
+    },
+  );
+
+  it('propagates storage errors', { timeout: 5000 }, async () => {
     expect.hasAssertions();
 
-    const body = emptyWriteBody();
-    const storage = buildStorage({
-      updateOwnedArmy: vi
-        .fn()
-        .mockResolvedValue({ success: true, data: undefined }),
-    });
-    const useCases = createUseCases(storage);
-
-    const result = await useCases.updateOwnedArmy(
-      ownerAuthSub,
-      'army-1',
-      body,
-    );
-
-    expect(result).toStrictEqual({ success: true, data: {} });
-    expect(storage.updateOwnedArmy).toHaveBeenCalledWith(
-      ownerAuthSub,
-      'army-1',
-      body,
-    );
-  });
-
-  it('propagates storage errors', async () => {
-    expect.hasAssertions();
-
-    const storage = buildStorage({
-      updateOwnedArmy: vi.fn().mockResolvedValue({
+    const updateOwnedArmy = vi
+      .fn<OwnedArmyStorage['updateOwnedArmy']>()
+      .mockResolvedValue({
         success: false,
         message: 'Army not found',
         status: 404,
-      }),
-    });
+      });
+    const storage = buildStorage({ updateOwnedArmy });
     const useCases = createUseCases(storage);
 
     const result = await useCases.updateOwnedArmy(
@@ -142,22 +146,18 @@ describe('updateOwnedArmy', () => {
 });
 
 describe('archiveOwnedArmy', () => {
-  it('returns no-content on success', async () => {
+  it('returns no-content on success', { timeout: 5000 }, async () => {
     expect.hasAssertions();
 
-    const storage = buildStorage({
-      archiveOwnedArmy: vi
-        .fn()
-        .mockResolvedValue({ success: true, data: undefined }),
-    });
+    const archiveOwnedArmy = vi
+      .fn<OwnedArmyStorage['archiveOwnedArmy']>()
+      .mockResolvedValue({ success: true, data: undefined });
+    const storage = buildStorage({ archiveOwnedArmy });
     const useCases = createUseCases(storage);
 
     const result = await useCases.archiveOwnedArmy(ownerAuthSub, 'army-1');
 
     expect(result).toStrictEqual({ success: true });
-    expect(storage.archiveOwnedArmy).toHaveBeenCalledWith(
-      ownerAuthSub,
-      'army-1',
-    );
+    expect(archiveOwnedArmy).toHaveBeenCalledWith(ownerAuthSub, 'army-1');
   });
 });

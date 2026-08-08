@@ -5,6 +5,7 @@ import type {
 } from '../db-types';
 import type { UnitType } from '@classicalmoser/prevail-rules/domain';
 import { parseIfJson } from '../parse-if-json';
+import { formatVersionTriple, parseVersionTriple } from './version-mappers';
 
 const unitCardVersionMapperToDomain = (
   version: UnitCardVersionDb,
@@ -12,23 +13,24 @@ const unitCardVersionMapperToDomain = (
   const partialUnitType: PartialUnitType = parseIfJson(
     version.unit_card_definition,
   );
-  const versionNumber = `${version.version_major}.${version.version_minor}.${version.version_patch}`;
 
   return {
     id: version.unit_card_id,
     name: version.unit_card_name,
     imageUrl: version.unit_card_artwork_url,
     ...partialUnitType,
-    version: versionNumber,
+    version: formatVersionTriple({
+      major: version.version_major,
+      minor: version.version_minor,
+      patch: version.version_patch,
+    }),
   };
 };
 
 const writeUnitCardVersionMapper = (
   unitType: UnitType,
 ): WriteUnitCardVersionDb => {
-  const majorVersion = Number.parseInt(unitType.version.split('.')[0], 10);
-  const minorVersion = Number.parseInt(unitType.version.split('.')[1], 10);
-  const patchVersion = Number.parseInt(unitType.version.split('.')[2], 10);
+  const { major, minor, patch } = parseVersionTriple(unitType.version);
 
   const definition = {
     traits: unitType.traits,
@@ -43,9 +45,9 @@ const writeUnitCardVersionMapper = (
     unit_card_artwork_url: unitType.imageUrl,
     unit_card_name: unitType.name,
     unit_card_definition: JSON.stringify(definition),
-    version_major: majorVersion,
-    version_minor: minorVersion,
-    version_patch: patchVersion,
+    version_major: major,
+    version_minor: minor,
+    version_patch: patch,
   };
 };
 

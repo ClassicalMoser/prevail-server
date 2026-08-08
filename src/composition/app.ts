@@ -13,10 +13,7 @@ import {
   createInMemoryEnginePorts,
   createUnitCardRendererAdapter,
 } from '@infrastructure';
-import {
-  createGameSessionUseCases,
-  createUseCasesRoot,
-} from '@application';
+import { createGameSessionUseCases, createUseCasesRoot } from '@application';
 import type { GameSessionRuntime } from '@application';
 import { runDetached } from '@utils';
 import { registerHttp } from './register-http';

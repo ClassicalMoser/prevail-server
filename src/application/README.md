@@ -53,10 +53,10 @@ Prefer composables when two use cases share non-trivial steps; prefer keeping th
 
 ## Slice depth
 
-| Slice | Application role today |
-|-------|-------------------------|
-| Command / unit cards | Rich: project, render, certify, asset writes |
-| Owned armies | Thin: mostly storage delegation + envelope mapping |
+| Slice                | Application role today                             |
+| -------------------- | -------------------------------------------------- |
+| Command / unit cards | Rich: project, render, certify, asset writes       |
+| Owned armies         | Thin: mostly storage delegation + envelope mapping |
 
 Prefer moving ownership / composition **policy** into army use cases over growing storage adapters when those rules become non-trivial.
 

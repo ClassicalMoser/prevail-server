@@ -4,7 +4,9 @@ export type {
   CommandCardCertificationStatus,
   UnitCardStorage,
   UnitCardCertificationStatus,
+  CatalogCardListItem,
   OwnedArmyStorage,
+  OwnedArmyWrite,
   User,
   UserStorage,
 } from './storage';
@@ -16,7 +18,12 @@ export type {
   NoContentSignature,
   RouteInvokeResult,
 } from './data-error-signature-port';
-export { noContentSuccess } from './data-error-signature-port';
+export {
+  emptyObjectSuccess,
+  mapVoidToEmptyObject,
+  mapVoidToNoContent,
+  noContentSuccess,
+} from './data-error-signature-port';
 export type {
   DeleteRouteHandler,
   GetRouteHandler,

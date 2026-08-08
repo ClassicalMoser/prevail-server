@@ -68,11 +68,11 @@ idea, less “ref” shape.
 
 ## Tradeoffs
 
-| Alternative | Why not (for now) |
-|-------------|-------------------|
-| Postgres engine ports first | Correct long-term; blocks the slice and mixes migration work with protocol work |
-| Separate pub/sub (Redis) for fanout | Extra infra; premature before single-node protocol stabilizes |
-| Fanout inside infrastructure adapter | Would pull WS/session knowledge into infra, worse hexagonal direction |
+| Alternative                          | Why not (for now)                                                               |
+| ------------------------------------ | ------------------------------------------------------------------------------- |
+| Postgres engine ports first          | Correct long-term; blocks the slice and mixes migration work with protocol work |
+| Separate pub/sub (Redis) for fanout  | Extra infra; premature before single-node protocol stabilizes                   |
+| Fanout inside infrastructure adapter | Would pull WS/session knowledge into infra, worse hexagonal direction           |
 
 ## Follow-ups
 

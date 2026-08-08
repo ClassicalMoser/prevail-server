@@ -5,30 +5,15 @@ import {
   getOwnedArmyByIdContract,
   updateOwnedArmyContract,
 } from '@classicalmoser/prevail-contracts/contracts';
-import type {
-  LoggerPort,
-  OwnedArmyUseCasesPort,
-  RouteRegistry,
-} from '@ports';
+import type { LoggerPort, OwnedArmyUseCasesPort, RouteRegistry } from '@ports';
 import {
   implementDeleteRoute,
   implementGetRoute,
   implementPostRoute,
   implementPutRoute,
-} from '@interface/http/route-definitions';
-
-const missingAuth = {
-  success: false as const,
-  message: 'Unauthorized',
-  status: 401,
-};
-
-const requireSubject = (auth: { subject: string } | undefined) => {
-  if (auth === undefined) {
-    return undefined;
-  }
-  return auth.subject;
-};
+  missingAuth,
+  requireSubject,
+} from '../route-definitions';
 
 const createOwnedArmyRoutes = (
   ownedArmyUseCases: OwnedArmyUseCasesPort,

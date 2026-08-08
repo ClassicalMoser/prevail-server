@@ -1,10 +1,7 @@
 import type { UserDb } from '../db-types';
 import type { Sql } from '../sql-type';
 
-const getUserByIdQuery = async (
-  sql: Sql,
-  userId: string,
-): Promise<UserDb[]> =>
+const getUserByIdQuery = async (sql: Sql, userId: string): Promise<UserDb[]> =>
   await sql`
     SELECT user_id, user_auth_sub
     FROM users
@@ -33,8 +30,4 @@ const createUserByAuthSubQuery = async (
     RETURNING user_id, user_auth_sub
   `;
 
-export {
-  createUserByAuthSubQuery,
-  getUserByAuthSubQuery,
-  getUserByIdQuery,
-};
+export { createUserByAuthSubQuery, getUserByAuthSubQuery, getUserByIdQuery };

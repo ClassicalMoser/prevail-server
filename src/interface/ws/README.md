@@ -6,26 +6,35 @@ Driving adapter for live in-game seats. Routes are **not** invented here — the
 
 Event-stream + round reconcile (server authoritative):
 
-| When | Server sends | Client does |
-|------|----------------|-------------|
-| Mid-round | Seat-projected `playerChoice` / `gameEffect` | `applyEvent` fold locally |
-| New round | Seat-projected `roundSnapshot` | Replace local state |
-| Bad submit | `choiceRejected` (submitter only) | Keep prior state |
-| Always | Serial `eventNumber` validated server-side | Propose next number; server accepts or rejects |
+| When            | Server sends                                 | Client does                                    |
+| --------------- | -------------------------------------------- | ---------------------------------------------- |
+| Mid-round       | Seat-projected `playerChoice` / `gameEffect` | `applyEvent` fold locally                      |
+| Connect / round | Seat-projected `gameSnapshot`                | Replace local state                            |
+| Client resync   | `requestGameSnapshot` → `gameSnapshot`       | Replace local state                            |
+| Bad submit      | `choiceRejected` (submitter only)            | Keep prior state                               |
+| Always          | Serial `eventNumber` validated server-side   | Propose next number; server accepts or rejects |
 
-Outbound messages use a tagged envelope:
+Inbound / outbound use tagged envelopes:
 
 ```ts
-{ type: 'playerChoice' | 'gameEffect' | 'roundSnapshot' | 'choiceRejected', payload }
+// inbound
+{
+  type: ('playerChoice' | 'requestGameSnapshot', payload);
+}
+// outbound
+{
+  type: ('playerChoice' | 'gameEffect' | 'gameSnapshot' | 'choiceRejected',
+    payload);
+}
 ```
 
-Opponent `chooseCard` (and commit*) card fields are redacted to `'hidden'` via `projectEventForVisibility` in `prevail-rules`.
+Opponent `chooseCard` (and commit\*) card fields are redacted to `'hidden'` via `projectEventForVisibility` in `prevail-rules`.
 
 ## Pattern: `implementInGameSeatWs`
 
 1. Copies `contract.path`, `contract.side`, `contract.auth`
 2. On connect: `safeParse` params; requires `auth` from composition
-3. On message: `JSON.parse` → `validators.playerChoice.safeParse` → handler
+3. On message: `JSON.parse` → envelope `type` → `validators.inbound.*.safeParse` → handler
 4. Unexpected errors → logger + `choiceRejected` / close
 
 ## Entry point: create vs-bot game

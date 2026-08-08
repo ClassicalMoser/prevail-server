@@ -87,6 +87,7 @@ const config: OxlintConfig = {
     'vitest/prefer-called-once': 'off', // Called times for consistency
 
     // These are styling preferences
+    'capitalized-comments': 'off', // Function and variable references will not match if capitalized.
     'no-inline-comments': 'off', // Inline comments allowed for short clarifications
     'no-warning-comments': 'off', // Warning comments allowed for future reference
     'no-named-export': 'off', // Named exports are preferred for readability

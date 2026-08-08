@@ -10,7 +10,7 @@ import type { DataErrorSignature } from '@ports/data-error-signature-port';
 type GameSessionOutbound =
   | { type: 'playerChoice'; payload: unknown }
   | { type: 'gameEffect'; payload: unknown }
-  | { type: 'roundSnapshot'; payload: unknown }
+  | { type: 'gameSnapshot'; payload: unknown }
   | { type: 'choiceRejected'; payload: FailValidationResult };
 
 /** Seat socket handle registered with the session fanout. */
@@ -36,18 +36,22 @@ interface GameSessionUseCasesPort {
   }) => Promise<DataErrorSignature<void>>;
   /**
    * Registers a seat connection for projected event / snapshot fanout and
-   * immediately sends that seat its current `roundSnapshot`.
+   * immediately sends that seat its current `gameSnapshot`.
    */
   registerSeatConnection: (
+    connection: GameSeatConnection,
+  ) => Promise<DataErrorSignature<void>>;
+  /**
+   * Sends the current seat-visible `gameSnapshot` to a registered connection
+   * (client recovery / resync).
+   */
+  sendGameSnapshot: (
     connection: GameSeatConnection,
   ) => Promise<DataErrorSignature<void>>;
   /** Removes a seat connection from fanout. */
   unregisterSeatConnection: (connection: GameSeatConnection) => void;
   /** Resolves which subject owns a seat for a game. */
-  getSeatSubject: (
-    gameId: string,
-    side: PlayerSide,
-  ) => string | undefined;
+  getSeatSubject: (gameId: string, side: PlayerSide) => string | undefined;
 }
 
 export type {

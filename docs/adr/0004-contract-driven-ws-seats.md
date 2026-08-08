@@ -42,11 +42,11 @@ delivery needs a fallback.
 
 ## Tradeoffs
 
-| Alternative | Why not (for now) |
-|-------------|-------------------|
+| Alternative                                    | Why not (for now)                                            |
+| ---------------------------------------------- | ------------------------------------------------------------ |
 | Single `/ws/games/:id` + side in first message | More flexible; weaker binding; easier to mishandle auth race |
-| Server-invented WS paths outside contracts | Breaks the HTTP precedent; client drift |
-| Cookie-only WS auth | Possible later; Auth0 SPA currently bearer-oriented |
+| Server-invented WS paths outside contracts     | Breaks the HTTP precedent; client drift                      |
+| Cookie-only WS auth                            | Possible later; Auth0 SPA currently bearer-oriented          |
 
 ## Technical debt
 

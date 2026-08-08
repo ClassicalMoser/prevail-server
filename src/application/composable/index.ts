@@ -4,6 +4,12 @@ export {
   getCommandCardUnitIds,
   replaceCommandCardUnitIdsWithNames,
 } from './replace-command-card-ids-with-names';
+export type { CardAssetKind, CardAssetTarget } from './card-asset-keys';
+export {
+  CARD_ASSET_TYPES,
+  cardAssetKey,
+  cardAssetTargets,
+} from './card-asset-keys';
 export type { CommandCardAssetTarget } from './command-card-asset-keys';
 export {
   COMMAND_CARD_ASSET_TYPES,
@@ -30,3 +36,9 @@ export {
   ensureUnitCardProjection,
   projectUnitCardVersion,
 } from './project-unit-card-version';
+export { certifyCardVersions } from './certify-card-versions';
+export type {
+  CardCertificationStatus,
+  CertifyCardVersionsOps,
+} from './certify-card-versions';
+export { toContractCardListItem } from './to-contract-card-list-item';

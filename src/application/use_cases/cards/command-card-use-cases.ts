@@ -11,17 +11,20 @@ import type {
   PrintCommandCard,
   UnitCardStorage,
 } from '@ports';
-import { noContentSuccess } from '@ports';
+import { mapVoidToNoContent } from '@ports';
 import type { CardListItem } from '@classicalmoser/prevail-contracts';
 import type { CommandCard } from '@classicalmoser/prevail-rules/domain';
 import {
   allCommandCardAssetsExist,
   buildUnitIdToNameMap,
+  certifyCardVersions,
   ensureCommandCardProjection,
   getCommandCardUnitIds,
   projectCommandCardVersion,
   replaceCommandCardUnitIdsWithNames,
+  toContractCardListItem,
 } from '@application/composable';
+import type { CommandCardProjectionDeps } from '@application/composable';
 
 interface CommandCardUseCasesDeps {
   commandCardStorage: CommandCardStorage;
@@ -33,11 +36,22 @@ interface CommandCardUseCasesDeps {
 const createCommandCardUseCases = (
   deps: CommandCardUseCasesDeps,
 ): CommandCardUseCasesPort => ({
-  getCurrentCommandCards: async (): Promise<DataErrorSignature<CommandCard[]>> =>
-    deps.commandCardStorage.getCurrentCommandCards(),
-  getAllCommandCards: async (): Promise<DataErrorSignature<CardListItem[]>> =>
-    deps.commandCardStorage.getAllCommandCards(),
-  getCommandCardById: async (id: string): Promise<DataErrorSignature<CommandCard>> =>
+  getCurrentCommandCards: async (): Promise<
+    DataErrorSignature<CommandCard[]>
+  > => deps.commandCardStorage.getCurrentCommandCards(),
+  getAllCommandCards: async (): Promise<DataErrorSignature<CardListItem[]>> => {
+    const result = await deps.commandCardStorage.getAllCommandCards();
+    if (!result.success) {
+      return result;
+    }
+    return {
+      success: true,
+      data: result.data.map(toContractCardListItem),
+    };
+  },
+  getCommandCardById: async (
+    id: string,
+  ): Promise<DataErrorSignature<CommandCard>> =>
     deps.commandCardStorage.getCommandCardById(id),
   getCommandCardsByIds: async (
     ids: string[],
@@ -81,98 +95,46 @@ const createCommandCardUseCases = (
   },
   deleteEmptyCommandCards: async (): Promise<
     ErrorSignature | NoContentSignature
-  > => {
-    const result = await deps.commandCardStorage.deleteEmptyCommandCards();
-    if (!result.success) {
-      return result;
-    }
-
-    return noContentSuccess();
-  },
+  > =>
+    mapVoidToNoContent(await deps.commandCardStorage.deleteEmptyCommandCards()),
   updateCommandCardCertifications: async (): Promise<
     DataErrorSignature<CertificationResults>
-  > => {
-    const beforeResult =
-      await deps.commandCardStorage.getLatestCommandCardCertifications();
-    if (!beforeResult.success) {
-      return beforeResult;
-    }
-
-    const uncertifiedStatuses = beforeResult.data.filter(
-      ({ certified }) => !certified,
-    );
-
-    const schemaValidStatuses = uncertifiedStatuses.filter(
-      ({ card }) => commandCardSchema.safeParse(card).success,
-    );
-
-    const allUnitIds = [
-      ...new Set(
-        schemaValidStatuses.flatMap(({ card }) => getCommandCardUnitIds(card)),
-      ),
-    ];
-    const nameMapResult = await buildUnitIdToNameMap(
-      deps.unitCardStorage,
-      allUnitIds,
-    );
-    if (!nameMapResult.success) {
-      return nameMapResult;
-    }
-
-    const projectionDeps = {
-      assetStorage: deps.assetStorage,
-      commandCardRenderer: deps.commandCardRenderer,
-      unitIdToNameMap: nameMapResult.data,
-    };
-
-    const statusesMissingAssets = [];
-    for (const entry of schemaValidStatuses) {
-      if (!(await allCommandCardAssetsExist(deps.assetStorage, entry.card))) {
-        statusesMissingAssets.push(entry);
-      }
-    }
-
-    for (const { card } of statusesMissingAssets) {
-      const healResult = await ensureCommandCardProjection(
-        projectionDeps,
-        card,
-      );
-      if (!healResult.success) {
-        return healResult;
-      }
-    }
-
-    const readyToCertify: string[] = [];
-    for (const { card } of schemaValidStatuses) {
-      if (await allCommandCardAssetsExist(deps.assetStorage, card)) {
-        readyToCertify.push(card.id);
-      }
-    }
-
-    const certifyResult =
-      await deps.commandCardStorage.certifyCommandCardVersions(readyToCertify);
-    if (!certifyResult.success) {
-      return certifyResult;
-    }
-
-    const afterResult =
-      await deps.commandCardStorage.getLatestCommandCardCertifications();
-    if (!afterResult.success) {
-      return afterResult;
-    }
-
-    const certified = afterResult.data
-      .filter((status) => status.certified)
-      .map(({ card }) => card.id);
-    const uncertified = afterResult.data
-      .filter((status) => !status.certified)
-      .map(({ card }) => card.id);
-
-    return {
-      success: true,
-      data: { certified, uncertified },
-    };
-  },
+  > =>
+    certifyCardVersions<CommandCard, CommandCardProjectionDeps>({
+      getLatest: () =>
+        deps.commandCardStorage.getLatestCommandCardCertifications(),
+      isSchemaValid: (card) => commandCardSchema.safeParse(card).success,
+      prepare: async (schemaValidStatuses) => {
+        const allUnitIds = [
+          ...new Set(
+            schemaValidStatuses.flatMap(({ card }) =>
+              getCommandCardUnitIds(card),
+            ),
+          ),
+        ];
+        const nameMapResult = await buildUnitIdToNameMap(
+          deps.unitCardStorage,
+          allUnitIds,
+        );
+        if (!nameMapResult.success) {
+          return nameMapResult;
+        }
+        return {
+          success: true,
+          data: {
+            assetStorage: deps.assetStorage,
+            commandCardRenderer: deps.commandCardRenderer,
+            unitIdToNameMap: nameMapResult.data,
+          },
+        };
+      },
+      allAssetsExist: async (card) =>
+        allCommandCardAssetsExist(deps.assetStorage, card),
+      ensureProjection: async (card, projectionDeps) =>
+        ensureCommandCardProjection(projectionDeps, card),
+      certify: (ids) => deps.commandCardStorage.certifyCommandCardVersions(ids),
+      cardId: (card) => card.id,
+    }),
   previewCommandCard: async (
     card: CommandCard,
   ): Promise<DataErrorSignature<string>> => {

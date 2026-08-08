@@ -24,23 +24,18 @@ const sampleGame = (): GameForVisibility<'authoritative'> => ({
 });
 
 describe('in-memory engine ports', () => {
-  it(
-    'saves and loads a game by id and mode',
-    { timeout: 5000 },
-    async () => {
-      expect.hasAssertions();
+  it('saves and loads a game by id and mode', { timeout: 5000 }, async () => {
+    expect.hasAssertions();
 
-      const ports = createInMemoryEnginePorts();
-      const game = sampleGame();
+    const ports = createInMemoryEnginePorts();
+    const game = sampleGame();
 
-      const save = await ports.gameStorage.saveNewGame(game);
-      expect(save.result).toBe(true);
+    const save = await ports.gameStorage.saveNewGame(game);
+    expect(save.result).toBe(true);
 
-      const loaded = await ports.gameStorage.getGame(game.id, 'mini');
-      expect(loaded?.result).toBe(true);
-      expect(loaded?.result === true && loaded.data.id).toBe(game.id);
-    },
-  );
+    const loaded = await ports.gameStorage.getGame(game.id, 'mini');
+    expect(loaded).toMatchObject({ result: true, data: { id: game.id } });
+  });
 
   it(
     'notifies onEventAppended when an event is added',

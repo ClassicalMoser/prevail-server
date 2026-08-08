@@ -23,9 +23,4 @@ interface ArmyCommandCardDb {
   quantity: number;
 }
 
-export type {
-  ArmyDb,
-  ArmyListItemDb,
-  ArmyUnitCardDb,
-  ArmyCommandCardDb,
-};
+export type { ArmyDb, ArmyListItemDb, ArmyUnitCardDb, ArmyCommandCardDb };

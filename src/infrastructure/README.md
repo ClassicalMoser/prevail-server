@@ -21,12 +21,12 @@ infrastructure/
 
 ## Database (`database/`)
 
-| Piece | Role |
-|-------|------|
-| `queries/` | Tagged SQL functions |
-| `db-types/` | Row shapes as returned by postgres |
-| `mappers/` | Row ↔ domain (and sometimes contract DTO) |
-| `adapters/` | Implement `*Storage` ports |
+| Piece        | Role                                          |
+| ------------ | --------------------------------------------- |
+| `queries/`   | Tagged SQL functions                          |
+| `db-types/`  | Row shapes as returned by postgres            |
+| `mappers/`   | Row ↔ domain (and sometimes contract DTO)     |
+| `adapters/`  | Implement `*Storage` ports                    |
 | `db-root.ts` | Builds `StoragePort` from a connection string |
 
 ### Pattern

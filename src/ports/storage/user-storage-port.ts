@@ -10,8 +10,8 @@ interface UserStorage {
   getByUserId: (userId: string) => Promise<DataErrorSignature<User>>;
   getByAuthSub: (authSub: string) => Promise<DataErrorSignature<User>>;
   /**
-   * Resolve the user for an Auth0 `sub`, inserting a row when none exists.
-   * Prefer a UNIQUE index on `users.user_auth_sub` for concurrent safety.
+   * Resolve the user for an auth subject, creating one when none exists.
+   * Implementations should make concurrent upserts safe.
    */
   ensureByAuthSub: (authSub: string) => Promise<DataErrorSignature<User>>;
 }

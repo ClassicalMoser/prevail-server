@@ -4,106 +4,53 @@ import type {
   DataErrorSignature,
   UnitCardRendererPort,
 } from '@ports';
-import type { UnitCardAssetTarget } from './unit-card-asset-keys';
-import { unitCardAssetTargets } from './unit-card-asset-keys';
+import type { CardAssetTarget } from './card-asset-keys';
+import type { ProjectCardAssetsOps } from './project-card-assets';
+import {
+  allCardAssetsExist,
+  ensureCardProjection,
+  projectCardVersion,
+} from './project-card-assets';
 import { renderDetailsForAssetType } from './render-details-for-asset-type';
+import { unitCardAssetTargets } from './unit-card-asset-keys';
 
 interface UnitCardProjectionDeps {
   assetStorage: AssetStorage;
   unitCardRenderer: UnitCardRendererPort;
 }
 
-const toUploadError = (error: unknown): DataErrorSignature<void> => ({
-  success: false,
-  message: error instanceof Error ? error.message : 'Failed to upload asset',
-  status: 500,
-});
-
-const projectUnitCardAsset = async (
+const unitCardProjectOps = (
   deps: UnitCardProjectionDeps,
-  unitType: UnitType,
-  target: UnitCardAssetTarget,
-): Promise<DataErrorSignature<void>> => {
-  const renderResult = await deps.unitCardRenderer.renderUnitCard(
-    unitType,
-    renderDetailsForAssetType(target.type),
-  );
-  if (!renderResult.success) {
-    return renderResult;
-  }
-
-  try {
-    await deps.assetStorage.putImmutable(
-      target.key,
-      renderResult.data,
-      target.type,
-    );
-    return { success: true, data: undefined };
-  } catch (error: unknown) {
-    return toUploadError(error);
-  }
-};
+): ProjectCardAssetsOps<UnitType> => ({
+  assetStorage: deps.assetStorage,
+  targets: unitCardAssetTargets,
+  render: async (
+    unitType: UnitType,
+    target: CardAssetTarget,
+  ): Promise<DataErrorSignature<Buffer>> =>
+    deps.unitCardRenderer.renderUnitCard(
+      unitType,
+      renderDetailsForAssetType(target.type),
+    ),
+});
 
 const projectUnitCardVersion = async (
   deps: UnitCardProjectionDeps,
   unitType: UnitType,
-): Promise<DataErrorSignature<void>> => {
-  for (const target of unitCardAssetTargets(unitType)) {
-    const result = await projectUnitCardAsset(deps, unitType, target);
-    if (!result.success) {
-      return result;
-    }
-  }
-
-  return { success: true, data: undefined };
-};
-
-const findMissingUnitCardAssetTargets = async (
-  assetStorage: AssetStorage,
-  unitType: UnitType,
-): Promise<UnitCardAssetTarget[]> => {
-  const missing: UnitCardAssetTarget[] = [];
-
-  for (const target of unitCardAssetTargets(unitType)) {
-    if (!(await assetStorage.objectExists(target.key))) {
-      missing.push(target);
-    }
-  }
-
-  return missing;
-};
+): Promise<DataErrorSignature<void>> =>
+  projectCardVersion(unitCardProjectOps(deps), unitType);
 
 const allUnitCardAssetsExist = async (
   assetStorage: AssetStorage,
   unitType: UnitType,
-): Promise<boolean> => {
-  for (const target of unitCardAssetTargets(unitType)) {
-    if (!(await assetStorage.objectExists(target.key))) {
-      return false;
-    }
-  }
-
-  return true;
-};
+): Promise<boolean> =>
+  allCardAssetsExist({ assetStorage, targets: unitCardAssetTargets }, unitType);
 
 const ensureUnitCardProjection = async (
   deps: UnitCardProjectionDeps,
   unitType: UnitType,
-): Promise<DataErrorSignature<void>> => {
-  const missing = await findMissingUnitCardAssetTargets(
-    deps.assetStorage,
-    unitType,
-  );
-
-  for (const target of missing) {
-    const result = await projectUnitCardAsset(deps, unitType, target);
-    if (!result.success) {
-      return result;
-    }
-  }
-
-  return { success: true, data: undefined };
-};
+): Promise<DataErrorSignature<void>> =>
+  ensureCardProjection(unitCardProjectOps(deps), unitType);
 
 export type { UnitCardProjectionDeps };
 export {

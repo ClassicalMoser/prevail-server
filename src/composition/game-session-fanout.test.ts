@@ -1,5 +1,9 @@
+import assert from 'node:assert/strict';
 import type { CreateVsBotGameBody } from '@classicalmoser/prevail-contracts';
-import type { Army, ChooseCardEvent } from '@classicalmoser/prevail-rules/domain';
+import type {
+  Army,
+  ChooseCardEvent,
+} from '@classicalmoser/prevail-rules/domain';
 import { tempCommandCards } from '@classicalmoser/prevail-rules/domain';
 import { createGameSessionUseCases } from '@application';
 import { createInMemoryEnginePorts } from '@infrastructure';
@@ -63,6 +67,7 @@ describe('game session event fanout', () => {
       });
 
       const runtime = createGameSessionUseCases({
+        botTurnGapMs: 0,
         enginePorts,
         ownedArmyStorage: ownedArmyStorage(),
       });
@@ -75,37 +80,35 @@ describe('game session event fanout', () => {
         whiteArmyId,
       };
       const created = await runtime.createVsBotGame('human-sub', body);
-      expect(created.success).toBe(true);
-      const gameId = created.success ? created.data : '';
+      expect(created).toMatchObject({
+        success: true,
+        data: expect.any(String),
+      });
+      assert.ok(created.success);
+      const gameId = created.data;
 
       const whiteMessages: GameSessionOutbound[] = [];
       const blackMessages: GameSessionOutbound[] = [];
 
-      expect(
-        (
-          await runtime.registerSeatConnection({
-            gameId,
-            send: (message) => {
-              whiteMessages.push(message);
-            },
-            side: 'white',
-            subject: 'human-sub',
-          })
-        ).success,
-      ).toBe(true);
+      const whiteRegistered = await runtime.registerSeatConnection({
+        gameId,
+        send: (message) => {
+          whiteMessages.push(message);
+        },
+        side: 'white',
+        subject: 'human-sub',
+      });
+      expect(whiteRegistered.success).toBe(true);
 
-      expect(
-        (
-          await runtime.registerSeatConnection({
-            gameId,
-            send: (message) => {
-              blackMessages.push(message);
-            },
-            side: 'black',
-            subject: 'bot:prevail',
-          })
-        ).success,
-      ).toBe(true);
+      const blackRegistered = await runtime.registerSeatConnection({
+        gameId,
+        send: (message) => {
+          blackMessages.push(message);
+        },
+        side: 'black',
+        subject: 'bot:prevail',
+      });
+      expect(blackRegistered.success).toBe(true);
 
       const choice: ChooseCardEvent = {
         card: tempCommandCards[0],

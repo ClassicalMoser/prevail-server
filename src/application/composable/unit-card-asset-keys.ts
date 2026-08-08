@@ -1,41 +1,30 @@
 import type { UnitType } from '@classicalmoser/prevail-rules/domain';
 import type { AssetType } from '@ports';
+import type { CardAssetTarget } from './card-asset-keys';
+import {
+  CARD_ASSET_TYPES,
+  cardAssetKey,
+  cardAssetTargets,
+} from './card-asset-keys';
 
-interface UnitCardAssetTarget {
-  type: AssetType;
-  key: string;
-}
+type UnitCardAssetTarget = CardAssetTarget;
 
-const UNIT_CARD_ASSET_TYPES: AssetType[] = ['svg', 'pdf', 'pdf-bleed'];
+const UNIT_CARD_ASSET_TYPES: AssetType[] = CARD_ASSET_TYPES;
 
 const unitCardAssetKey = (
   cardId: string,
   version: string,
   assetType: AssetType,
-): string => {
-  const base = `${cardId}_${version}`;
-  switch (assetType) {
-    case 'svg': {
-      return `cards/unit/svg/${base}.svg`;
-    }
-    case 'pdf': {
-      return `cards/unit/print/${base}.pdf`;
-    }
-    case 'pdf-bleed': {
-      return `cards/unit/print/${base}.bleed.pdf`;
-    }
-    default: {
-      const _exhaustive: never = assetType;
-      return _exhaustive;
-    }
-  }
-};
+): string =>
+  cardAssetKey({
+    kind: 'unit',
+    cardId,
+    version,
+    assetType,
+  });
 
 const unitCardAssetTargets = (unitType: UnitType): UnitCardAssetTarget[] =>
-  UNIT_CARD_ASSET_TYPES.map((type) => ({
-    type,
-    key: unitCardAssetKey(unitType.id, unitType.version, type),
-  }));
+  cardAssetTargets('unit', unitType);
 
 export type { UnitCardAssetTarget };
 export { UNIT_CARD_ASSET_TYPES, unitCardAssetKey, unitCardAssetTargets };

@@ -7,6 +7,7 @@ import {
   getLineSegmentFromStart,
 } from '@classicalmoser/prevail-rules/domain';
 import type {
+  Command,
   GameState,
   LegalPlayerChoiceOptions,
   PlayerChoiceEvent,
@@ -20,6 +21,13 @@ interface RandomSource {
   nextFloat: () => number;
 }
 
+interface SelectRandomPlayerChoiceInput {
+  options: LegalPlayerChoiceOptions;
+  state: GameState;
+  actingPlayer: PlayerSide;
+  random?: RandomSource;
+}
+
 const defaultRandom: RandomSource = {
   nextFloat: () => Math.random(),
 };
@@ -27,7 +35,10 @@ const defaultRandom: RandomSource = {
 const pickIndex = (length: number, random: RandomSource): number =>
   Math.floor(random.nextFloat() * length);
 
-const pickOne = <T>(items: readonly T[], random: RandomSource): T | undefined => {
+const pickOne = <T>(
+  items: readonly T[],
+  random: RandomSource,
+): T | undefined => {
   if (items.length === 0) {
     return undefined;
   }
@@ -59,16 +70,19 @@ const pickEventForPlayer = <T extends { player: PlayerSide }>(
   );
 
 const pickRoutDiscard = (
-  options: Extract<LegalPlayerChoiceOptions, { choiceType: 'chooseRoutDiscard' }>,
+  options: Extract<
+    LegalPlayerChoiceOptions,
+    { choiceType: 'chooseRoutDiscard' }
+  >,
   actingPlayer: PlayerSide,
   random: RandomSource,
-): PlayerChoiceEvent | null => {
+): PlayerChoiceEvent | undefined => {
   const { routDiscard } = options;
   if (routDiscard.player !== actingPlayer) {
-    return null;
+    return undefined;
   }
   if (routDiscard.cardIds.length < routDiscard.numberToDiscard) {
-    return null;
+    return undefined;
   }
   const cardIds = shuffleCopy(routDiscard.cardIds, random).slice(
     0,
@@ -83,18 +97,67 @@ const pickRoutDiscard = (
   };
 };
 
+const unitInstanceKey = (unit: {
+  playerSide: string;
+  unitType: { id: string };
+  instanceNumber: number;
+}): string =>
+  `${unit.playerSide}:${unit.unitType.id}:${unit.instanceNumber}`;
+
+/** Greedy cover: fill each grant's slots with unused eligible units. */
+const pickAssignUnitSupport = (
+  options: Extract<
+    LegalPlayerChoiceOptions,
+    { choiceType: 'assignUnitSupport' }
+  >,
+  actingPlayer: PlayerSide,
+  random: RandomSource,
+): PlayerChoiceEvent | undefined => {
+  const { unitSupportGrants } = options;
+  if (unitSupportGrants.player !== actingPlayer) {
+    return undefined;
+  }
+  const covered = new Set<string>();
+  const assignments: {
+    cardId: string;
+    units: (typeof unitSupportGrants.grants)[number]['eligibleUnits'][number][];
+  }[] = [];
+
+  for (const grant of shuffleCopy([...unitSupportGrants.grants], random)) {
+    const available = shuffleCopy(
+      grant.eligibleUnits.filter((unit) => !covered.has(unitInstanceKey(unit))),
+      random,
+    ).slice(0, grant.unitSupport.count);
+    if (available.length === 0) {
+      continue;
+    }
+    for (const unit of available) {
+      covered.add(unitInstanceKey(unit));
+    }
+    assignments.push({ cardId: grant.card.id, units: [...available] });
+  }
+
+  return {
+    assignments,
+    choiceType: 'assignUnitSupport',
+    eventNumber: options.expectedEventNumber,
+    eventType: PLAYER_CHOICE_EVENT_TYPE,
+    player: actingPlayer,
+  };
+};
+
 const pickMoveCommander = (
   options: Extract<LegalPlayerChoiceOptions, { choiceType: 'moveCommander' }>,
   actingPlayer: PlayerSide,
   random: RandomSource,
-): PlayerChoiceEvent | null => {
+): PlayerChoiceEvent | undefined => {
   const { startingCoordinate, destinations } = options;
   if (startingCoordinate === null) {
-    return null;
+    return undefined;
   }
   const to = pickOne(destinations, random);
   if (to === undefined) {
-    return null;
+    return undefined;
   }
   return {
     choiceType: 'moveCommander',
@@ -106,29 +169,33 @@ const pickMoveCommander = (
   };
 };
 
-const pickMoveUnit = (
-  options: Extract<LegalPlayerChoiceOptions, { choiceType: 'moveUnit' }>,
-  actingPlayer: PlayerSide,
-  state: GameState,
-  random: RandomSource,
-): PlayerChoiceEvent | null => {
+const pickMoveUnit = (input: {
+  options: Extract<LegalPlayerChoiceOptions, { choiceType: 'moveUnit' }>;
+  actingPlayer: PlayerSide;
+  state: GameState;
+  random: RandomSource;
+}): PlayerChoiceEvent | undefined => {
+  const { options, actingPlayer, state, random } = input;
   const { moveUnits } = options;
   if (moveUnits.player !== actingPlayer) {
-    return null;
+    return undefined;
   }
   const unit = pickOne(moveUnits.units, random);
   if (unit === undefined) {
-    return null;
+    return undefined;
   }
-  let destinations: UnitWithPlacement['placement'][];
+  let destinations: UnitWithPlacement['placement'][] | undefined = undefined;
   try {
     destinations = [...getLegalUnitMoves(unit, state)];
   } catch {
-    return null;
+    destinations = undefined;
+  }
+  if (destinations === undefined) {
+    return undefined;
   }
   const to = pickOne(destinations, random);
   if (to === undefined) {
-    return null;
+    return undefined;
   }
   return {
     choiceType: 'moveUnit',
@@ -141,29 +208,29 @@ const pickMoveUnit = (
   };
 };
 
-const pickIssueCommand = (
-  options: Extract<LegalPlayerChoiceOptions, { choiceType: 'issueCommand' }>,
+const doneIssuingCommandsEvent = (
   actingPlayer: PlayerSide,
-  state: GameState,
-  random: RandomSource,
-): PlayerChoiceEvent | null => {
-  const { issueCommands } = options;
-  if (issueCommands.player !== actingPlayer) {
-    return null;
-  }
-  const command = pickOne(issueCommands.commands, random);
-  if (command === undefined) {
-    return null;
-  }
+  expectedEventNumber: number,
+): PlayerChoiceEvent => ({
+  choiceType: 'doneIssuingCommands',
+  eventNumber: expectedEventNumber,
+  eventType: PLAYER_CHOICE_EVENT_TYPE,
+  player: actingPlayer,
+});
+
+const tryBuildIssueCommand = (input: {
+  command: Command;
+  actingPlayer: PlayerSide;
+  expectedEventNumber: number;
+  state: GameState;
+  random: RandomSource;
+}): PlayerChoiceEvent | undefined => {
+  const { command, actingPlayer, expectedEventNumber, state, random } = input;
 
   if (command.size === 'units') {
-    const eligible = getLegalUnitsForIssueCommand(
-      command,
-      actingPlayer,
-      state,
-    );
+    const eligible = getLegalUnitsForIssueCommand(command, actingPlayer, state);
     if (eligible.length < command.number) {
-      return null;
+      return undefined;
     }
     const units = shuffleCopy(eligible, random)
       .slice(0, command.number)
@@ -171,7 +238,7 @@ const pickIssueCommand = (
     return {
       choiceType: 'issueCommand',
       command,
-      eventNumber: options.expectedEventNumber,
+      eventNumber: expectedEventNumber,
       eventType: PLAYER_CHOICE_EVENT_TYPE,
       player: actingPlayer,
       units,
@@ -182,7 +249,7 @@ const pickIssueCommand = (
   const starts = getLegalUnitsForIssueCommand(command, actingPlayer, state);
   const start = pickOne(starts, random);
   if (start === undefined) {
-    return null;
+    return undefined;
   }
   const ends = getLegalLineEndsForIssueCommand(
     command,
@@ -192,7 +259,7 @@ const pickIssueCommand = (
   );
   const end = pickOne(ends, random);
   if (end === undefined) {
-    return null;
+    return undefined;
   }
   const segment = getLineSegmentFromStart(command, state, start);
   const startIndex = segment.findIndex(
@@ -208,70 +275,106 @@ const pickIssueCommand = (
       uwp.unit.instanceNumber === end.unit.instanceNumber,
   );
   if (startIndex === -1 || endIndex === -1) {
-    return null;
+    return undefined;
   }
-  const low = Math.min(startIndex, endIndex);
-  const high = Math.max(startIndex, endIndex);
-  const units: UnitInstance[] = segment
-    .slice(low, high + 1)
-    .map((uwp) => uwp.unit);
+  // Validators treat units[0] as the inspired start — keep start→end order.
+  const units: UnitInstance[] =
+    startIndex <= endIndex
+      ? segment.slice(startIndex, endIndex + 1).map((uwp) => uwp.unit)
+      : segment
+          .slice(endIndex, startIndex + 1)
+          .toReversed()
+          .map((uwp) => uwp.unit);
   return {
     choiceType: 'issueCommand',
     command,
-    eventNumber: options.expectedEventNumber,
+    eventNumber: expectedEventNumber,
     eventType: PLAYER_CHOICE_EVENT_TYPE,
     player: actingPlayer,
     units,
   };
 };
 
-const pickRangedAttack = (
+const pickIssueCommand = (input: {
+  options: Extract<LegalPlayerChoiceOptions, { choiceType: 'issueCommand' }>;
+  actingPlayer: PlayerSide;
+  state: GameState;
+  random: RandomSource;
+}): PlayerChoiceEvent | undefined => {
+  const { options, actingPlayer, state, random } = input;
+  const { issueCommands } = options;
+  if (issueCommands.player !== actingPlayer) {
+    return undefined;
+  }
+
+  for (const command of shuffleCopy(issueCommands.commands, random)) {
+    const built = tryBuildIssueCommand({
+      actingPlayer,
+      command,
+      expectedEventNumber: options.expectedEventNumber,
+      random,
+      state,
+    });
+    if (built !== undefined) {
+      return built;
+    }
+  }
+
+  // No remaining slot is issuable (or build failed) — forfeit leftovers.
+  if (options.canDoneIssuing) {
+    return doneIssuingCommandsEvent(actingPlayer, options.expectedEventNumber);
+  }
+  return undefined;
+};
+
+const pickRangedAttack = (input: {
   options: Extract<
     LegalPlayerChoiceOptions,
     { choiceType: 'performRangedAttack' }
-  >,
-  actingPlayer: PlayerSide,
-  state: GameState,
-  random: RandomSource,
-): PlayerChoiceEvent | null => {
+  >;
+  actingPlayer: PlayerSide;
+  state: GameState;
+  random: RandomSource;
+}): PlayerChoiceEvent | undefined => {
+  const { options, actingPlayer, state, random } = input;
   const { rangedAttackers } = options;
   if (rangedAttackers.player !== actingPlayer) {
-    return null;
+    return undefined;
   }
-  const shuffledAttackers = shuffleCopy(rangedAttackers.attackers, random);
-  for (const unit of shuffledAttackers) {
-    const targets = getLegalRangedAttackTargets(unit, state);
-    const targetUnit = pickOne(targets, random);
-    if (targetUnit === undefined) {
-      continue;
-    }
-    return {
-      choiceType: 'performRangedAttack',
-      eventNumber: options.expectedEventNumber,
-      eventType: PLAYER_CHOICE_EVENT_TYPE,
-      player: actingPlayer,
-      supportingUnits: [],
-      targetUnit,
+  const match = shuffleCopy(rangedAttackers.attackers, random)
+    .map((unit) => ({
+      targetUnit: pickOne(getLegalRangedAttackTargets(unit, state), random),
       unit,
-    };
+    }))
+    .find((entry) => entry.targetUnit !== undefined);
+  if (match?.targetUnit === undefined) {
+    return undefined;
   }
-  return null;
+  return {
+    choiceType: 'performRangedAttack',
+    eventNumber: options.expectedEventNumber,
+    eventType: PLAYER_CHOICE_EVENT_TYPE,
+    player: actingPlayer,
+    supportingUnits: [],
+    targetUnit: match.targetUnit,
+    unit: match.unit,
+  };
 };
 
 const pickSetupUnits = (
   options: Extract<LegalPlayerChoiceOptions, { choiceType: 'setupUnits' }>,
   actingPlayer: PlayerSide,
   random: RandomSource,
-): PlayerChoiceEvent | null => {
+): PlayerChoiceEvent | undefined => {
   const { setupUnits } = options;
   if (setupUnits.player !== actingPlayer) {
-    return null;
+    return undefined;
   }
   if (
     setupUnits.units.length === 0 ||
     setupUnits.coordinates.length < setupUnits.units.length
   ) {
-    return null;
+    return undefined;
   }
   const coordinates = shuffleCopy(setupUnits.coordinates, random).slice(
     0,
@@ -287,8 +390,13 @@ const pickSetupUnits = (
       unit,
     }),
   );
+  const commanderCoordinate = unitPlacements[0]?.placement.coordinate;
+  if (commanderCoordinate === undefined) {
+    return undefined;
+  }
   return {
     choiceType: 'setupUnits',
+    commanderCoordinate,
     eventNumber: options.expectedEventNumber,
     eventType: PLAYER_CHOICE_EVENT_TYPE,
     player: actingPlayer,
@@ -298,38 +406,43 @@ const pickSetupUnits = (
 
 /**
  * Pure random selection of one legal {@link PlayerChoiceEvent} for `actingPlayer`.
- * Returns `null` when that seat has no sampleable option under the given payload.
+ * Returns `undefined` when that seat has no sampleable option under the given payload.
  */
 const selectRandomPlayerChoice = (
-  options: LegalPlayerChoiceOptions,
-  state: GameState,
-  actingPlayer: PlayerSide,
-  random: RandomSource = defaultRandom,
-): PlayerChoiceEvent | null => {
+  input: SelectRandomPlayerChoiceInput,
+): PlayerChoiceEvent | undefined => {
+  const { options, state, actingPlayer } = input;
+  const random = input.random ?? defaultRandom;
   switch (options.choiceType) {
+    case 'assignUnitSupport': {
+      return pickAssignUnitSupport(options, actingPlayer, random);
+    }
     case 'chooseCard': {
-      return pickEventForPlayer(options.events, actingPlayer, random) ?? null;
+      return pickEventForPlayer(options.events, actingPlayer, random);
     }
     case 'chooseMeleeResolution': {
-      return pickEventForPlayer(options.events, actingPlayer, random) ?? null;
+      return pickEventForPlayer(options.events, actingPlayer, random);
     }
     case 'chooseRally': {
-      return pickEventForPlayer(options.events, actingPlayer, random) ?? null;
+      return pickEventForPlayer(options.events, actingPlayer, random);
     }
     case 'chooseRetreatOption': {
-      return pickEventForPlayer(options.events, actingPlayer, random) ?? null;
+      return pickEventForPlayer(options.events, actingPlayer, random);
     }
     case 'chooseWhetherToRetreat': {
-      return pickEventForPlayer(options.events, actingPlayer, random) ?? null;
+      return pickEventForPlayer(options.events, actingPlayer, random);
     }
     case 'commitToMelee': {
-      return pickEventForPlayer(options.events, actingPlayer, random) ?? null;
+      return pickEventForPlayer(options.events, actingPlayer, random);
     }
     case 'commitToMovement': {
-      return pickEventForPlayer(options.events, actingPlayer, random) ?? null;
+      return pickEventForPlayer(options.events, actingPlayer, random);
     }
     case 'commitToRangedAttack': {
-      return pickEventForPlayer(options.events, actingPlayer, random) ?? null;
+      return pickEventForPlayer(options.events, actingPlayer, random);
+    }
+    case 'doneIssuingCommands': {
+      return pickEventForPlayer(options.events, actingPlayer, random);
     }
     case 'chooseRoutDiscard': {
       return pickRoutDiscard(options, actingPlayer, random);
@@ -338,13 +451,13 @@ const selectRandomPlayerChoice = (
       return pickMoveCommander(options, actingPlayer, random);
     }
     case 'moveUnit': {
-      return pickMoveUnit(options, actingPlayer, state, random);
+      return pickMoveUnit({ actingPlayer, options, random, state });
     }
     case 'issueCommand': {
-      return pickIssueCommand(options, actingPlayer, state, random);
+      return pickIssueCommand({ actingPlayer, options, random, state });
     }
     case 'performRangedAttack': {
-      return pickRangedAttack(options, actingPlayer, state, random);
+      return pickRangedAttack({ actingPlayer, options, random, state });
     }
     case 'setupUnits': {
       return pickSetupUnits(options, actingPlayer, random);
@@ -356,5 +469,5 @@ const selectRandomPlayerChoice = (
   }
 };
 
-export type { RandomSource };
+export type { RandomSource, SelectRandomPlayerChoiceInput };
 export { selectRandomPlayerChoice };

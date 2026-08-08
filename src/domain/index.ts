@@ -8,4 +8,4 @@
  * @see ./README.md
  */
 
-export {};
+export { UNTITLED_ARMY_NAME, armyDisplayName } from './armies';

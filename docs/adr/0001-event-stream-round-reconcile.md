@@ -19,11 +19,11 @@ too large or inconsistently shaped.
 
 Use an **event-stream + round-reconcile** protocol on seat WebSockets:
 
-| When | Server sends | Client does |
-|------|----------------|-------------|
+| When             | Server sends                                  | Client does           |
+| ---------------- | --------------------------------------------- | --------------------- |
 | Mid-round append | Seat-projected `playerChoice` or `gameEffect` | Fold via `applyEvent` |
-| New round | Seat-projected `roundSnapshot` | Replace local state |
-| Bad submit | `choiceRejected` to submitter only | Keep prior state |
+| New round        | Seat-projected `roundSnapshot`                | Replace local state   |
+| Bad submit       | `choiceRejected` to submitter only            | Keep prior state      |
 
 Rules:
 
@@ -48,11 +48,11 @@ Rules:
 
 ## Tradeoffs
 
-| Alternative | Why not (for now) |
-|-------------|-------------------|
+| Alternative                           | Why not (for now)                                                       |
+| ------------------------------------- | ----------------------------------------------------------------------- |
 | Full projected `Game` on every change | Heavier; encourages treating WS as “state sync” and skipping event fold |
-| CRDT / OT peer sync | Wrong trust model — server must remain authority for legality |
-| Server-only state; client polls HTTP | Worse latency; duplicates seat identity problems |
+| CRDT / OT peer sync                   | Wrong trust model — server must remain authority for legality           |
+| Server-only state; client polls HTTP  | Worse latency; duplicates seat identity problems                        |
 
 ## Technical debt
 

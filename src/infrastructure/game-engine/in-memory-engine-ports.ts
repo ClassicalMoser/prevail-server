@@ -9,17 +9,12 @@ import type {
   Event,
   Game,
   GameForVisibility,
-  GameModeName,
   GameState,
 } from '@classicalmoser/prevail-rules/domain';
 
 /** Host hooks for WS fanout (event-stream + round-reconcile protocol). */
 interface InMemoryEnginePortHooks {
-  onEventAppended?: (
-    gameId: string,
-    roundNumber: number,
-    event: Event,
-  ) => void;
+  onEventAppended?: (gameId: string, roundNumber: number, event: Event) => void;
   onRoundSnapshotSaved?: (
     gameId: string,
     roundNumber: number,
@@ -28,6 +23,8 @@ interface InMemoryEnginePortHooks {
 }
 
 const ok = <T>(data: T): PortResponse<T> => ({ data, result: true });
+const okVoid = (): PortResponse<void> =>
+  ({ data: undefined, result: true }) as PortResponse<void>;
 const fail = (errorReason: string): PortResponse<never> => ({
   errorReason,
   result: false,
@@ -40,7 +37,7 @@ const createInMemoryGameStorage = (): GameStorage => {
     getGame: async (gameId, gameMode) => {
       const game = games.get(gameId);
       if (game === undefined) {
-        return undefined;
+        return;
       }
       if (game.gameMode !== gameMode) {
         return fail('Game mode mismatch');
@@ -52,7 +49,7 @@ const createInMemoryGameStorage = (): GameStorage => {
         return fail('Game already exists');
       }
       games.set(game.id, game);
-      return ok(undefined);
+      return okVoid();
     },
     updateGameState: async (gameId, gameState) => {
       const existing = games.get(gameId);
@@ -64,7 +61,7 @@ const createInMemoryGameStorage = (): GameStorage => {
         gameState,
       } as GameForVisibility<'authoritative'>;
       games.set(gameId, next);
-      return ok(undefined);
+      return okVoid();
     },
   };
 };
@@ -95,7 +92,7 @@ const createInMemoryEventStreamStorage = (
     },
     flushEventStream: async (gameId, roundNumber) => {
       streams.delete(streamKey(gameId, roundNumber));
-      return ok(undefined);
+      return okVoid();
     },
     newEventStream: async (gameId, roundNumber) => {
       const key = streamKey(gameId, roundNumber);
@@ -130,7 +127,7 @@ const createInMemoryRoundSnapshotStorage = (
     saveRoundSnapshot: async (gameId, roundNumber, gameState) => {
       snapshots.set(streamKey(gameId, roundNumber), gameState);
       hooks.onRoundSnapshotSaved?.(gameId, roundNumber, gameState);
-      return ok(undefined);
+      return okVoid();
     },
   };
 };
@@ -148,25 +145,5 @@ const createInMemoryEnginePorts = (
   roundSnapshotStorage: createInMemoryRoundSnapshotStorage(hooks),
 });
 
-/** Lookup helper for session code that needs gameMode by id only. */
-const findGameMode = async (
-  gameStorage: GameStorage,
-  gameId: string,
-  candidates: readonly GameModeName[] = [
-    'tutorial',
-    'mini',
-    'standard',
-    'epic',
-  ],
-): Promise<GameModeName | undefined> => {
-  for (const mode of candidates) {
-    const result = await gameStorage.getGame(gameId, mode);
-    if (result?.result) {
-      return mode;
-    }
-  }
-  return undefined;
-};
-
 export type { InMemoryEnginePortHooks };
-export { createInMemoryEnginePorts, findGameMode };
+export { createInMemoryEnginePorts };
