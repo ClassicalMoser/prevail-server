@@ -1,6 +1,6 @@
 import FastifyInstance from 'fastify';
 import cors from '@fastify/cors';
-import { createRoutes } from '@interface';
+import { createRoutes, createWsRoutes } from '@interface';
 import type { LoggerPort, StoragePort, UseCasesPort } from '@ports';
 import path from 'node:path';
 import process from 'node:process';
@@ -10,10 +10,17 @@ import {
   createCommandCardRendererAdapter,
   createAuthInfrastructure,
   createDbRoot,
+  createInMemoryEnginePorts,
   createUnitCardRendererAdapter,
 } from '@infrastructure';
-import { createUseCasesRoot } from '@application';
+import {
+  createGameSessionUseCases,
+  createUseCasesRoot,
+} from '@application';
+import type { GameSessionRuntime } from '@application';
+import { runDetached } from '@utils';
 import { registerHttp } from './register-http';
+import { registerWs } from './register-ws';
 import { createCorsOptions } from './cors-options';
 
 const app = FastifyInstance({ logger: true });
@@ -96,6 +103,29 @@ const auth = createAuthInfrastructure(logger, {
   audience: auth0Audience,
 });
 
+const gameSessionRef: { current?: GameSessionRuntime } = {};
+
+const enginePorts = createInMemoryEnginePorts({
+  onEventAppended: (gameId, _round, event) => {
+    gameSessionRef.current?.fanoutEvent(gameId, event);
+  },
+  onRoundSnapshotSaved: (gameId, round, state) => {
+    const runtime = gameSessionRef.current;
+    if (runtime === undefined) {
+      return;
+    }
+    runDetached(async () => {
+      await runtime.fanoutRoundSnapshot(gameId, round, state);
+    });
+  },
+});
+
+const gameSessionUseCases = createGameSessionUseCases({
+  enginePorts,
+  ownedArmyStorage: dbRoot.ownedArmyStorage,
+});
+gameSessionRef.current = gameSessionUseCases;
+
 const useCases: UseCasesPort = createUseCasesRoot({
   storagePort: dbRoot,
   commandCardRenderer: createCommandCardRendererAdapter({
@@ -106,14 +136,17 @@ const useCases: UseCasesPort = createUseCasesRoot({
     assetsDir: cardRendererAssetsDir,
   }),
   assetStorage,
+  gameSessionUseCases,
 });
 
 const routes = createRoutes(useCases, logger);
+const wsRoutes = createWsRoutes(gameSessionUseCases, logger);
 
 const configureApp = async (): Promise<void> => {
   await app.register(cors, createCorsOptions(clientOrigins));
 
   registerHttp(app, auth, routes);
+  await registerWs(app, auth, wsRoutes);
 };
 
 export { app, configureApp };

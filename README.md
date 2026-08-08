@@ -7,6 +7,10 @@ A Node.js / Fastify backend for **Prevail: Ancient Battles**. It exposes HTTP AP
 ## What This Server Does
 
 - **Serves contract-defined HTTP routes** from `@classicalmoser/prevail-contracts`
+- **Hosts live games** via contract-defined WebSockets (`@fastify/websocket`) with an event-stream + round-reconcile protocol
+- **Creates human-vs-bot games** at `POST /games/vs-bot` (in-memory engine ports for now)
+
+Architecture decisions and known debt for the live-game slice: [`docs/adr/`](./docs/adr/README.md).
 - **Persists** command cards, unit cards, and player-owned armies in Postgres
 - **Authenticates** Auth0 bearer tokens and maps `sub` → local `users`
 - **Renders** card preview SVGs via Typst and stores immutable assets in Cloudflare R2
@@ -24,7 +28,7 @@ src/
 ├── ports/           # Inbound + outbound interfaces (no implementations)
 ├── application/     # Use cases — wraps domain via ports
 ├── infrastructure/  # Adapters: Postgres, Auth0, R2, Typst
-├── interface/       # Driving adapters: HTTP (WS stub)
+├── interface/       # Driving adapters: HTTP + WebSocket
 ├── composition/     # Composition root: wire adapters → Fastify
 ├── utils/           # Cross-cutting helpers (errors, bearer extract)
 └── testing/         # Shared test helpers (alias reserved; grow as needed)
@@ -91,6 +95,7 @@ Use a `.env` file with `node --env-file=.env` (see `pnpm start` / `pnpm dev`).
 - [`src/domain/README.md`](./src/domain/README.md) — Server domain + prevail-rules
 - [`src/ports/README.md`](./src/ports/README.md) — Port conventions and result envelopes
 - [`src/interface/http/README.md`](./src/interface/http/README.md) — Contract-driven HTTP pattern
+- [`src/interface/ws/README.md`](./src/interface/ws/README.md) — Contract-driven WS / live game protocol
 - [`src/application/README.md`](./src/application/README.md) — Use cases and composables
 - [`src/infrastructure/README.md`](./src/infrastructure/README.md) — Adapter boundaries
 - [`src/composition/README.md`](./src/composition/README.md) — Composition root and Fastify mount

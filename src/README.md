@@ -50,13 +50,13 @@ See [`infrastructure/README.md`](./infrastructure/README.md).
 
 ### 5. **Interface** (`interface/`)
 
-Driving adapters. Today: HTTP route registries built with `implement*Route` from contracts. WebSocket is a stub.
+Driving adapters: HTTP route registries (`implement*Route`) and in-game WebSocket seats (`implementInGameSeatWs`) from contracts.
 
-See [`interface/http/README.md`](./interface/http/README.md).
+See [`interface/http/README.md`](./interface/http/README.md) and [`interface/ws/README.md`](./interface/ws/README.md).
 
 ### 6. **Composition** (`composition/`)
 
-The **only** layer allowed to import application, infrastructure, and interface. Creates adapters, builds `UseCasesPort`, registers CORS + routes on Fastify.
+The **only** layer allowed to import application, infrastructure, and interface. Creates adapters, builds `UseCasesPort`, registers CORS + HTTP + WebSocket routes on Fastify.
 
 Entry: `main.ts` → `configureApp()` / `app` from `@composition`.
 
@@ -149,9 +149,11 @@ These are **not** import-boundary violations, but they erode hexagonal purity:
 
 ## Related Documentation
 
+- [`../docs/adr/README.md`](../docs/adr/README.md) — ADRs for live-game / vs-bot decisions & debt
 - [`domain/README.md`](./domain/README.md) — Server domain + prevail-rules
 - [`ports/README.md`](./ports/README.md) — Port and envelope conventions
 - [`interface/http/README.md`](./interface/http/README.md) — HTTP + contracts
+- [`interface/ws/README.md`](./interface/ws/README.md) — WebSocket seats
 - [`application/README.md`](./application/README.md) — Use cases
 - [`infrastructure/README.md`](./infrastructure/README.md) — Adapters
 - [`composition/README.md`](./composition/README.md) — Wiring and Fastify

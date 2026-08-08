@@ -37,6 +37,9 @@ export type {
   CertificationResults,
   UnitCardUseCasesPort,
   OwnedArmyUseCasesPort,
+  GameSeatConnection,
+  GameSessionOutbound,
+  GameSessionUseCasesPort,
 } from './use-cases';
 export type {
   CommandCardRendererPort,
@@ -45,3 +48,11 @@ export type {
   RenderDetails,
 } from './card-renderer';
 export type { AssetStorage, AssetType, UploadResult } from './asset-storage';
+export type {
+  AnyInGameSeatContract,
+  InGameSeatWsHandler,
+  RegisteredWsRoute,
+  WireWsConnection,
+  WsRouteRegistry,
+  WsSeatConnectionContext,
+} from './ws-port';

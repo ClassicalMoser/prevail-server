@@ -5,3 +5,8 @@ export type {
 } from './command-card-use-cases';
 export type { UnitCardUseCasesPort } from './unit-card-use-cases';
 export type { OwnedArmyUseCasesPort } from './owned-army-use-cases';
+export type {
+  GameSeatConnection,
+  GameSessionOutbound,
+  GameSessionUseCasesPort,
+} from './game-session-use-cases';

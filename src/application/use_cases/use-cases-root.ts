@@ -1,6 +1,7 @@
 import type {
   AssetStorage,
   CommandCardRendererPort,
+  GameSessionUseCasesPort,
   StoragePort,
   UnitCardRendererPort,
   UseCasesPort,
@@ -13,6 +14,7 @@ interface UseCasesRootDeps {
   commandCardRenderer: CommandCardRendererPort;
   unitCardRenderer: UnitCardRendererPort;
   assetStorage: AssetStorage;
+  gameSessionUseCases: GameSessionUseCasesPort;
 }
 
 const createUseCasesRoot = (deps: UseCasesRootDeps): UseCasesPort => ({
@@ -30,6 +32,7 @@ const createUseCasesRoot = (deps: UseCasesRootDeps): UseCasesPort => ({
   ownedArmyUseCases: createOwnedArmyUseCases({
     ownedArmyStorage: deps.storagePort.ownedArmyStorage,
   }),
+  gameSessionUseCases: deps.gameSessionUseCases,
 });
 
 export type { UseCasesRootDeps };
