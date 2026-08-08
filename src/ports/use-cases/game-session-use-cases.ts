@@ -36,7 +36,8 @@ interface GameSessionUseCasesPort {
   }) => Promise<DataErrorSignature<void>>;
   /**
    * Registers a seat connection for projected event / snapshot fanout and
-   * immediately sends that seat its current `gameSnapshot`.
+   * sends that seat its current `gameSnapshot` as the first outbound message
+   * (after any queued bot/effect resume for the human seat).
    */
   registerSeatConnection: (
     connection: GameSeatConnection,

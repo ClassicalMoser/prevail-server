@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "tsdown && (tsdown --watch & node --env-file=.env --watch dist/main.js)",
+    "dev": "tsdown && (tsdown --watch & node --env-file=.env --watch --watch-path=dist/main.js --watch-path=../prevail-rules/dist --watch-path=../prevail-contracts/dist dist/main.js)",
     "build": "tsdown",
     "start": "node --env-file=.env dist/main.js",
     "typecheck": "tsc --noEmit",

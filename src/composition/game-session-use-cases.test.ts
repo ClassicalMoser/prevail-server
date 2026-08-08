@@ -273,6 +273,92 @@ describe('createGameSessionUseCases vs-bot create', () => {
   );
 
   it(
+    'serializes reconnect bot resume with in-flight submits and opens with gameSnapshot',
+    { timeout: 15_000 },
+    async () => {
+      expect.hasAssertions();
+
+      const runtimeRef: {
+        current?: ReturnType<typeof createGameSessionUseCases>;
+      } = {};
+      const enginePorts = createInMemoryEnginePorts({
+        onEventAppended: (gameId, _round, event) => {
+          runtimeRef.current?.fanoutEvent(gameId, event);
+        },
+        onRoundSnapshotSaved: (gameId, round, state) => {
+          void runtimeRef.current?.fanoutRoundSnapshot(gameId, round, state);
+        },
+      });
+      const runtime = createGameSessionUseCases({
+        botTurnGapMs: 25,
+        enginePorts,
+        ownedArmyStorage: ownedArmyStorage({
+          [blackArmyId]: miniArmy(blackArmyId),
+          [whiteArmyId]: miniArmy(whiteArmyId),
+        }),
+      });
+      runtimeRef.current = runtime;
+
+      const created = await runtime.createVsBotGame('auth0|human-sub', {
+        blackArmyId,
+        gameMode: 'mini',
+        humanSide: 'white',
+        whiteArmyId,
+      });
+      assert.ok(created.success);
+
+      const game = await enginePorts.gameStorage.getGame(created.data, 'mini');
+      assert.ok(game !== undefined);
+      assert.ok(game.result);
+      const options = getLegalPlayerChoiceOptions(game.data.gameState);
+      assert.ok(options !== null);
+      assert.ok(options.choiceType === 'setupUnits');
+
+      const { setupUnits } = options;
+      const unitPlacements = setupUnits.units.map((unit, index) => ({
+        placement: {
+          coordinate: setupUnits.coordinates[index]!,
+          facing: 'south' as const,
+        },
+        unit,
+      }));
+
+      const messages: GameSessionOutbound[] = [];
+      const submitPromise = runtime.submitPlayerChoice({
+        gameId: created.data,
+        playerChoice: {
+          choiceType: 'setupUnits',
+          commanderCoordinate: unitPlacements[0]!.placement.coordinate,
+          eventNumber: options.expectedEventNumber,
+          eventType: PLAYER_CHOICE_EVENT_TYPE,
+          player: 'white',
+          unitPlacements,
+        },
+        side: 'white',
+        subject: 'auth0|human-sub',
+      });
+
+      const registerPromise = runtime.registerSeatConnection({
+        gameId: created.data,
+        send: (message) => {
+          messages.push(message);
+        },
+        side: 'white',
+        subject: 'auth0|human-sub',
+      });
+
+      const [submitted, registered] = await Promise.all([
+        submitPromise,
+        registerPromise,
+      ]);
+
+      expect(submitted).toStrictEqual({ data: undefined, success: true });
+      expect(registered).toStrictEqual({ data: undefined, success: true });
+      expect(messages[0]).toMatchObject({ type: 'gameSnapshot' });
+    },
+  );
+
+  it(
     'resends the current seat-visible gameSnapshot on explicit request',
     { timeout: 5000 },
     async () => {

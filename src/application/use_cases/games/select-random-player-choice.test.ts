@@ -339,6 +339,90 @@ describe('selectRandomPlayerChoice function', () => {
   );
 
   it(
+    'picks a front-engagement commitToMovement card when available',
+    { timeout: 5000 },
+    () => {
+      expect.hasAssertions();
+
+      const moveCard = tempCommandCards[4]!;
+      const options: LegalPlayerChoiceOptions = {
+        choiceType: 'commitToMovement',
+        events: [
+          {
+            choiceType: 'commitToMovement',
+            committedCard: moveCard,
+            eventNumber: 2,
+            eventType: 'playerChoice',
+            modifierTypes: ['speed'],
+            player: 'white',
+          },
+          {
+            choiceType: 'commitToMovement',
+            committedCard: null,
+            eventNumber: 2,
+            eventType: 'playerChoice',
+            modifierTypes: [],
+            player: 'white',
+          },
+        ],
+        expectedEventNumber: 2,
+        playerSource: 'white',
+      };
+
+      const choice = selectRandomPlayerChoice({
+        actingPlayer: 'white',
+        options,
+        random: firstAlways,
+        state: createEmptyGameState('mini'),
+      });
+
+      expect(choice).toMatchObject({
+        choiceType: 'commitToMovement',
+        committedCard: moveCard,
+        player: 'white',
+      });
+    },
+  );
+
+  it(
+    'refuses front-engagement commitToMovement when that is the only option',
+    { timeout: 5000 },
+    () => {
+      expect.hasAssertions();
+
+      const choice = selectRandomPlayerChoice({
+        actingPlayer: 'white',
+        options: {
+          choiceType: 'commitToMovement',
+          events: [
+            {
+              choiceType: 'commitToMovement',
+              committedCard: null,
+              eventNumber: 2,
+              eventType: 'playerChoice',
+              modifierTypes: [],
+              player: 'white',
+            },
+          ],
+          expectedEventNumber: 2,
+          playerSource: 'white',
+        },
+        random: firstAlways,
+        state: createEmptyGameState('mini'),
+      });
+
+      expect(choice).toStrictEqual({
+        choiceType: 'commitToMovement',
+        committedCard: null,
+        eventNumber: 2,
+        eventType: 'playerChoice',
+        modifierTypes: [],
+        player: 'white',
+      });
+    },
+  );
+
+  it(
     'greedily assigns unit support slots without double-covering units',
     { timeout: 5000 },
     () => {

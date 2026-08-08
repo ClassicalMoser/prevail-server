@@ -3,6 +3,7 @@ import type { EnginePorts } from '@classicalmoser/prevail-rules/application';
 import type { CreateVsBotGameBody } from '@classicalmoser/prevail-contracts';
 import {
   createInitialGameState,
+  getExpectedEvent,
   getLegalPlayerChoiceOptions,
   projectEventForVisibility,
   projectGameForVisibility,
@@ -204,7 +205,25 @@ const createGameSessionUseCases = (
 
       const options = getLegalPlayerChoiceOptions(state);
       if (options === null) {
-        return;
+        // Player-choice router returns null for game effects *or* when
+        // getExpectedEvent throws. Only drain effects when one is expected.
+        let expected;
+        try {
+          expected = getExpectedEvent(state);
+        } catch {
+          return;
+        }
+        if (expected.actionType !== 'gameEffect') {
+          return;
+        }
+        const advanced = await runner.advanceUntilPlayerChoice(
+          gameId,
+          meta.gameMode,
+        );
+        if (!advanced.result) {
+          return;
+        }
+        continue;
       }
       if (options.playerSource === meta.humanSide) {
         return;
@@ -397,21 +416,23 @@ const createGameSessionUseCases = (
       };
     }
 
-    const authoritative = await loadAuthoritativeGame(
-      connection.gameId,
-      meta.gameMode,
-    );
-    if (authoritative === undefined) {
-      return { message: 'Game not found', status: 404, success: false };
-    }
-
-    getConnections(connection.gameId).add(connection);
-    sendGameSnapshotToConnection(connection, authoritative);
-    // Resume bot if it stalled mid-burst (e.g. before a rules fix / reconnect).
-    if (connection.side === meta.humanSide) {
-      await takeBotTurns(connection.gameId);
-    }
-    return { data: undefined, success: true };
+    // Serialize with submit/create bot work, and keep the seat out of fanout
+    // until after resume so the open gameSnapshot is always first.
+    return enqueue(connection.gameId, async () => {
+      if (connection.side === meta.humanSide) {
+        await takeBotTurns(connection.gameId);
+      }
+      const afterBots = await loadAuthoritativeGame(
+        connection.gameId,
+        meta.gameMode,
+      );
+      if (afterBots === undefined) {
+        return { message: 'Game not found', status: 404, success: false };
+      }
+      getConnections(connection.gameId).add(connection);
+      sendGameSnapshotToConnection(connection, afterBots);
+      return { data: undefined, success: true };
+    });
   };
 
   const sendGameSnapshot = async (
