@@ -7,6 +7,8 @@ export {
 } from './army-mappers';
 export {
   commandCardVersionMapperToDomain,
+  mapCommandCardVersions,
+  sortCommandCardsByInitiative,
   writeCommandCardVersionMapper,
 } from './command-card-mappers';
 export {

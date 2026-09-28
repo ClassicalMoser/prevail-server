@@ -5,6 +5,7 @@ import type {
   UnitCount,
   UnitType,
 } from '@classicalmoser/prevail-rules/domain';
+import { sortCommandCardsByInitiative } from './command-card-mappers';
 
 const toArmy = (params: {
   armyId: string;
@@ -52,13 +53,15 @@ const buildCommandCards = (
   rows: ArmyCommandCardDb[],
   cardsById: ReadonlyMap<string, CommandCard>,
 ): CommandCard[] =>
-  rows.flatMap((row) => {
-    const card = cardsById.get(row.command_card_id);
-    if (card === undefined) {
-      return [];
-    }
-    return [card];
-  });
+  sortCommandCardsByInitiative(
+    rows.flatMap((row) => {
+      const card = cardsById.get(row.command_card_id);
+      if (card === undefined) {
+        return [];
+      }
+      return [card];
+    }),
+  );
 
 export {
   buildCommandCards,

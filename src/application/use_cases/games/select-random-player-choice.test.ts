@@ -516,7 +516,12 @@ describe('selectRandomPlayerChoice function', () => {
 
       assert.ok(choice !== undefined);
       assert.ok(choice.choiceType === 'assignUnitSupport');
-      expect(choice.assignments).toHaveLength(2);
+      // Identical generic grants sum into one category with count 2.
+      expect(choice.assignments).toHaveLength(1);
+      expect(choice.assignments[0]?.unitSupport).toStrictEqual({
+        count: 2,
+        supportType: 'generic',
+      });
       const coveredKeys = choice.assignments.flatMap((assignment) =>
         assignment.units.map(
           (unit) =>

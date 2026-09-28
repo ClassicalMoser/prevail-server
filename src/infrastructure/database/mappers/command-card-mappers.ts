@@ -8,6 +8,11 @@ import { commandCardSchema } from '@classicalmoser/prevail-rules/domain';
 import { parseIfJson } from '../parse-if-json';
 import { formatVersionTriple, parseVersionTriple } from './version-mappers';
 
+/** Stable ascending sort by initiative for any multi-card fetch. */
+const sortCommandCardsByInitiative = <T extends { initiative: number }>(
+  cards: readonly T[],
+): T[] => cards.toSorted((a, b) => a.initiative - b.initiative);
+
 const commandCardVersionMapperToDomain = (
   version: CommandCardVersionDb,
 ): CommandCard => {
@@ -23,6 +28,13 @@ const commandCardVersionMapperToDomain = (
     }),
   };
 };
+
+const mapCommandCardVersions = (
+  versions: readonly CommandCardVersionDb[],
+): CommandCard[] =>
+  sortCommandCardsByInitiative(
+    versions.map((version) => commandCardVersionMapperToDomain(version)),
+  );
 
 const writeCommandCardVersionMapper = (
   card: CommandCard,
@@ -49,4 +61,9 @@ const writeCommandCardVersionMapper = (
   return cardWrite;
 };
 
-export { commandCardVersionMapperToDomain, writeCommandCardVersionMapper };
+export {
+  commandCardVersionMapperToDomain,
+  mapCommandCardVersions,
+  sortCommandCardsByInitiative,
+  writeCommandCardVersionMapper,
+};

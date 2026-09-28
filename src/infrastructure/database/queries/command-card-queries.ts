@@ -14,8 +14,9 @@ const getCurrentCommandCardsQuery = async (
     FROM rules_versions
     ORDER BY version_major DESC, version_minor DESC, version_patch DESC
     LIMIT 1
-  )
-  SELECT DISTINCT ON (cc.command_card_id)
+  ),
+  latest_cards AS (
+    SELECT DISTINCT ON (cc.command_card_id)
       cc.command_card_id,
       ccv.command_card_version_id,
       ccv.command_card_name,
@@ -34,7 +35,11 @@ const getCurrentCommandCardsQuery = async (
       cc.command_card_id,
       ccv.version_major DESC,
       ccv.version_minor DESC,
-      ccv.version_patch DESC`;
+      ccv.version_patch DESC
+  )
+  SELECT *
+  FROM latest_cards
+  ORDER BY (command_card_definition->>'initiative')::int ASC`;
 
 const getCommandCardByIdQuery = async (
   sql: Sql,
@@ -60,7 +65,8 @@ const getCommandCardsByIdsQuery = async (
   sql: Sql,
   commandCardIds: string[],
 ): Promise<CommandCardVersionDb[]> =>
-  await sql`SELECT DISTINCT ON (ccv.command_card_id)
+  await sql`WITH latest_cards AS (
+    SELECT DISTINCT ON (ccv.command_card_id)
       ccv.command_card_id,
       ccv.command_card_version_id,
       ccv.command_card_name,
@@ -74,7 +80,11 @@ const getCommandCardsByIdsQuery = async (
       ccv.command_card_id,
       ccv.version_major DESC,
       ccv.version_minor DESC,
-      ccv.version_patch DESC`;
+      ccv.version_patch DESC
+  )
+  SELECT *
+  FROM latest_cards
+  ORDER BY (command_card_definition->>'initiative')::int ASC`;
 
 const getLatestCommandCardCertificationsQuery = async (
   sql: Sql,
@@ -84,8 +94,9 @@ const getLatestCommandCardCertificationsQuery = async (
     FROM rules_versions
     ORDER BY version_major DESC, version_minor DESC, version_patch DESC
     LIMIT 1
-  )
-  SELECT DISTINCT ON (cc.command_card_id)
+  ),
+  latest_cards AS (
+    SELECT DISTINCT ON (cc.command_card_id)
       cc.command_card_id,
       ccv.command_card_version_id,
       ccv.command_card_name,
@@ -105,7 +116,11 @@ const getLatestCommandCardCertificationsQuery = async (
       cc.command_card_id,
       ccv.version_major DESC,
       ccv.version_minor DESC,
-      ccv.version_patch DESC`;
+      ccv.version_patch DESC
+  )
+  SELECT *
+  FROM latest_cards
+  ORDER BY (command_card_definition->>'initiative')::int ASC`;
 
 const getAllCommandCardsQuery = async (
   sql: Sql,
@@ -121,6 +136,7 @@ const getAllCommandCardsQuery = async (
       SELECT DISTINCT ON (command_card_id)
         command_card_id,
         command_card_name,
+        command_card_definition,
         version_major,
         version_minor,
         version_patch
@@ -133,7 +149,7 @@ const getAllCommandCardsQuery = async (
     ) latest
       ON latest.command_card_id = cc.command_card_id
     ORDER BY
-      cc.created_at DESC,
+      (latest.command_card_definition->>'initiative')::int ASC NULLS LAST,
       cc.command_card_id`;
 
 const deleteEmptyCommandCardsQuery = async (sql: Sql): Promise<void> => {

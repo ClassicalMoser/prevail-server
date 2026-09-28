@@ -103,7 +103,7 @@ const unitInstanceKey = (unit: {
   instanceNumber: number;
 }): string => `${unit.playerSide}:${unit.unitType.id}:${unit.instanceNumber}`;
 
-/** Greedy cover: fill each grant's slots with unused eligible units. */
+/** Greedy cover: fill each category's slots with unused eligible units. */
 const pickAssignUnitSupport = (
   options: Extract<
     LegalPlayerChoiceOptions,
@@ -112,26 +112,34 @@ const pickAssignUnitSupport = (
   actingPlayer: PlayerSide,
   random: RandomSource,
 ): PlayerChoiceEvent | undefined => {
-  const { unitSupportGrants } = options;
-  if (unitSupportGrants.player !== actingPlayer) {
+  const { assignUnitSupport } = options;
+  if (assignUnitSupport.player !== actingPlayer) {
     return undefined;
   }
   const covered = new Set<string>();
   const assignments: {
-    cardId: string;
-    units: (typeof unitSupportGrants.grants)[number]['eligibleUnits'][number][];
+    unitSupport: (typeof assignUnitSupport.categories)[number]['unitSupport'];
+    units: (typeof assignUnitSupport.categories)[number]['eligibleUnits'][number][];
   }[] = [];
 
-  for (const grant of shuffleCopy([...unitSupportGrants.grants], random)) {
+  for (const category of shuffleCopy(
+    [...assignUnitSupport.categories],
+    random,
+  )) {
     const available = shuffleCopy(
-      grant.eligibleUnits.filter((unit) => !covered.has(unitInstanceKey(unit))),
+      category.eligibleUnits.filter(
+        (unit) => !covered.has(unitInstanceKey(unit)),
+      ),
       random,
-    ).slice(0, grant.unitSupport.count);
+    ).slice(0, category.unitSupport.count);
     if (available.length > 0) {
       for (const unit of available) {
         covered.add(unitInstanceKey(unit));
       }
-      assignments.push({ cardId: grant.card.id, units: [...available] });
+      assignments.push({
+        unitSupport: category.unitSupport,
+        units: [...available],
+      });
     }
   }
 

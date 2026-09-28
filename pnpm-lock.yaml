@@ -39,6 +39,9 @@ importers:
       '@types/ws':
         specifier: ^8.18.1
         version: 8.18.1
+      classicalmoser-oxlint-config:
+        specifier: link:../../classicalmoser-oxlint-config
+        version: link:../../classicalmoser-oxlint-config
       eslint-plugin-command:
         specifier: ^3.5.2
         version: 3.5.2(@typescript-eslint/rule-tester@8.61.1(eslint@10.5.0)(typescript@6.0.3))(@typescript-eslint/typescript-estree@8.61.1(typescript@6.0.3))(@typescript-eslint/utils@8.61.1(eslint@10.5.0)(typescript@6.0.3))(eslint@10.5.0)
@@ -51,9 +54,6 @@ importers:
       eslint-plugin-regexp:
         specifier: ^3.1.0
         version: 3.1.0(eslint@10.5.0)
-      eslint-plugin-unused-imports:
-        specifier: ^4.4.1
-        version: 4.4.1(eslint@10.5.0)
       eslint-plugin-yml:
         specifier: ^3.4.0
         version: 3.4.0(eslint@10.5.0)
@@ -1270,15 +1270,6 @@ packages:
     engines: {node: ^20.19.0 || ^22.13.0 || >=24}
     peerDependencies:
       eslint: '>=9.38.0'
-
-  eslint-plugin-unused-imports@4.4.1:
-    resolution: {integrity: sha512-oZGYUz1X3sRMGUB+0cZyK2VcvRX5lm/vB56PgNNcU+7ficUCKm66oZWKUubXWnOuPjQ8PvmXtCViXBMONPe7tQ==}
-    peerDependencies:
-      '@typescript-eslint/eslint-plugin': ^8.0.0-0 || ^7.0.0 || ^6.0.0 || ^5.0.0
-      eslint: ^10.0.0 || ^9.0.0 || ^8.0.0
-    peerDependenciesMeta:
-      '@typescript-eslint/eslint-plugin':
-        optional: true
 
   eslint-plugin-yml@3.4.0:
     resolution: {integrity: sha512-j6U3ESrAkidkvNb3HFN2UMxke46GNp6bsJokabXCICcgomSy3YU4oED9cjzkZ58nYxWD5qnWV1b/2YlqyWMOxA==}
@@ -3148,10 +3139,6 @@ snapshots:
       refa: 0.12.1
       regexp-ast-analysis: 0.7.1
       scslre: 0.3.0
-
-  eslint-plugin-unused-imports@4.4.1(eslint@10.5.0):
-    dependencies:
-      eslint: 10.5.0
 
   eslint-plugin-yml@3.4.0(eslint@10.5.0):
     dependencies:

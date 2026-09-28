@@ -26,11 +26,11 @@
   "devDependencies": {
     "@types/node": "^25.9.1",
     "@types/ws": "^8.18.1",
+    "classicalmoser-oxlint-config": "link:../../classicalmoser-oxlint-config",
     "eslint-plugin-command": "^3.5.2",
     "eslint-plugin-import-boundaries": "^0.8.2",
     "eslint-plugin-jsonc": "^3.2.0",
     "eslint-plugin-regexp": "^3.1.0",
-    "eslint-plugin-unused-imports": "^4.4.1",
     "eslint-plugin-yml": "^3.4.0",
     "oxfmt": "^0.53.0",
     "oxlint": "^1.68.0",

@@ -28,17 +28,13 @@ import type {
 import {
   commandCardListItemMapper,
   commandCardVersionMapperToDomain,
+  mapCommandCardVersions,
   parseVersionTriple,
   writeCommandCardVersionMapper,
 } from '../mappers';
 import type { Sql } from '../sql-type';
 import type { CommandCard } from '@classicalmoser/prevail-rules/domain';
 import { notFound, storageOp, voidSuccess } from './storage-op';
-
-const mapCommandCardVersions = (
-  versions: CommandCardVersionDb[],
-): CommandCard[] =>
-  versions.map((version) => commandCardVersionMapperToDomain(version));
 
 const createCommandCardStorage = (
   logger: LoggerPort,
@@ -188,12 +184,15 @@ const createCommandCardStorage = (
       run: async () => {
         const rows: CommandCardCertificationStatusDb[] =
           await getLatestCommandCardCertificationsQuery(sql);
+        const statuses = rows.map((row) => ({
+          card: commandCardVersionMapperToDomain(row),
+          certified: row.certified,
+        }));
         return {
           success: true,
-          data: rows.map((row) => ({
-            card: commandCardVersionMapperToDomain(row),
-            certified: row.certified,
-          })),
+          data: statuses.toSorted(
+            (a, b) => a.card.initiative - b.card.initiative,
+          ),
         };
       },
     }),
