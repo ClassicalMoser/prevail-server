@@ -15,6 +15,18 @@ import {
   requireSubject,
 } from '../route-definitions';
 
+/**
+ * HTTP routes for owned armies.
+ *
+ * Every route requires an authenticated subject. The subject is the owner
+ * key; handlers do not read a user id from the path. Create and archive use
+ * the contract success status. Update sends the body through the use case,
+ * which derives the display name.
+ *
+ * @param ownedArmyUseCases - Army use cases.
+ * @param logger - Passed into the route helpers for unexpected failures.
+ * @returns The owned-army route registry.
+ */
 const createOwnedArmyRoutes = (
   ownedArmyUseCases: OwnedArmyUseCasesPort,
   logger: LoggerPort,

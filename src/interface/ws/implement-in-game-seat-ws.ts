@@ -83,6 +83,18 @@ const sendChoiceRejected = (
   });
 };
 
+/**
+ * Build one registered WebSocket route from an in-game seat contract.
+ *
+ * Params and inbound messages are parsed with the contract Zod schemas.
+ * The connection handle returned from `onOpen` is passed back to snapshot,
+ * choice, and close handlers without the route knowing the handle's shape.
+ *
+ * @param contract - Seat contract for one side.
+ * @param logger - Where unexpected socket failures are recorded.
+ * @param handlers - Open, choice, snapshot, and close callbacks.
+ * @returns A route the composition root can mount.
+ */
 const implementInGameSeatWs = <
   TSide extends 'white' | 'black',
   TParams extends Record<string, unknown>,

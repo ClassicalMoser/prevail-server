@@ -9,6 +9,17 @@ import {
 import type { Sql } from '../sql-type';
 import { handleError } from '@utils';
 
+/**
+ * Postgres adapter for local users.
+ *
+ * `get` methods return 404 when the row is absent. `ensureByAuthSub` inserts
+ * when missing, then re-reads if a concurrent insert won the race, so two
+ * requests with the same Auth0 subject still share one user id.
+ *
+ * @param logger - Where unexpected database failures are recorded.
+ * @param sql - postgres.js client.
+ * @returns The {@link UserStorage} port.
+ */
 const createUserStorage = (logger: LoggerPort, sql: Sql): UserStorage => ({
   getByUserId: async (userId: string): Promise<DataErrorSignature<User>> => {
     try {

@@ -58,6 +58,18 @@ const hasPermissions = (
   return required.every((permission) => grantedSet.has(permission));
 };
 
+/**
+ * Auth0 access-token check for a route's auth requirement.
+ *
+ * A verification failure is 401. A token that is valid but missing a required
+ * permission is 403. Empty `permissionsRequired` still means the token must
+ * verify. Permissions on the token that are not in the contract list are
+ * ignored.
+ *
+ * @param logger - Where unexpected verification failures are recorded.
+ * @param config - Auth0 domain and audience.
+ * @returns The {@link AuthPort}.
+ */
 const createAuth0Adapter = (
   logger: LoggerPort,
   config: AuthInfrastructureConfig,

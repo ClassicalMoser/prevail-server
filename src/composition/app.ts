@@ -139,6 +139,12 @@ const useCases: UseCasesPort = createUseCasesRoot({
 const routes = createRoutes(useCases, logger);
 const wsRoutes = createWsRoutes(gameSessionUseCases, logger);
 
+/**
+ * Mount CORS, HTTP routes, and WebSocket seats on the process Fastify app.
+ *
+ * HTTP auth runs in route registration. WebSocket upgrade auth runs when the
+ * socket opens. Both share the Auth0 adapter created at startup.
+ */
 const configureApp = async (): Promise<void> => {
   await app.register(cors, createCorsOptions(clientOrigins));
 

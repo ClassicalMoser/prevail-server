@@ -21,6 +21,16 @@ import {
   implementPostRoute,
 } from '@interface/http/route-definitions';
 
+/**
+ * HTTP routes for the command-card catalog.
+ *
+ * Reads are public. Mutations require a subject. Preview returns an SVG body
+ * through the media post helper instead of a JSON envelope.
+ *
+ * @param commandCardUseCases - Command-card use cases.
+ * @param logger - Passed into the route helpers for unexpected failures.
+ * @returns The command-card route registry.
+ */
 const createCommandCardRoutes = (
   commandCardUseCases: CommandCardUseCasesPort,
   logger: LoggerPort,

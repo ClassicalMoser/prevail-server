@@ -38,6 +38,18 @@ import { notFound, storageOp, voidSuccess } from './storage-op';
 const mapUnitCardVersions = (versions: UnitCardVersionDb[]): UnitType[] =>
   versions.map((version) => unitCardVersionMapperToDomain(version));
 
+/**
+ * Postgres adapter for catalog unit cards.
+ *
+ * Current reads return the latest certified version of each unit type.
+ * Artwork stays a column. Traits, stats, cost, limit, and morale stay in the
+ * JSON definition. Certification uses the latest rules version, same as
+ * command cards.
+ *
+ * @param logger - Where unexpected database failures are recorded.
+ * @param sql - postgres.js client.
+ * @returns The {@link UnitCardStorage} port.
+ */
 const createUnitCardStorage = (
   logger: LoggerPort,
   sql: Sql,

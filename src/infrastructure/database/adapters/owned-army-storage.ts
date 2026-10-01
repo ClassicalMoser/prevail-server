@@ -43,6 +43,17 @@ import {
 import type { Sql } from '../sql-type';
 import { handleError } from '@utils';
 
+/**
+ * Rebuild an owned army from its row plus current catalog definitions.
+ *
+ * Join tables store ids and quantities. The latest certified unit and command
+ * cards are loaded so the returned `Army` matches the rules shape. A join row
+ * whose card is missing is dropped by the mappers.
+ *
+ * @param sql - postgres.js client.
+ * @param row - Army identity row, including the display name and owner.
+ * @returns The domain army. The display name stays on the row, not on `Army`.
+ */
 const hydrateArmy = async (sql: Sql, row: ArmyDb): Promise<Army> => {
   const unitRows = await getArmyUnitCardsQuery(sql, row.army_id);
   const commandRows = await getArmyCommandCardsQuery(sql, row.army_id);
@@ -79,6 +90,17 @@ const hydrateArmy = async (sql: Sql, row: ArmyDb): Promise<Army> => {
   });
 };
 
+/**
+ * Replace an army's unit and command-card join rows.
+ *
+ * The previous rows are deleted first, then the new composition is inserted.
+ * Command-card quantity stays 1 because the domain army stores cards by
+ * identity, not by a stack count.
+ *
+ * @param sql - postgres.js client.
+ * @param armyId - Army whose composition is being replaced.
+ * @param army - Units and command cards to persist.
+ */
 const replaceArmyComposition = async (
   sql: Sql,
   armyId: string,
@@ -95,6 +117,19 @@ const replaceArmyComposition = async (
   }
 };
 
+/**
+ * Postgres adapter for player-owned armies.
+ *
+ * Every read and write is scoped by the owner's auth subject. Creating an
+ * army ensures a local user row exists for that subject, then inserts the
+ * army under that user. Archive sets `archived_at` and does not delete
+ * composition history.
+ *
+ * @param logger - Where unexpected database failures are recorded.
+ * @param sql - postgres.js client.
+ * @param userStorage - Resolves or creates the owner from an auth subject.
+ * @returns The {@link OwnedArmyStorage} port.
+ */
 const createOwnedArmyStorage = (
   logger: LoggerPort,
   sql: Sql,

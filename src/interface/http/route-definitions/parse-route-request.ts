@@ -17,6 +17,12 @@ type ParseResult<T> =
   | { ok: true; value: T }
   | { ok: false; error: ErrorSignature };
 
+/**
+ * Shared 400 bodies for a contract Zod failure.
+ *
+ * Params, query, and body stay distinct so the handler can report which part
+ * of the request failed without inspecting the Zod issue list.
+ */
 const invalidParams: ErrorSignature = {
   success: false,
   message: 'Invalid params',

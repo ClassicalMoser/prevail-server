@@ -29,6 +29,13 @@ const doneIssuingCommandsEvent = (
   return choice;
 };
 
+/**
+ * Build one issue-command event, or undefined when the command cannot be filled.
+ *
+ * A units command takes a random subset of the legal units. A lines command
+ * picks a random start and legal end, then keeps the segment between them in
+ * start-to-end order because validators treat units[0] as the inspired start.
+ */
 const tryBuildIssueCommand = (input: {
   command: Command;
   actingPlayer: PlayerSide;

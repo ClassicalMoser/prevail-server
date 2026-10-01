@@ -13,6 +13,13 @@ import type { RandomSource } from './random-source';
 import { pickOne } from './pick-one';
 import { shuffleCopy } from './shuffle-copy';
 
+/**
+ * Sample one legal move for a unit that can still move.
+ *
+ * Destinations come from the rules movement query. A getter that throws, or
+ * a unit with an empty destination list, is skipped. The first unit that
+ * yields a destination becomes the move.
+ */
 const pickMoveUnit = (input: {
   options: Extract<LegalPlayerChoiceOptions, { choiceType: 'moveUnit' }>;
   actingPlayer: PlayerSide;

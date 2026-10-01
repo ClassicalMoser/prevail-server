@@ -33,6 +33,17 @@ interface CommandCardUseCasesDeps {
   assetStorage: AssetStorage;
 }
 
+/**
+ * Catalog and preview use cases for command cards.
+ *
+ * Storage returns domain cards. List responses are mapped to contract list
+ * items here. Creating a version projects render assets and refuses the write
+ * when a referenced unit card is missing. Certification heals missing assets
+ * before it stamps the latest rules version.
+ *
+ * @param deps - Storage, renderer, and asset ports.
+ * @returns The command-card use-case port.
+ */
 const createCommandCardUseCases = (
   deps: CommandCardUseCasesDeps,
 ): CommandCardUseCasesPort => ({

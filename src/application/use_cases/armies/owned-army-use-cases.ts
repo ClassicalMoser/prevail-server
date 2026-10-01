@@ -17,6 +17,17 @@ interface OwnedArmyUseCasesDeps {
   ownedArmyStorage: OwnedArmyStorage;
 }
 
+/**
+ * Owned-army use cases.
+ *
+ * Reads delegate to storage. Create stores the untitled display name.
+ * Update renames the list from the first unit type via `armyDisplayName`
+ * and returns an empty object so the HTTP contract can answer 200.
+ * Archive maps a void write to 204.
+ *
+ * @param deps - Owned-army storage.
+ * @returns The owned-army use-case port.
+ */
 const createOwnedArmyUseCases = (
   deps: OwnedArmyUseCasesDeps,
 ): OwnedArmyUseCasesPort => ({

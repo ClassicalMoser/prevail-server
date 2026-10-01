@@ -36,6 +36,18 @@ import type { Sql } from '../sql-type';
 import type { CommandCard } from '@classicalmoser/prevail-rules/domain';
 import { notFound, storageOp, voidSuccess } from './storage-op';
 
+/**
+ * Postgres adapter for catalog command cards.
+ *
+ * Reads return domain cards or list items. Writes validate through the
+ * command-card mapper before insert, so a schema failure throws out of
+ * `storageOp` and becomes an error envelope. Certification stamps the latest
+ * rules version onto the selected card versions.
+ *
+ * @param logger - Where unexpected database failures are recorded.
+ * @param sql - postgres.js client.
+ * @returns The {@link CommandCardStorage} port.
+ */
 const createCommandCardStorage = (
   logger: LoggerPort,
   sql: Sql,

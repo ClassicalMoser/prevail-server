@@ -38,6 +38,18 @@ const resolveUnitImage = async (
   );
 };
 
+/**
+ * Render one unit card to a buffer through a temporary Typst workspace.
+ *
+ * The workspace gets a copy of the templates and, when the details ask for
+ * it, the unit artwork downloaded from an allowed origin. Compile writes to
+ * stdout. The workspace is removed after the compile, success or failure.
+ *
+ * @param unitType - Domain unit type, including artwork URL and stats.
+ * @param details - Format, bleed, and whether to embed the unit image.
+ * @param deps - Assets directory and the allowed media origin.
+ * @returns The compiled bytes, or an error envelope when compile fails.
+ */
 const renderUnitCard = async (
   unitType: UnitType,
   details: RenderDetails,

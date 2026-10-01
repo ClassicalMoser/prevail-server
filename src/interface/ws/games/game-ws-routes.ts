@@ -40,6 +40,17 @@ type SeatSnapshotResult = Awaited<
   >
 >;
 
+/**
+ * Seat handlers for one side of a live game.
+ *
+ * `onOpen` registers the connection and sends the first snapshot from inside
+ * the session queue, so that snapshot is the first outbound message. Later
+ * choices and snapshot requests use the same connection handle.
+ *
+ * @param side - White or black seat this handler set owns.
+ * @param gameSessionUseCases - Session API the handlers call.
+ * @returns Handlers for the in-game seat WebSocket contract.
+ */
 const createSeatHandlers = (
   side: 'white' | 'black',
   gameSessionUseCases: GameSessionUseCasesPort,

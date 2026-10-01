@@ -72,6 +72,17 @@ const authenticateUpgrade = async (input: {
 /**
  * Registers `@fastify/websocket` and mounts contract-driven WS routes.
  */
+/**
+ * Register the WebSocket plugin and one Fastify route per seat contract.
+ *
+ * Upgrade auth uses the Authorization header when a client can set it, and
+ * `access_token` in the query when it cannot. A failed check closes the
+ * socket with 1008 before seat handlers run.
+ *
+ * @param app - Fastify instance.
+ * @param authPort - Token check used during upgrade.
+ * @param routes - Seat routes from the contract registry.
+ */
 const registerWs = async (
   app: FastifyInstance,
   authPort: AuthPort,

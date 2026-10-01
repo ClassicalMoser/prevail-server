@@ -13,6 +13,13 @@ const setupFacing = (player: PlayerSide): 'north' | 'south' => {
   return facing;
 };
 
+/**
+ * Place the acting player's setup units on a random subset of legal coordinates.
+ *
+ * The facing is south for white and north for black. The commander's
+ * coordinate is the first placement. Too few coordinates, or an empty unit
+ * list, returns undefined so the bot does not submit an illegal setup.
+ */
 const pickSetupUnits = (
   options: Extract<LegalPlayerChoiceOptions, { choiceType: 'setupUnits' }>,
   actingPlayer: PlayerSide,

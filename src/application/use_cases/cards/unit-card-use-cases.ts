@@ -26,6 +26,15 @@ interface UnitCardUseCasesDeps {
   assetStorage: AssetStorage;
 }
 
+/**
+ * Catalog and preview use cases for unit cards.
+ *
+ * List responses become contract list items. Version writes project SVG, PDF,
+ * and bleed assets. Preview renders one SVG in memory and does not store it.
+ *
+ * @param deps - Storage, renderer, and asset ports.
+ * @returns The unit-card use-case port.
+ */
 const createUnitCardUseCases = (
   deps: UnitCardUseCasesDeps,
 ): UnitCardUseCasesPort => ({
