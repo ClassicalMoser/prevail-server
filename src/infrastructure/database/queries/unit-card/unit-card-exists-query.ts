@@ -3,9 +3,7 @@
  * Mapping into domain unit types happens in `mappers/`.
  */
 
-import type {
-  Sql,
-} from '@infrastructure/database/sql-type';
+import type { Sql } from '@infrastructure/database/sql-type';
 
 /**
  * Tagged SQL for unit-card rows. Each function returns rows only.

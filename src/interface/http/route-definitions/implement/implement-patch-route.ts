@@ -5,9 +5,7 @@
  * from the contract validators so handlers only wire use-case calls.
  */
 
-import type {
-  PatchRoute,
-} from '@classicalmoser/prevail-contracts';
+import type { PatchRoute } from '@classicalmoser/prevail-contracts';
 
 import type {
   DataErrorSignature,
@@ -16,16 +14,10 @@ import type {
   RouteHandler,
 } from '@ports';
 
-import {
-  tryParseBodyRouteRequest,
-} from '../parse-route-request';
+import { tryParseBodyRouteRequest } from '../parse-route-request';
 
-import {
-  handleError,
-} from '@utils';
-import {
-  jsonSuccessContentType,
-} from './json-success-content-type';
+import { handleError } from '@utils';
+import { jsonSuccessContentType } from './json-success-content-type';
 
 const implementPatchRoute = <
   TParams extends Record<string, unknown>,

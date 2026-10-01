@@ -18,13 +18,9 @@ import type {
   RegisteredRoute,
 } from '@ports';
 
-import {
-  tryParseBodyRouteRequest,
-} from '../parse-route-request';
+import { tryParseBodyRouteRequest } from '../parse-route-request';
 
-import {
-  handleError,
-} from '@utils';
+import { handleError } from '@utils';
 
 const implementMediaPostRoute = <
   TParams extends Record<string, unknown>,

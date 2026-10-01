@@ -29,7 +29,10 @@ describe('fanoutEvent function', () => {
         connections: new Map([
           [
             'game-1',
-            new Set([seat('white', whiteMessages), seat('black', blackMessages)]),
+            new Set([
+              seat('white', whiteMessages),
+              seat('black', blackMessages),
+            ]),
           ],
         ]),
       });

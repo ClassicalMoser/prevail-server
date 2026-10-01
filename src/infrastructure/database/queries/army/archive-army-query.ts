@@ -3,9 +3,7 @@
  * Display name and composition are columns. Domain mapping happens in `mappers/`.
  */
 
-import type {
-  Sql,
-} from '@infrastructure/database/sql-type';
+import type { Sql } from '@infrastructure/database/sql-type';
 
 /**
  * Tagged SQL for owned armies and their unit and command-card join rows.

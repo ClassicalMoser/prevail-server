@@ -1,4 +1,7 @@
-import { tempCommandCards, tempUnits } from '@classicalmoser/prevail-rules/domain';
+import {
+  tempCommandCards,
+  tempUnits,
+} from '@classicalmoser/prevail-rules/domain';
 import { toArmy } from './to-army';
 
 describe('toArmy function', () => {

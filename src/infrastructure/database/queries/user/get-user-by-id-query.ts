@@ -3,13 +3,9 @@
  * The mapper turns a row into the port `User`.
  */
 
-import type {
-  UserDb,
-} from '@infrastructure/database/db-types';
+import type { UserDb } from '@infrastructure/database/db-types';
 
-import type {
-  Sql,
-} from '@infrastructure/database/sql-type';
+import type { Sql } from '@infrastructure/database/sql-type';
 
 /**
  * Tagged SQL for local users keyed by id or Auth0 subject.

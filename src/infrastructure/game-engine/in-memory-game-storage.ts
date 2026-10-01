@@ -1,5 +1,8 @@
 import type { GameStorage } from '@classicalmoser/prevail-rules/application';
-import type { Game, GameForVisibility } from '@classicalmoser/prevail-rules/domain';
+import type {
+  Game,
+  GameForVisibility,
+} from '@classicalmoser/prevail-rules/domain';
 import { fail, ok, okVoid } from './port-response';
 
 const createInMemoryGameStorage = (): GameStorage => {

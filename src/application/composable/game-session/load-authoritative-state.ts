@@ -1,4 +1,7 @@
-import type { GameModeName, GameState } from '@classicalmoser/prevail-rules/domain';
+import type {
+  GameModeName,
+  GameState,
+} from '@classicalmoser/prevail-rules/domain';
 import type { GameSessionStore } from './game-session-store';
 import { loadAuthoritativeGame } from './load-authoritative-game';
 

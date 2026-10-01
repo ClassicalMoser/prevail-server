@@ -3,13 +3,9 @@
  * Mapping into domain cards happens in `mappers/`.
  */
 
-import type {
-  CommandCardVersionDb,
-} from '@infrastructure/database/db-types';
+import type { CommandCardVersionDb } from '@infrastructure/database/db-types';
 
-import type {
-  Sql,
-} from '@infrastructure/database/sql-type';
+import type { Sql } from '@infrastructure/database/sql-type';
 
 /**
  * Current certified command cards, one row per card, initiative ascending.

@@ -1,6 +1,4 @@
-import type {
-  PostRouteContract,
-} from './post-route-contract';
+import type { PostRouteContract } from './post-route-contract';
 /**
  * Contract-driven route registration.
  *
@@ -15,16 +13,10 @@ import type {
   RouteHandler,
 } from '@ports';
 
-import {
-  tryParseBodyRouteRequest,
-} from '../parse-route-request';
+import { tryParseBodyRouteRequest } from '../parse-route-request';
 
-import {
-  handleError,
-} from '@utils';
-import {
-  jsonSuccessContentType,
-} from './json-success-content-type';
+import { handleError } from '@utils';
+import { jsonSuccessContentType } from './json-success-content-type';
 
 const implementPostRoute = <
   TParams extends Record<string, unknown>,

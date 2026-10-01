@@ -3,13 +3,9 @@
  * Mapping into domain cards happens in `mappers/`.
  */
 
-import type {
-  CommandCardListItemDb,
-} from '@infrastructure/database/db-types';
+import type { CommandCardListItemDb } from '@infrastructure/database/db-types';
 
-import type {
-  Sql,
-} from '@infrastructure/database/sql-type';
+import type { Sql } from '@infrastructure/database/sql-type';
 
 /**
  * Tagged SQL for command-card rows. Each function returns rows only.

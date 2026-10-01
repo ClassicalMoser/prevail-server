@@ -8,9 +8,7 @@ import type {
   WriteCommandCardVersionDb,
 } from '@infrastructure/database/db-types';
 
-import type {
-  Sql,
-} from '@infrastructure/database/sql-type';
+import type { Sql } from '@infrastructure/database/sql-type';
 
 /**
  * Tagged SQL for command-card rows. Each function returns rows only.

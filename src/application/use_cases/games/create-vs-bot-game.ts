@@ -92,10 +92,11 @@ const createVsBotGame = async (
 
   // processEvent appends with `gameState.currentRoundNumber` (0 during
   // pre-round setup), not `currentRoundState.roundNumber` (1).
-  const streamResult = await store.enginePorts.eventStreamStorage.newEventStream(
-    gameId,
-    game.gameState.currentRoundNumber,
-  );
+  const streamResult =
+    await store.enginePorts.eventStreamStorage.newEventStream(
+      gameId,
+      game.gameState.currentRoundNumber,
+    );
   if (!streamResult.result) {
     return {
       message: streamResult.errorReason,

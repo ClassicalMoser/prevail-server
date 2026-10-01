@@ -6,7 +6,13 @@ import {
 import type { GameSessionOutbound } from '@ports';
 import assert from 'node:assert/strict';
 import { createInMemoryEnginePorts } from '@infrastructure';
-import { army, blackArmyId, miniArmy, ownedArmyStorage, whiteArmyId } from '@testing';
+import {
+  army,
+  blackArmyId,
+  miniArmy,
+  ownedArmyStorage,
+  whiteArmyId,
+} from '@testing';
 import { createGameSessionUseCases } from './game-session-use-cases';
 
 describe('registerSeatConnection function', () => {

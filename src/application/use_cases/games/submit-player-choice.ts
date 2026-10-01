@@ -1,4 +1,7 @@
-import type { PlayerChoiceEvent, PlayerSide } from '@classicalmoser/prevail-rules/domain';
+import type {
+  PlayerChoiceEvent,
+  PlayerSide,
+} from '@classicalmoser/prevail-rules/domain';
 import type { DataErrorSignature } from '@ports';
 import { enqueue } from '@application/composable/game-session/enqueue';
 import type { GameSessionStore } from '@application/composable/game-session/game-session-store';

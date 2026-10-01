@@ -1,4 +1,8 @@
-import type { Army, CommandCard, UnitType } from '@classicalmoser/prevail-rules/domain';
+import type {
+  Army,
+  CommandCard,
+  UnitType,
+} from '@classicalmoser/prevail-rules/domain';
 import type { DataErrorSignature, OwnedArmyStorage } from '@ports';
 
 const whiteArmyId = '550e8400-e29b-41d4-a716-446655440001';
@@ -32,7 +36,10 @@ const unitType = (overrides: Partial<UnitType> = {}): UnitType => ({
   ...overrides,
 });
 
-const commandCard = (initiative: 1 | 2 | 3 | 4, index: number): CommandCard => ({
+const commandCard = (
+  initiative: 1 | 2 | 3 | 4,
+  index: number,
+): CommandCard => ({
   command: {
     modifiers: [],
     number: 1,

@@ -5,9 +5,7 @@
  * from the contract validators so handlers only wire use-case calls.
  */
 
-import type {
-  DeleteRoute,
-} from '@classicalmoser/prevail-contracts';
+import type { DeleteRoute } from '@classicalmoser/prevail-contracts';
 
 import type {
   DeleteRouteHandler,
@@ -16,16 +14,10 @@ import type {
   RouteInvokeResult,
 } from '@ports';
 
-import {
-  tryParseDeleteRequest,
-} from '../parse-route-request';
+import { tryParseDeleteRequest } from '../parse-route-request';
 
-import {
-  handleError,
-} from '@utils';
-import {
-  jsonSuccessContentType,
-} from './json-success-content-type';
+import { handleError } from '@utils';
+import { jsonSuccessContentType } from './json-success-content-type';
 
 const implementDeleteRoute = <
   TParams extends Record<string, unknown>,
