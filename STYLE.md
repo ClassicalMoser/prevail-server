@@ -35,8 +35,8 @@ The project is strict about both. Do not use a type assertion (`as`, `!`) or `@t
 
 Two production edges still assert, because the type cannot say the value:
 
-- `PortResponse<void>` does not accept a literal `undefined`. The in-memory engine helper returns that response with one assertion.
-- Rules `Game` and `GameState` are visibility unions. Storing an authoritative game in memory, and writing `createInitialGameState` onto that game, still narrows with an assertion. That happens in the in-memory adapter and in `game-session-use-cases.ts`.
+- `PortResponse<void>` does not accept a literal `undefined`. `port-response.ts` returns that response with one assertion.
+- Rules `Game` and `GameState` are visibility unions. Storing an authoritative game, loading one back, and writing `createInitialGameState` onto that game still narrow with an assertion. Those lines are `in-memory-game-storage.ts`, `load-authoritative-game.ts`, and `create-vs-bot-game.ts`.
 
 `schema.parse` throws on an invalid command-card write. That is the insert's failure, described in [`DESIGN.md`](./DESIGN.md).
 
@@ -44,7 +44,11 @@ Do not add another assertion. If a cast is only hiding a type that can be writte
 
 ## Commentary
 
-Commentary is extensive. 25% comments is not too much. Leave existing function commentary in place, including `@param` and `@returns`. JSDoc-style comments ahead of declarations are good for IDE readability. A shorter header is not a cleanup. When a helper does several steps, comment each step: what it writes, and why.
+Commentary is extensive. **More than 25% is not too much. Less than 10% is usually not enough to infer intent cleanly.**
+
+An exported function has a JSDoc block ahead of it: what it writes, and why. Leave `@param` and `@returns` in place. A shorter header is not a cleanup. When a function does several steps, comment each step the same way. A one-line constant that the rest of the system depends on says why that value exists.
+
+A long template, such as a SQL string, is a reasonable exception to the small-file rule. The template can run past a short function. Intent is still easy to lose inside it. The comment ahead of that function says what the template selects or writes, and why it is shaped that way. A comment inside the template marks a join, a filter, or an ordering that the shape does not make obvious.
 
 ## Tests
 
@@ -62,4 +66,14 @@ Build a game value with factories, sample values, and transforms from `@classica
 
 A helper used by one suite may stay in that file. The same helper in a second suite, when no factory or transform covers it, belongs in `@testing`.
 
-Colocate `*.test.ts` with the module it exercises. Mock ports, not adapters. HTTP inject tests stay next to composition and interface.
+### Where a test file lives
+
+A `*.test.ts` sits in the same directory as the module it exercises. Its name is that module's file name plus `.test`. `create-vs-bot-game.ts` is tested by `create-vs-bot-game.test.ts` beside it.
+
+Every file that exports a function has that colocated test. A barrel and a type-only module do not.
+
+A test file with no sibling module of the same name is extraneous. Delete it or move the cases next to the function they call.
+
+A case that calls `fanoutEvent` lives in `fanout-event.test.ts`. It does not stay in a parent suite because the parent factory wires `fanoutEvent`. If the case is already in a parent file, move it. If the module has no test, write one. The new test calls that function. It does not boot the factory in order to reach it.
+
+Mock ports, not adapters. HTTP inject tests stay next to composition and interface.

@@ -1,56 +1,18 @@
 import assert from 'node:assert/strict';
 import type { CreateVsBotGameBody } from '@classicalmoser/prevail-contracts';
-import type {
-  Army,
-  ChooseCardEvent,
-} from '@classicalmoser/prevail-rules/domain';
+import type { ChooseCardEvent } from '@classicalmoser/prevail-rules/domain';
 import { tempCommandCards } from '@classicalmoser/prevail-rules/domain';
-import { createGameSessionUseCases } from './game-session-use-cases';
 import { createInMemoryEnginePorts } from '@infrastructure';
-import type {
-  DataErrorSignature,
-  GameSessionOutbound,
-  OwnedArmyStorage,
-} from '@ports';
+import type { GameSessionOutbound } from '@ports';
+import {
+  army,
+  blackArmyId,
+  ownedArmyStorage,
+  whiteArmyId,
+} from '@testing';
+import { createGameSessionUseCases } from '../../use_cases/games/game-session-use-cases';
 
-const army = (id: string): Army => ({
-  commandCards: [],
-  id,
-  units: [],
-});
-
-const whiteArmyId = '550e8400-e29b-41d4-a716-446655440001';
-const blackArmyId = '550e8400-e29b-41d4-a716-446655440002';
-
-const ownedArmyStorage = (): OwnedArmyStorage => ({
-  archiveOwnedArmy: async (): Promise<DataErrorSignature<void>> => ({
-    data: undefined,
-    success: true,
-  }),
-  createOwnedArmy: async (): Promise<DataErrorSignature<string>> => ({
-    data: whiteArmyId,
-    success: true,
-  }),
-  getOwnedArmies: async (): Promise<DataErrorSignature<Army[]>> => ({
-    data: [army(whiteArmyId), army(blackArmyId)],
-    success: true,
-  }),
-  getOwnedArmyById: async (
-    _sub: string,
-    id: string,
-  ): Promise<DataErrorSignature<Army>> => {
-    if (id === whiteArmyId || id === blackArmyId) {
-      return { data: army(id), success: true };
-    }
-    return { message: 'Not found', status: 404, success: false };
-  },
-  updateOwnedArmy: async (): Promise<DataErrorSignature<void>> => ({
-    data: undefined,
-    success: true,
-  }),
-});
-
-describe('game session event fanout', () => {
+describe('fanoutEvent function', () => {
   it(
     'redacts opponent chooseCard card identity for the other seat',
     { timeout: 5000 },
@@ -69,7 +31,10 @@ describe('game session event fanout', () => {
       const runtime = createGameSessionUseCases({
         botTurnGapMs: 0,
         enginePorts,
-        ownedArmyStorage: ownedArmyStorage(),
+        ownedArmyStorage: ownedArmyStorage({
+          [blackArmyId]: army(blackArmyId),
+          [whiteArmyId]: army(whiteArmyId),
+        }),
       });
       runtimeRef.current = runtime;
 
@@ -119,8 +84,8 @@ describe('game session event fanout', () => {
       };
       runtime.fanoutEvent(gameId, choice);
 
-      const whiteChoice = whiteMessages.find((m) => m.type === 'playerChoice');
-      const blackChoice = blackMessages.find((m) => m.type === 'playerChoice');
+      const whiteChoice = whiteMessages.find((message) => message.type === 'playerChoice');
+      const blackChoice = blackMessages.find((message) => message.type === 'playerChoice');
 
       expect(whiteChoice?.payload).toMatchObject({
         card: tempCommandCards[0],

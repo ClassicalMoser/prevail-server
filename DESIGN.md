@@ -49,8 +49,12 @@ Direct imports of `prevail-rules` from any layer are allowed. Do not add an `@do
 
 Contract DTOs stay at the interface. Storage ports speak rules or server domain shapes. Inbound use-case ports still accept some contract write bodies (`ArmyWriteBody`, `CardListItem`). New ports take a domain write. The route maps the contract.
 
+## Use cases and composables
+
+What counts as a use case is written in [`src/application/README.md`](./src/application/README.md). A method of an inbound `*UseCasesPort` is a use case and lives under `use_cases/`. Application logic that is not a method of that port is a composable and lives under `composable/`. A file does not become a use case because a use case calls it.
+
 ## Sessions
 
 Live games are in-memory. [`docs/adr/0002`](./docs/adr/0002-in-memory-session-hosting.md) records that. Engine port interfaces are the ones rules defines, so a durable adapter replaces the memory adapter without a new domain layer.
 
-Seat identity, fan-out, and the bot's turn loop are application work. The bot submits an event through the runner. It does not apply the event itself.
+The session port's use cases are `createVsBotGame`, `submitPlayerChoice`, `registerSeatConnection`, `sendGameSnapshot`, `unregisterSeatConnection`, and `getSeatSubject`. Seat identity, fan-out, the per-game queue, and the bot's turn loop are composables under `composable/game-session/`. The bot submits an event through the runner. It does not apply the event itself. `fanoutEvent` and `fanoutRoundSnapshot` are hooks the in-memory engine calls. They are not on `GameSessionUseCasesPort`.

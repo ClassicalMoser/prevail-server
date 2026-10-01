@@ -18,15 +18,30 @@ const createOwnedArmyUseCases = (deps: {
 });
 ```
 
+## What a use case is
+
+A use case is one method of an inbound `*UseCasesPort`. The file is named for that method and lives under `use_cases/`. `createVsBotGame` is a use case. `enqueue`, `fanoutEvent`, and `takeBotTurns` are not: no port method is those functions.
+
+The factory `create*UseCases` is the composer. It builds the port from those methods and returns it. It is not a place to hide the methods' bodies, and it is not a place to hide their tests.
+
+## What a composable is
+
+A composable is application logic that is not a port method. It lives under `composable/`, including when only one use case calls it. Shared steps, projections, queues, fan-out, and turn loops are composables.
+
+A composable does not import a use case. A use case may import a composable.
+
 ## Layout
 
 ```
 application/
-├── use_cases/          # Feature use-case factories (+ colocated *.test.ts)
-│   ├── cards/          # command + unit card orchestration
-│   ├── armies/         # owned-army use cases
+├── use_cases/          # Port methods only, one per file, plus the create*UseCases composer
+│   ├── cards/
+│   ├── armies/
+│   ├── games/          # GameSessionUseCasesPort methods and its composer
 │   └── use-cases-root.ts
-├── composable/         # Shared helpers (card projection, asset keys, …)
+├── composable/
+│   ├── game-session/   # Queue, fan-out, seat projection, bot turn loop
+│   └── …               # Card projection, asset keys, certification
 └── index.ts
 ```
 
@@ -43,13 +58,14 @@ Wire factories through `createUseCasesRoot` — composition passes real adapters
 
 ## Composables (`composable/`)
 
-Reusable application logic that is not a full use-case port:
+These are the application functions that are not port methods:
 
 - Projecting command-card versions for storage / render
 - Building R2 asset keys
 - Replacing nested card ids with names for Typst
+- Live-game session support: the per-game queue, seat fan-out, authoritative loads, and the bot turn loop
 
-Prefer composables when two use cases share non-trivial steps; prefer keeping thin pass-through use cases only when there is truly no policy to own.
+Prefer a composable when the step is not itself a port method. A thin pass-through stays a use case only when the port method has no other policy to own.
 
 ## Slice depth
 
@@ -62,11 +78,11 @@ Prefer moving ownership / composition **policy** into army use cases over growin
 
 ## Testing
 
-How to write a test is [`../../STYLE.md`](../../STYLE.md).
+How to write a test, and where the file lives, is [`../../STYLE.md`](../../STYLE.md).
 
 - Mock **ports**, not infrastructure.
 - Vitest globals are enabled; boundary lint is disabled for `*.test.ts`.
-- Colocate `*.test.ts` with the use case. HTTP inject tests belong nearer composition / interface.
+- A use case's test sits next to that use-case file. A composable's test sits next to that composable file. HTTP inject tests belong nearer composition / interface.
 
 ## Related Documentation
 
