@@ -103,6 +103,7 @@ Use a `.env` file with `node --env-file=.env` (see `pnpm start` / `pnpm dev`).
 - [`src/interface/ws/README.md`](./src/interface/ws/README.md) — Contract-driven WS / live game protocol
 - [`src/application/README.md`](./src/application/README.md) — Use cases and composables
 - [`src/infrastructure/README.md`](./src/infrastructure/README.md) — Adapter boundaries
+- [`db/README.md`](./db/README.md) — SQL migrations
 - [`src/composition/README.md`](./src/composition/README.md) — Composition root and Fastify mount
 
 ## License

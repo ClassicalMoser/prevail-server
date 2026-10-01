@@ -70,3 +70,4 @@ infrastructure/
 - [`../README.md`](../README.md) — Architecture and soft-coupling notes
 - [`../ports/README.md`](../ports/README.md) — Interfaces to implement
 - [Root `README.md`](../../README.md) — Env vars for DB / Auth0 / R2 / Typst
+- [`../../db/README.md`](../../db/README.md) — SQL migrations
