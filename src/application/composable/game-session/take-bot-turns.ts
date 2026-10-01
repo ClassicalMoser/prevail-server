@@ -3,7 +3,7 @@ import {
   getLegalPlayerChoiceOptions,
 } from '@classicalmoser/prevail-rules/domain';
 import { setTimeout as delay } from 'node:timers/promises';
-import { selectRandomPlayerChoice } from '../../use_cases/games/select-random-player-choice';
+import { selectRandomPlayerChoice } from '../player-choice/select-random-player-choice';
 import type { GameSessionStore } from './game-session-store';
 import { loadAuthoritativeState } from './load-authoritative-state';
 import { otherSide } from './other-side';

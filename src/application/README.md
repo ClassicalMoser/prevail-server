@@ -41,6 +41,7 @@ application/
 │   └── use-cases-root.ts
 ├── composable/
 │   ├── game-session/   # Queue, fan-out, seat projection, bot turn loop
+│   ├── player-choice/  # Samples a legal player choice; not a port method
 │   └── …               # Card projection, asset keys, certification
 └── index.ts
 ```

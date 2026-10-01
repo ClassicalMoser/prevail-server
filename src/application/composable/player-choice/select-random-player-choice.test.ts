@@ -19,7 +19,7 @@ import {
   validatePlayerChoice,
 } from '@classicalmoser/prevail-rules/domain';
 import { selectRandomPlayerChoice } from './select-random-player-choice';
-import type { RandomSource } from './choice/random-source';
+import type { RandomSource } from './random-source';
 
 /* Domain wire values use null for refuse commits and empty card slots. */
 /* eslint-disable unicorn/no-null -- protocol nulls in fixtures */

@@ -42,3 +42,4 @@ export type {
   CertifyCardVersionsOps,
 } from './certify-card-versions';
 export { toContractCardListItem } from './to-contract-card-list-item';
+export type { GameSessionStore } from './game-session/game-session-store';

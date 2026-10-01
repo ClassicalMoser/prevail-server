@@ -10,6 +10,8 @@ Small functions, small files. One primary export per file. A function does one j
 
 A barrel (`index.ts`) re-exports those files. It is not a second implementation. A factory and the deps type it closes over may share a file. Two functions with different jobs do not.
 
+Functions should not turn into skyscrapers. If nested functions or `if` bodies exceed ten lines or so, they should usually split out. The name says what that branch does.
+
 No classes. Shared behavior is a function, or a closure that returns functions.
 
 `return` stands on its own line and returns a name. Do not return a call. Do not build that call's arguments inline. Name each piece, then pass the names.
@@ -74,6 +76,6 @@ Every file that exports a function has that colocated test. A barrel and a type-
 
 A test file with no sibling module of the same name is extraneous. Delete it or move the cases next to the function they call.
 
-A case that calls `fanoutEvent` lives in `fanout-event.test.ts`. It does not stay in a parent suite because the parent factory wires `fanoutEvent`. If the case is already in a parent file, move it. If the module has no test, write one. The new test calls that function. It does not boot the factory in order to reach it.
+A case that calls `fanoutEvent` lives in `fanout-event.test.ts`. It does not stay in a parent suite because the parent factory wires `fanoutEvent`. If the case is already in a parent file, move it. If the module has no test, write one. The new test calls that function. It does not boot the factory in order to reach it. Do not assert the same fact in a second suite.
 
 Mock ports, not adapters. HTTP inject tests stay next to composition and interface.

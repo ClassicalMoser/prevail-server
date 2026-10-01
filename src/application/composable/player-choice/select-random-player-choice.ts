@@ -4,16 +4,16 @@ import type {
   PlayerChoiceEvent,
   PlayerSide,
 } from '@classicalmoser/prevail-rules/domain';
-import { pickAssignUnitSupport } from './choice/pick-assign-unit-support';
-import { pickEventForPlayer } from './choice/pick-event-for-player';
-import { pickIssueCommand } from './choice/pick-issue-command';
-import { pickMoveCommander } from './choice/pick-move-commander';
-import { pickMoveUnit } from './choice/pick-move-unit';
-import { pickRangedAttack } from './choice/pick-ranged-attack';
-import { pickRoutDiscard } from './choice/pick-rout-discard';
-import { pickSetupUnits } from './choice/pick-setup-units';
-import { defaultRandom } from './choice/random-source';
-import type { RandomSource } from './choice/random-source';
+import { pickAssignUnitSupport } from './pick-assign-unit-support';
+import { pickEventForPlayer } from './pick-event-for-player';
+import { pickIssueCommand } from './pick-issue-command';
+import { pickMoveCommander } from './pick-move-commander';
+import { pickMoveUnit } from './pick-move-unit';
+import { pickRangedAttack } from './pick-ranged-attack';
+import { pickRoutDiscard } from './pick-rout-discard';
+import { pickSetupUnits } from './pick-setup-units';
+import { defaultRandom } from './random-source';
+import type { RandomSource } from './random-source';
 
 interface SelectRandomPlayerChoiceInput {
   options: LegalPlayerChoiceOptions;

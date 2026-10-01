@@ -5,3 +5,4 @@ export {
   ownedArmyStorage,
   whiteArmyId,
 } from './game-session-armies';
+export { gameSessionStore } from './game-session-store';

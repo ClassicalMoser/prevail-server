@@ -8,3 +8,4 @@ export type {
   GameSessionUseCasesDeps,
   UseCasesRootDeps,
 } from './use_cases';
+export type { GameSessionStore } from './composable';
