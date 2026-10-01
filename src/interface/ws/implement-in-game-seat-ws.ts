@@ -17,7 +17,9 @@ const parseInboundJson = (
   raw: string,
 ): { ok: true; value: unknown } | { ok: false } => {
   try {
-    return { ok: true, value: JSON.parse(raw) as unknown };
+    const value: unknown = JSON.parse(raw);
+    const parsed: { ok: true; value: unknown } = { ok: true, value };
+    return parsed;
   } catch {
     return { ok: false };
   }
@@ -26,9 +28,9 @@ const parseInboundJson = (
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
 
-interface SeatOpenResultOk {
+interface SeatOpenResultOk<THandle> {
   ok: true;
-  connectionHandle: unknown;
+  connectionHandle: THandle;
 }
 
 interface SeatOpenResultFail {
@@ -37,18 +39,19 @@ interface SeatOpenResultFail {
   reason: string;
 }
 
-type SeatOpenResult = SeatOpenResultOk | SeatOpenResultFail;
+type SeatOpenResult<THandle> = SeatOpenResultOk<THandle> | SeatOpenResultFail;
 
 const openSeatConnection = async <
   TParams extends Record<string, unknown>,
   TInboundPlayerChoice,
+  THandle,
 >(input: {
-  handlers: InGameSeatWsHandler<TParams, TInboundPlayerChoice>;
+  handlers: InGameSeatWsHandler<TParams, TInboundPlayerChoice, THandle>;
   context: WsSeatConnectionContext<TParams>;
   sendJson: (message: unknown) => void;
   path: string;
   logger: LoggerPort;
-}): Promise<SeatOpenResult> => {
+}): Promise<SeatOpenResult<THandle>> => {
   try {
     return await input.handlers.onOpen(input.context, input.sendJson);
   } catch (error) {
@@ -88,6 +91,7 @@ const implementInGameSeatWs = <
   TGameEffect,
   TGameSnapshot,
   TChoiceRejected,
+  THandle = unknown,
 >(
   contract: InGameSeatContract<
     TSide,
@@ -99,7 +103,7 @@ const implementInGameSeatWs = <
     TChoiceRejected
   >,
   logger: LoggerPort,
-  handlers: InGameSeatWsHandler<TParams, TInboundPlayerChoice>,
+  handlers: InGameSeatWsHandler<TParams, TInboundPlayerChoice, THandle>,
 ): RegisteredWsRoute => ({
   path: contract.path,
   side: contract.side,

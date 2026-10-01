@@ -149,6 +149,9 @@ These are **not** import-boundary violations, but they erode hexagonal purity:
 
 ## Related Documentation
 
+- [`../STYLE.md`](../STYLE.md) — functions, files, commentary, tests
+- [`../DESIGN.md`](../DESIGN.md) — rules kernel, envelopes, layers
+- [`../CONTRIBUTING.md`](../CONTRIBUTING.md) — scripts and checks
 - [`../docs/adr/README.md`](../docs/adr/README.md) — ADRs for live-game / vs-bot decisions & debt
 - [`domain/README.md`](./domain/README.md) — Server domain + prevail-rules
 - [`ports/README.md`](./ports/README.md) — Port and envelope conventions

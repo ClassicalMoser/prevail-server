@@ -6,6 +6,11 @@ import type {
 } from '../db-types';
 import type { Sql } from '../sql-type';
 
+/**
+ * Tagged SQL for command-card rows. Each function returns rows only.
+ * Mapping into domain cards happens in `mappers/`.
+ */
+
 const getCurrentCommandCardsQuery = async (
   sql: Sql,
 ): Promise<CommandCardVersionDb[]> =>

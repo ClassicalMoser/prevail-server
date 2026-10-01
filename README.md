@@ -92,6 +92,10 @@ Use a `.env` file with `node --env-file=.env` (see `pnpm start` / `pnpm dev`).
 
 ## Documentation
 
+- [`STYLE.md`](./STYLE.md) — functions, files, commentary, tests
+- [`DESIGN.md`](./DESIGN.md) — rules kernel, envelopes, layers
+- [`CONTRIBUTING.md`](./CONTRIBUTING.md) — scripts and checks
+- [`AGENTS.md`](./AGENTS.md) — pointer for agents
 - [`src/README.md`](./src/README.md) — Hexagonal architecture and request flow
 - [`src/domain/README.md`](./src/domain/README.md) — Server domain + prevail-rules
 - [`src/ports/README.md`](./src/ports/README.md) — Port conventions and result envelopes

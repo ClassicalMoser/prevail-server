@@ -51,19 +51,22 @@ const implementGetRoute = <
   invoke: async (wire): Promise<DataErrorSignature<TReturn>> => {
     const parsed = tryParseGetRequest(wire, contract.validators);
     if (!parsed.ok) {
-      return parsed.error;
+      const rejected = parsed.error;
+      return rejected;
     }
 
     try {
-      return await handler(parsed.value, wire.auth);
+      const handled = await handler(parsed.value, wire.auth);
+      return handled;
     } catch (error) {
-      return handleError({
+      const failure = handleError({
         error,
         logger,
         context: `handling ${contract.method} on ${contract.path}`,
         message: `Failed to handle ${contract.method} on ${contract.path}`,
         status: 500,
       });
+      return failure;
     }
   },
 });
@@ -98,19 +101,22 @@ const implementPostRoute = <
       contract.validators,
     );
     if (!parsed.ok) {
-      return parsed.error;
+      const rejected = parsed.error;
+      return rejected;
     }
 
     try {
-      return await handler(parsed.value, wire.auth);
+      const handled = await handler(parsed.value, wire.auth);
+      return handled;
     } catch (error) {
-      return handleError({
+      const failure = handleError({
         error,
         logger,
         context: `handling ${contract.method} on ${contract.path}`,
         message: `Failed to handle ${contract.method} on ${contract.path}`,
         status: 500,
       });
+      return failure;
     }
   },
 });
@@ -133,19 +139,22 @@ const implementPutRoute = <
   invoke: async (wire): Promise<DataErrorSignature<TReturn>> => {
     const parsed = tryParseBodyRouteRequest(wire, contract.validators);
     if (!parsed.ok) {
-      return parsed.error;
+      const rejected = parsed.error;
+      return rejected;
     }
 
     try {
-      return await handler(parsed.value, wire.auth);
+      const handled = await handler(parsed.value, wire.auth);
+      return handled;
     } catch (error) {
-      return handleError({
+      const failure = handleError({
         error,
         logger,
         context: `handling ${contract.method} on ${contract.path}`,
         message: `Failed to handle ${contract.method} on ${contract.path}`,
         status: 500,
       });
+      return failure;
     }
   },
 });
@@ -168,19 +177,22 @@ const implementPatchRoute = <
   invoke: async (wire): Promise<DataErrorSignature<TReturn>> => {
     const parsed = tryParseBodyRouteRequest(wire, contract.validators);
     if (!parsed.ok) {
-      return parsed.error;
+      const rejected = parsed.error;
+      return rejected;
     }
 
     try {
-      return await handler(parsed.value, wire.auth);
+      const handled = await handler(parsed.value, wire.auth);
+      return handled;
     } catch (error) {
-      return handleError({
+      const failure = handleError({
         error,
         logger,
         context: `handling ${contract.method} on ${contract.path}`,
         message: `Failed to handle ${contract.method} on ${contract.path}`,
         status: 500,
       });
+      return failure;
     }
   },
 });
@@ -201,19 +213,22 @@ const implementDeleteRoute = <
   invoke: async (wire): Promise<RouteInvokeResult> => {
     const parsed = tryParseDeleteRequest(wire, contract.validators);
     if (!parsed.ok) {
-      return parsed.error;
+      const rejected = parsed.error;
+      return rejected;
     }
 
     try {
-      return await handler(parsed.value, wire.auth);
+      const handled = await handler(parsed.value, wire.auth);
+      return handled;
     } catch (error) {
-      return handleError({
+      const failure = handleError({
         error,
         logger,
         context: `handling ${contract.method} on ${contract.path}`,
         message: `Failed to handle ${contract.method} on ${contract.path}`,
         status: 500,
       });
+      return failure;
     }
   },
 });
@@ -242,19 +257,22 @@ const implementMediaPostRoute = <
   ): Promise<DataErrorSignature<MediaPayload<TSuccessContentType>>> => {
     const parsed = tryParseBodyRouteRequest(wire, contract.validators);
     if (!parsed.ok) {
-      return parsed.error;
+      const rejected = parsed.error;
+      return rejected;
     }
 
     try {
-      return await handler(parsed.value, wire.auth);
+      const handled = await handler(parsed.value, wire.auth);
+      return handled;
     } catch (error) {
-      return handleError({
+      const failure = handleError({
         error,
         logger,
         context: `handling ${contract.method} on ${contract.path}`,
         message: `Failed to handle ${contract.method} on ${contract.path}`,
         status: 500,
       });
+      return failure;
     }
   },
 });

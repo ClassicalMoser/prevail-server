@@ -3,13 +3,28 @@ import type { AssetType, RenderDetails } from '@ports';
 const renderDetailsForAssetType = (assetType: AssetType): RenderDetails => {
   switch (assetType) {
     case 'svg': {
-      return { bleed: false, format: 'svg', unitImage: false };
+      const details: RenderDetails = {
+        bleed: false,
+        format: 'svg',
+        unitImage: false,
+      };
+      return details;
     }
     case 'pdf': {
-      return { bleed: false, format: 'pdf', unitImage: false };
+      const details: RenderDetails = {
+        bleed: false,
+        format: 'pdf',
+        unitImage: false,
+      };
+      return details;
     }
     case 'pdf-bleed': {
-      return { bleed: true, format: 'pdf', unitImage: false };
+      const details: RenderDetails = {
+        bleed: true,
+        format: 'pdf',
+        unitImage: false,
+      };
+      return details;
     }
     default: {
       const _exhaustive: never = assetType;

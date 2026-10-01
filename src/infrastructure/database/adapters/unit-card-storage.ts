@@ -42,8 +42,8 @@ const createUnitCardStorage = (
   logger: LoggerPort,
   sql: Sql,
 ): UnitCardStorage => ({
-  getCurrentUnitCards: (): Promise<DataErrorSignature<UnitType[]>> =>
-    storageOp({
+  getCurrentUnitCards: (): Promise<DataErrorSignature<UnitType[]>> => {
+    const stored = storageOp({
       logger,
       context: 'getting current unit cards from database',
       message: 'Failed to get current unit cards from database',
@@ -51,10 +51,12 @@ const createUnitCardStorage = (
         success: true,
         data: mapUnitCardVersions(await getCurrentUnitCardsQuery(sql)),
       }),
-    }),
+    });
+    return stored;
+  },
 
-  getAllUnitCards: (): Promise<DataErrorSignature<CatalogCardListItem[]>> =>
-    storageOp({
+  getAllUnitCards: (): Promise<DataErrorSignature<CatalogCardListItem[]>> => {
+    const stored = storageOp({
       logger,
       context: 'getting all unit cards from database',
       message: 'Failed to get all unit cards from database',
@@ -65,27 +67,34 @@ const createUnitCardStorage = (
           data: rows.map((row) => unitCardListItemMapper(row)),
         };
       },
-    }),
+    });
+    return stored;
+  },
 
-  getUnitCardById: (id: string): Promise<DataErrorSignature<UnitType>> =>
-    storageOp({
+  getUnitCardById: (id: string): Promise<DataErrorSignature<UnitType>> => {
+    const stored = storageOp({
       logger,
       context: 'getting unit card by id from database',
       message: 'Failed to get unit card by id from database',
       run: async () => {
         const rows: UnitCardVersionDb[] = await getUnitCardByIdQuery(sql, id);
         if (rows.length === 0) {
-          return notFound('Unit card not found');
+          const storedCall = notFound('Unit card not found');
+          return storedCall;
         }
         return {
           success: true,
           data: unitCardVersionMapperToDomain(rows[0]),
         };
       },
-    }),
+    });
+    return stored;
+  },
 
-  getUnitCardsByIds: (ids: string[]): Promise<DataErrorSignature<UnitType[]>> =>
-    storageOp({
+  getUnitCardsByIds: (
+    ids: string[],
+  ): Promise<DataErrorSignature<UnitType[]>> => {
+    const stored = storageOp({
       logger,
       context: 'getting unit cards by ids from database',
       message: 'Failed to get unit cards by ids from database',
@@ -98,10 +107,12 @@ const createUnitCardStorage = (
           data: mapUnitCardVersions(await getUnitCardsByIdsQuery(sql, ids)),
         };
       },
-    }),
+    });
+    return stored;
+  },
 
-  createEmptyUnitCard: (): Promise<DataErrorSignature<string>> =>
-    storageOp({
+  createEmptyUnitCard: (): Promise<DataErrorSignature<string>> => {
+    const stored = storageOp({
       logger,
       context: 'creating empty unit card in database',
       message: 'Failed to create empty unit card in database',
@@ -110,30 +121,36 @@ const createUnitCardStorage = (
           await createEmptyUnitCardQuery(sql);
         return { success: true, data: rows[0].unit_card_id };
       },
-    }),
+    });
+    return stored;
+  },
 
-  deleteEmptyUnitCards: (): Promise<DataErrorSignature<void>> =>
-    storageOp({
+  deleteEmptyUnitCards: (): Promise<DataErrorSignature<void>> => {
+    const stored = storageOp({
       logger,
       context: 'deleting empty unit cards from database',
       message: 'Failed to delete empty unit cards from database',
       run: async () => {
         await deleteEmptyUnitCardsQuery(sql);
-        return voidSuccess();
+        const storedCall = voidSuccess();
+        return storedCall;
       },
-    }),
+    });
+    return stored;
+  },
 
   createUnitCardVersion: (
     unitType: UnitType,
-  ): Promise<DataErrorSignature<UnitType>> =>
-    storageOp({
+  ): Promise<DataErrorSignature<UnitType>> => {
+    const stored = storageOp({
       logger,
       context: 'creating unit card version in database',
       message: 'Failed to create unit card version in database',
       run: async () => {
         const existingCard = await unitCardExistsQuery(sql, unitType.id);
         if (existingCard.length === 0) {
-          return notFound('Unit card not found');
+          const storedCall = notFound('Unit card not found');
+          return storedCall;
         }
 
         const writeVersion: WriteUnitCardVersionDb =
@@ -148,12 +165,14 @@ const createUnitCardStorage = (
           data: unitCardVersionMapperToDomain(rows[0]),
         };
       },
-    }),
+    });
+    return stored;
+  },
 
   deleteUnitCardVersion: (
     unitType: UnitType,
-  ): Promise<DataErrorSignature<void>> =>
-    storageOp({
+  ): Promise<DataErrorSignature<void>> => {
+    const stored = storageOp({
       logger,
       context: 'deleting unit card version from database',
       message: 'Failed to delete unit card version from database',
@@ -166,14 +185,17 @@ const createUnitCardStorage = (
           versionMinor: minor,
           versionPatch: patch,
         });
-        return voidSuccess();
+        const storedCall = voidSuccess();
+        return storedCall;
       },
-    }),
+    });
+    return stored;
+  },
 
   getLatestUnitCardCertifications: (): Promise<
     DataErrorSignature<UnitCardCertificationStatus[]>
-  > =>
-    storageOp({
+  > => {
+    const stored = storageOp({
       logger,
       context: 'getting latest unit card certifications from database',
       message: 'Failed to get latest unit card certifications from database',
@@ -188,18 +210,21 @@ const createUnitCardStorage = (
           })),
         };
       },
-    }),
+    });
+    return stored;
+  },
 
   certifyUnitCardVersions: (
     unitCardIds: string[],
-  ): Promise<DataErrorSignature<void>> =>
-    storageOp({
+  ): Promise<DataErrorSignature<void>> => {
+    const stored = storageOp({
       logger,
       context: 'certifying unit card versions in database',
       message: 'Failed to certify unit card versions in database',
       run: async () => {
         if (unitCardIds.length === 0) {
-          return voidSuccess();
+          const storedCall = voidSuccess();
+          return storedCall;
         }
 
         const rulesVersionRows = await getLatestRulesVersionIdQuery(sql);
@@ -216,9 +241,12 @@ const createUnitCardStorage = (
           unitCardIds,
           rulesVersionRows[0].rules_version_id,
         );
-        return voidSuccess();
+        const storedCall = voidSuccess();
+        return storedCall;
       },
-    }),
+    });
+    return stored;
+  },
 });
 
 export { createUnitCardStorage };

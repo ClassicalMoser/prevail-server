@@ -55,7 +55,7 @@ describe('websocket route registration', () => {
     const ws = new WebSocket(`ws://127.0.0.1:${server.port}/ws/test`, {
       headers: { authorization: 'Bearer bad' },
     });
-    const [code] = (await once(ws, 'close')) as [number];
+    const [code] = (await once(ws, 'close')) as [number]; // 'once' types the event args as unknown[]
 
     expect(code).toBe(1008);
     await server.close();
@@ -91,7 +91,7 @@ describe('websocket route registration', () => {
       const ws = new WebSocket(`ws://127.0.0.1:${server.port}/ws/test`, {
         headers: { authorization: 'Bearer good' },
       });
-      const [data] = (await once(ws, 'message')) as [Buffer | string];
+      const [data] = (await once(ws, 'message')) as [Buffer | string]; // 'once' types the event args as unknown[]
       ws.close();
 
       expect(JSON.parse(String(data))).toStrictEqual({
@@ -132,7 +132,7 @@ describe('websocket route registration', () => {
       const ws = new WebSocket(
         `ws://127.0.0.1:${server.port}/ws/test-query?access_token=good`,
       );
-      const [data] = (await once(ws, 'message')) as [Buffer | string];
+      const [data] = (await once(ws, 'message')) as [Buffer | string]; // 'once' types the event args as unknown[]
       ws.close();
 
       expect(JSON.parse(String(data))).toStrictEqual({

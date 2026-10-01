@@ -15,16 +15,20 @@ const unitCardAssetKey = (
   cardId: string,
   version: string,
   assetType: AssetType,
-): string =>
-  cardAssetKey({
+): string => {
+  const key = cardAssetKey({
     kind: 'unit',
     cardId,
     version,
     assetType,
   });
+  return key;
+};
 
-const unitCardAssetTargets = (unitType: UnitType): UnitCardAssetTarget[] =>
-  cardAssetTargets('unit', unitType);
+const unitCardAssetTargets = (unitType: UnitType): UnitCardAssetTarget[] => {
+  const targets = cardAssetTargets('unit', unitType);
+  return targets;
+};
 
 export type { UnitCardAssetTarget };
 export { UNIT_CARD_ASSET_TYPES, unitCardAssetKey, unitCardAssetTargets };

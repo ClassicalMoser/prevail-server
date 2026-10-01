@@ -7,6 +7,7 @@ import type {
   AuthRequired,
   Permission,
 } from '@classicalmoser/prevail-contracts';
+import { PERMISSIONS } from '@classicalmoser/prevail-contracts';
 import type { AuthPort, ErrorSignature, LoggerPort } from '@ports';
 import { handleError } from '@utils';
 import type { AuthInfrastructureConfig } from '../auth-config';
@@ -31,10 +32,19 @@ const toStringArray = (value: unknown): readonly string[] => {
   return value.filter((entry): entry is string => typeof entry === 'string');
 };
 
+const knownPermissions = new Set<string>(PERMISSIONS);
+
+const isPermission = (value: string): value is Permission =>
+  knownPermissions.has(value);
+
 const toPermissions = (
   claims: Record<string, unknown>,
-): readonly Permission[] =>
-  toStringArray(claims.permissions) as readonly Permission[];
+): readonly Permission[] => {
+  const granted = toStringArray(claims.permissions).filter((entry) =>
+    isPermission(entry),
+  );
+  return granted;
+};
 
 const hasPermissions = (
   granted: readonly Permission[],

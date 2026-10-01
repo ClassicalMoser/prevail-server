@@ -26,7 +26,13 @@ type UnitIdToNameMap = ReadonlyMap<string, string>;
 const buildPlaceholderUnitIdToNameMap = (unitIds: string[]): UnitIdToNameMap =>
   new Map(unitIds.map((id) => [id, `NAME_${id.slice(0, 5)}...`]));
 
-/** Get the name of a unit type from the lookup table. */
+/**
+ * Name for a unit type id, or throw when the map has no entry.
+ *
+ * A missing id means the caller looked up cards that are not on this card.
+ * The throw aborts the render so the route boundary can report the failure.
+ * Callers that can recover should check the map before calling.
+ */
 const getUnitName = (unitIdToNameMap: UnitIdToNameMap, id: string): string => {
   const name = unitIdToNameMap.get(id);
   if (name === undefined) {

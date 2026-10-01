@@ -6,6 +6,11 @@ import type {
 } from '../db-types';
 import type { Sql } from '../sql-type';
 
+/**
+ * Tagged SQL for owned armies and their unit and command-card join rows.
+ * Display name and composition are columns. Domain mapping happens in `mappers/`.
+ */
+
 const getOwnedArmiesQuery = async (
   sql: Sql,
   authSub: string,

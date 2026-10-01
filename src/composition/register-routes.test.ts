@@ -16,7 +16,7 @@ const buildApp = (route: RegisteredRoute): FastifyInstance => {
 const baseRoute = {
   method: 'POST' as const,
   path: '/resource',
-  auth: { authRequired: false } as RegisteredRoute['auth'],
+  auth: { authRequired: false } as RegisteredRoute['auth'], // partial auth object; the test only checks authRequired
   successStatus: 201 as const,
   successContentType: 'application/json' as const,
 };

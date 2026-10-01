@@ -12,10 +12,9 @@ import { createUnitCardUseCases } from './unit-card-use-cases';
 const validUnitA = tempUnits[0];
 const validUnitB = tempUnits[1];
 
-// Drop a required nested field so the domain schema rejects it.
 const invalidUnit = {
   ...tempUnits[2],
-  stats: undefined as unknown as UnitType['stats'],
+  stats: undefined as unknown as UnitType['stats'], // unreachable for a real unit; forces schema rejection
 };
 
 const status = (

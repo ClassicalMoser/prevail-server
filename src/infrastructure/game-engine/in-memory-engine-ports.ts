@@ -22,13 +22,21 @@ interface InMemoryEnginePortHooks {
   ) => void;
 }
 
-const ok = <T>(data: T): PortResponse<T> => ({ data, result: true });
+const ok = <T>(data: T): PortResponse<T> => {
+  const response: PortResponse<T> = { data, result: true };
+  return response;
+};
+
 const okVoid = (): PortResponse<void> =>
   ({ data: undefined, result: true }) as PortResponse<void>;
-const fail = (errorReason: string): PortResponse<never> => ({
-  errorReason,
-  result: false,
-});
+
+const fail = (errorReason: string): PortResponse<never> => {
+  const response: PortResponse<never> = {
+    errorReason,
+    result: false,
+  };
+  return response;
+};
 
 const createInMemoryGameStorage = (): GameStorage => {
   const games = new Map<string, Game>();
@@ -40,28 +48,34 @@ const createInMemoryGameStorage = (): GameStorage => {
         return;
       }
       if (game.gameMode !== gameMode) {
-        return fail('Game mode mismatch');
+        const response = fail('Game mode mismatch');
+        return response;
       }
-      return ok(game);
+      const response = ok(game);
+      return response;
     },
     saveNewGame: async (game) => {
       if (games.has(game.id)) {
-        return fail('Game already exists');
+        const response = fail('Game already exists');
+        return response;
       }
       games.set(game.id, game);
-      return okVoid();
+      const response = okVoid();
+      return response;
     },
     updateGameState: async (gameId, gameState) => {
       const existing = games.get(gameId);
       if (existing === undefined) {
-        return fail('Game not found');
+        const response = fail('Game not found');
+        return response;
       }
       const next = {
         ...existing,
         gameState,
       } as GameForVisibility<'authoritative'>;
       games.set(gameId, next);
-      return okVoid();
+      const response = okVoid();
+      return response;
     },
   };
 };
@@ -77,41 +91,49 @@ const createInMemoryEventStreamStorage = (
   return {
     getEventStream: async (gameId, roundNumber) => {
       const stream = streams.get(streamKey(gameId, roundNumber));
-      return ok(stream);
+      const response = ok(stream);
+      return response;
     },
     addEventToStream: async (gameId, roundNumber, event) => {
       const key = streamKey(gameId, roundNumber);
       const current = streams.get(key);
       if (current === undefined) {
-        return fail('Event stream not initialized');
+        const response = fail('Event stream not initialized');
+        return response;
       }
       const next = [...current, event];
       streams.set(key, next);
       hooks.onEventAppended?.(gameId, roundNumber, event);
-      return ok(next);
+      const response = ok(next);
+      return response;
     },
     flushEventStream: async (gameId, roundNumber) => {
       streams.delete(streamKey(gameId, roundNumber));
-      return okVoid();
+      const response = okVoid();
+      return response;
     },
     newEventStream: async (gameId, roundNumber) => {
       const key = streamKey(gameId, roundNumber);
       if (streams.has(key)) {
-        return fail('Event stream already exists');
+        const response = fail('Event stream already exists');
+        return response;
       }
       const empty: Event[] = [];
       streams.set(key, empty);
-      return ok(empty);
+      const response = ok(empty);
+      return response;
     },
     truncateEventStream: async (gameId, roundNumber, firstEventToRemove) => {
       const key = streamKey(gameId, roundNumber);
       const current = streams.get(key);
       if (current === undefined) {
-        return fail('Event stream not initialized');
+        const response = fail('Event stream not initialized');
+        return response;
       }
       const next = current.slice(0, firstEventToRemove);
       streams.set(key, next);
-      return ok(next);
+      const response = ok(next);
+      return response;
     },
   };
 };
@@ -122,12 +144,15 @@ const createInMemoryRoundSnapshotStorage = (
   const snapshots = new Map<string, GameState>();
 
   return {
-    getRoundSnapshot: async (gameId, roundNumber) =>
-      ok(snapshots.get(streamKey(gameId, roundNumber))),
+    getRoundSnapshot: async (gameId, roundNumber) => {
+      const snapshot = ok(snapshots.get(streamKey(gameId, roundNumber)));
+      return snapshot;
+    },
     saveRoundSnapshot: async (gameId, roundNumber, gameState) => {
       snapshots.set(streamKey(gameId, roundNumber), gameState);
       hooks.onRoundSnapshotSaved?.(gameId, roundNumber, gameState);
-      return okVoid();
+      const response = okVoid();
+      return response;
     },
   };
 };

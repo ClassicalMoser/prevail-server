@@ -2,6 +2,7 @@ import type { S3Client } from '@aws-sdk/client-s3';
 import { PutObjectCommand } from '@aws-sdk/client-s3';
 import type { AssetType, UploadResult } from '@ports';
 import { contentTypeFor } from './content-type-for';
+import { httpStatusCode } from './http-status-code';
 
 interface PutImmutableParams {
   client: S3Client;
@@ -11,12 +12,10 @@ interface PutImmutableParams {
   assetType: AssetType;
 }
 
-const isPreconditionFailed = (error: unknown): boolean =>
-  typeof error === 'object' &&
-  error !== null &&
-  '$metadata' in error &&
-  (error as { $metadata?: { httpStatusCode?: number } }).$metadata
-    ?.httpStatusCode === 412;
+const isPreconditionFailed = (error: unknown): boolean => {
+  const status = httpStatusCode(error);
+  return status === 412;
+};
 
 const putImmutable = async (
   params: PutImmutableParams,

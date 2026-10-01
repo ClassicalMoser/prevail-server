@@ -25,13 +25,16 @@ const cardAssetKey = ({
   const base = `${cardId}_${version}`;
   switch (assetType) {
     case 'svg': {
-      return `cards/${kind}/svg/${base}.svg`;
+      const key = `cards/${kind}/svg/${base}.svg`;
+      return key;
     }
     case 'pdf': {
-      return `cards/${kind}/print/${base}.pdf`;
+      const key = `cards/${kind}/print/${base}.pdf`;
+      return key;
     }
     case 'pdf-bleed': {
-      return `cards/${kind}/print/${base}.bleed.pdf`;
+      const key = `cards/${kind}/print/${base}.bleed.pdf`;
+      return key;
     }
     default: {
       const _exhaustive: never = assetType;
@@ -43,16 +46,19 @@ const cardAssetKey = ({
 const cardAssetTargets = (
   kind: CardAssetKind,
   card: { id: string; version: string },
-): CardAssetTarget[] =>
-  CARD_ASSET_TYPES.map((type) => ({
-    type,
-    key: cardAssetKey({
+): CardAssetTarget[] => {
+  const targets = CARD_ASSET_TYPES.map((type) => {
+    const key = cardAssetKey({
       kind,
       cardId: card.id,
       version: card.version,
       assetType: type,
-    }),
-  }));
+    });
+    const target: CardAssetTarget = { type, key };
+    return target;
+  });
+  return targets;
+};
 
 export type { CardAssetKind, CardAssetKeyInput, CardAssetTarget };
 export { CARD_ASSET_TYPES, cardAssetKey, cardAssetTargets };

@@ -17,7 +17,7 @@ const sampleGame = (): GameForVisibility<'authoritative'> => ({
   gameMode: 'mini',
   gameState: createEmptyGameState(
     'mini',
-  ) as GameForVisibility<'authoritative'>['gameState'],
+  ) as GameForVisibility<'authoritative'>['gameState'], // createEmptyGameState returns the wide GameState union
   id: '550e8400-e29b-41d4-a716-446655440010',
   whiteArmy: placeholderArmy,
   whitePlayer: 'white',

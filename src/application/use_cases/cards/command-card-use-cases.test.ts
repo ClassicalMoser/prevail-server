@@ -18,10 +18,9 @@ import { getCommandCardUnitIds } from '@application/composable';
 const validCardA = tempCommandCards[4];
 const validCardB = tempCommandCards[5];
 
-// Drop a required nested field so the domain schema rejects it.
 const invalidCard = {
   ...tempCommandCards[2],
-  command: undefined as unknown as CommandCard['command'],
+  command: undefined as unknown as CommandCard['command'], // unreachable for a real card; forces schema rejection
 };
 
 const status = (

@@ -49,31 +49,32 @@ type WsRouteRegistry = readonly RegisteredWsRoute[];
 interface InGameSeatWsHandler<
   TParams extends Record<string, unknown>,
   TInboundPlayerChoice,
+  THandle = unknown,
 > {
   onOpen: (
     context: WsSeatConnectionContext<TParams>,
     send: (message: unknown) => void,
   ) => Promise<
-    | { ok: true; connectionHandle: unknown }
+    | { ok: true; connectionHandle: THandle }
     | { ok: false; closeCode?: number; reason: string }
   >;
   onPlayerChoice: (
     context: WsSeatConnectionContext<TParams>,
     choice: TInboundPlayerChoice,
-    connectionHandle: unknown,
+    connectionHandle: THandle,
   ) => Promise<
     { ok: true } | { ok: false; choiceRejected: FailValidationResult }
   >;
   /** Client asked for the current seat-visible game (resync). */
   onRequestGameSnapshot: (
     context: WsSeatConnectionContext<TParams>,
-    connectionHandle: unknown,
+    connectionHandle: THandle,
   ) => Promise<
     { ok: true } | { ok: false; choiceRejected: FailValidationResult }
   >;
   onClose: (
     context: WsSeatConnectionContext<TParams>,
-    connectionHandle: unknown,
+    connectionHandle: THandle,
   ) => void;
 }
 

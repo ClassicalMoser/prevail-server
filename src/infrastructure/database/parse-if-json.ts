@@ -6,7 +6,7 @@
 
 function parseIfJson<T>(value: string | T): T {
   if (typeof value === 'string') {
-    const parsedValue = JSON.parse(value) as T;
+    const parsedValue: T = JSON.parse(value);
     return parsedValue;
   }
   return value;

@@ -4,7 +4,7 @@ import { objectExists } from './object-exists';
 
 const send = vi.fn<NonNullable<S3Client['send']>>();
 
-const client = { send } as unknown as S3Client;
+const client = { send } as unknown as S3Client; // S3Client needs a full client; this suite only calls send
 const bucket = 'test-bucket';
 
 describe('r2 object existence', () => {

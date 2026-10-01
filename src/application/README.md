@@ -62,12 +62,16 @@ Prefer moving ownership / composition **policy** into army use cases over growin
 
 ## Testing
 
+How to write a test is [`../../STYLE.md`](../../STYLE.md).
+
 - Mock **ports**, not infrastructure.
 - Vitest globals are enabled; boundary lint is disabled for `*.test.ts`.
-- Prefer covering orchestration branches here; HTTP inject tests belong nearer composition / interface.
+- Colocate `*.test.ts` with the use case. HTTP inject tests belong nearer composition / interface.
 
 ## Related Documentation
 
+- [`../../STYLE.md`](../../STYLE.md) — functions, files, commentary, tests
+- [`../../DESIGN.md`](../../DESIGN.md) — rules kernel, envelopes, layers
 - [`../README.md`](../README.md) — Architecture
 - [`../ports/README.md`](../ports/README.md) — Port and envelope shapes
 - [`../infrastructure/README.md`](../infrastructure/README.md) — Adapters use cases call

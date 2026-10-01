@@ -1,6 +1,11 @@
 import type { UserDb } from '../db-types';
 import type { Sql } from '../sql-type';
 
+/**
+ * Tagged SQL for local users keyed by id or Auth0 subject.
+ * The mapper turns a row into the port `User`.
+ */
+
 const getUserByIdQuery = async (sql: Sql, userId: string): Promise<UserDb[]> =>
   await sql`
     SELECT user_id, user_auth_sub

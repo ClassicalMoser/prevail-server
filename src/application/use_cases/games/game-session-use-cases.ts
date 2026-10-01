@@ -61,8 +61,15 @@ interface GameSessionRuntime extends GameSessionUseCasesPort {
   ) => Promise<void>;
 }
 
-const otherSide = (side: PlayerSide): PlayerSide =>
-  side === 'white' ? 'black' : 'white';
+const otherSide = (side: PlayerSide): PlayerSide => {
+  const opposite: PlayerSide = side === 'white' ? 'black' : 'white';
+  return opposite;
+};
+
+const subjectForSeat = (meta: GameSessionMeta, side: PlayerSide): string => {
+  const subject = side === meta.humanSide ? meta.humanSubject : BOT_SUBJECT;
+  return subject;
+};
 
 const sendGameSnapshotToConnection = (
   connection: GameSeatConnection,
@@ -372,8 +379,7 @@ const createGameSessionUseCases = (
         return { message: 'Game not found', status: 404, success: false };
       }
 
-      const expectedSubject =
-        input.side === meta.humanSide ? meta.humanSubject : BOT_SUBJECT;
+      const expectedSubject = subjectForSeat(meta, input.side);
       if (input.subject !== expectedSubject) {
         return {
           message: 'Seat not assigned to this player',
@@ -418,8 +424,7 @@ const createGameSessionUseCases = (
     if (meta === undefined) {
       return { message: 'Game not found', status: 404, success: false };
     }
-    const expectedSubject =
-      connection.side === meta.humanSide ? meta.humanSubject : BOT_SUBJECT;
+    const expectedSubject = subjectForSeat(meta, connection.side);
     if (connection.subject !== expectedSubject) {
       return {
         message: 'Seat not assigned to this player',
@@ -454,8 +459,7 @@ const createGameSessionUseCases = (
     if (meta === undefined) {
       return { message: 'Game not found', status: 404, success: false };
     }
-    const expectedSubject =
-      connection.side === meta.humanSide ? meta.humanSubject : BOT_SUBJECT;
+    const expectedSubject = subjectForSeat(meta, connection.side);
     if (connection.subject !== expectedSubject) {
       return {
         message: 'Seat not assigned to this player',
@@ -495,7 +499,8 @@ const createGameSessionUseCases = (
     if (meta === undefined) {
       return undefined;
     }
-    return side === meta.humanSide ? meta.humanSubject : BOT_SUBJECT;
+    const subject = subjectForSeat(meta, side);
+    return subject;
   };
 
   return {

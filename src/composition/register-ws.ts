@@ -3,6 +3,35 @@ import websocket from '@fastify/websocket';
 import type { AuthPort, WsRouteRegistry } from '@ports';
 import { extractAccessToken, normalizeRequestHeaders } from '@utils';
 
+const headerRecord = (
+  headers: Readonly<Record<string, string | string[] | undefined>>,
+): Readonly<Record<string, string | string[] | undefined>> => {
+  const record: Record<string, string | string[] | undefined> = {
+    ...headers,
+  };
+  return record;
+};
+
+const queryRecord = (
+  query: unknown,
+): Record<string, string | string[] | undefined> => {
+  const record: Record<string, string | string[] | undefined> = {};
+  if (typeof query !== 'object' || query === null) {
+    return record;
+  }
+  for (const [key, value] of Object.entries(query)) {
+    if (typeof value === 'string') {
+      record[key] = value;
+    } else if (
+      Array.isArray(value) &&
+      value.every((entry) => typeof entry === 'string')
+    ) {
+      record[key] = value;
+    }
+  }
+  return record;
+};
+
 const rawToText = (raw: Buffer | ArrayBuffer | Buffer[]): string => {
   if (Buffer.isBuffer(raw)) {
     return raw.toString('utf8');
@@ -52,9 +81,7 @@ const registerWs = async (
 
   for (const route of routes) {
     app.get(route.path, { websocket: true }, async (socket, request) => {
-      const headers = normalizeRequestHeaders(
-        request.headers as Record<string, string | string[] | undefined>,
-      );
+      const headers = normalizeRequestHeaders(headerRecord(request.headers));
 
       const authOutcome = await authenticateUpgrade({
         authPort,
@@ -62,7 +89,7 @@ const registerWs = async (
           socket.close(code, reason);
         },
         headers,
-        query: request.query as Record<string, string | string[] | undefined>,
+        query: queryRecord(request.query),
         route,
       });
       if (authOutcome === 'closed') {

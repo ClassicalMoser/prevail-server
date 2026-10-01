@@ -27,8 +27,8 @@ const runTypstCompile = async (
       maxBuffer: 10 * 1024 * 1024,
     },
   );
-
-  return stdout as Buffer;
+  const compiled = Buffer.isBuffer(stdout) ? stdout : Buffer.from(stdout);
+  return compiled;
 };
 
 const templatePathInWorkspace = (

@@ -21,18 +21,18 @@ infrastructure/
 
 ## Database (`database/`)
 
-| Piece        | Role                                          |
-| ------------ | --------------------------------------------- |
-| `queries/`   | Tagged SQL functions                          |
-| `db-types/`  | Row shapes as returned by postgres            |
-| `mappers/`   | Row ↔ domain (and sometimes contract DTO)     |
-| `adapters/`  | Implement `*Storage` ports                    |
-| `db-root.ts` | Builds `StoragePort` from a connection string |
+| Piece        | Role                                                                         |
+| ------------ | ---------------------------------------------------------------------------- |
+| `queries/`   | Tagged SQL functions                                                         |
+| `db-types/`  | Row shapes as returned by postgres                                           |
+| `mappers/`   | One function per file. Row ↔ domain or port shape. The barrel is `index.ts`. |
+| `adapters/`  | Implement `*Storage` ports                                                   |
+| `db-root.ts` | Builds `StoragePort` from a connection string                                |
 
 ### Pattern
 
 1. Queries return DB row types only.
-2. Mappers convert to rules / `@domain` entities — not contract DTOs when avoidable. Direct `prevail-rules` imports are fine.
+2. Mappers convert to rules / `@domain` / port shapes. One primary export per file. Direct `prevail-rules` imports are fine. See [`../../STYLE.md`](../../STYLE.md).
 3. Adapters catch errors with `handleError`, return `DataErrorSignature`.
 4. Multi-step writes (e.g. replace army junction rows) stay transactional when the SQL client allows — prefer clarity over clever helpers.
 
@@ -65,6 +65,8 @@ infrastructure/
 
 ## Related Documentation
 
+- [`../../STYLE.md`](../../STYLE.md) — functions, files, commentary, tests
+- [`../../DESIGN.md`](../../DESIGN.md) — rules kernel, envelopes, layers
 - [`../README.md`](../README.md) — Architecture and soft-coupling notes
 - [`../ports/README.md`](../ports/README.md) — Interfaces to implement
 - [Root `README.md`](../../README.md) — Env vars for DB / Auth0 / R2 / Typst

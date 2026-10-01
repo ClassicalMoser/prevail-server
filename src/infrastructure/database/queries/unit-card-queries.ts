@@ -6,6 +6,11 @@ import type {
 } from '../db-types';
 import type { Sql } from '../sql-type';
 
+/**
+ * Tagged SQL for unit-card rows. Each function returns rows only.
+ * Mapping into domain unit types happens in `mappers/`.
+ */
+
 const getCurrentUnitCardsQuery = async (
   sql: Sql,
 ): Promise<UnitCardVersionDb[]> =>

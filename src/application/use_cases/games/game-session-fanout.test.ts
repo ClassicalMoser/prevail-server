@@ -5,7 +5,7 @@ import type {
   ChooseCardEvent,
 } from '@classicalmoser/prevail-rules/domain';
 import { tempCommandCards } from '@classicalmoser/prevail-rules/domain';
-import { createGameSessionUseCases } from '@application';
+import { createGameSessionUseCases } from './game-session-use-cases';
 import { createInMemoryEnginePorts } from '@infrastructure';
 import type {
   DataErrorSignature,

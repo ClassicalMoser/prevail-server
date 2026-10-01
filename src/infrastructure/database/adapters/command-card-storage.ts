@@ -40,8 +40,8 @@ const createCommandCardStorage = (
   logger: LoggerPort,
   sql: Sql,
 ): CommandCardStorage => ({
-  getCurrentCommandCards: (): Promise<DataErrorSignature<CommandCard[]>> =>
-    storageOp({
+  getCurrentCommandCards: (): Promise<DataErrorSignature<CommandCard[]>> => {
+    const stored = storageOp({
       logger,
       context: 'getting current command cards from database',
       message: 'Failed to get current command cards from database',
@@ -49,10 +49,14 @@ const createCommandCardStorage = (
         success: true,
         data: mapCommandCardVersions(await getCurrentCommandCardsQuery(sql)),
       }),
-    }),
+    });
+    return stored;
+  },
 
-  getAllCommandCards: (): Promise<DataErrorSignature<CatalogCardListItem[]>> =>
-    storageOp({
+  getAllCommandCards: (): Promise<
+    DataErrorSignature<CatalogCardListItem[]>
+  > => {
+    const stored = storageOp({
       logger,
       context: 'getting all command cards from database',
       message: 'Failed to get all command cards from database',
@@ -64,10 +68,14 @@ const createCommandCardStorage = (
           data: rows.map((row) => commandCardListItemMapper(row)),
         };
       },
-    }),
+    });
+    return stored;
+  },
 
-  getCommandCardById: (id: string): Promise<DataErrorSignature<CommandCard>> =>
-    storageOp({
+  getCommandCardById: (
+    id: string,
+  ): Promise<DataErrorSignature<CommandCard>> => {
+    const stored = storageOp({
       logger,
       context: 'getting command card by id from database',
       message: 'Failed to get command card by id from database',
@@ -77,19 +85,22 @@ const createCommandCardStorage = (
           id,
         );
         if (rows.length === 0) {
-          return notFound('Command card not found');
+          const storedCall = notFound('Command card not found');
+          return storedCall;
         }
         return {
           success: true,
           data: commandCardVersionMapperToDomain(rows[0]),
         };
       },
-    }),
+    });
+    return stored;
+  },
 
   getCommandCardsByIds: (
     ids: string[],
-  ): Promise<DataErrorSignature<CommandCard[]>> =>
-    storageOp({
+  ): Promise<DataErrorSignature<CommandCard[]>> => {
+    const stored = storageOp({
       logger,
       context: 'getting command cards by ids from database',
       message: 'Failed to get command cards by ids from database',
@@ -104,10 +115,12 @@ const createCommandCardStorage = (
           ),
         };
       },
-    }),
+    });
+    return stored;
+  },
 
-  createEmptyCommandCard: (): Promise<DataErrorSignature<string>> =>
-    storageOp({
+  createEmptyCommandCard: (): Promise<DataErrorSignature<string>> => {
+    const stored = storageOp({
       logger,
       context: 'creating empty command card in database',
       message: 'Failed to create empty command card in database',
@@ -116,30 +129,36 @@ const createCommandCardStorage = (
           await createEmptyCommandCardQuery(sql);
         return { success: true, data: rows[0].command_card_id };
       },
-    }),
+    });
+    return stored;
+  },
 
-  deleteEmptyCommandCards: (): Promise<DataErrorSignature<void>> =>
-    storageOp({
+  deleteEmptyCommandCards: (): Promise<DataErrorSignature<void>> => {
+    const stored = storageOp({
       logger,
       context: 'deleting empty command cards from database',
       message: 'Failed to delete empty command cards from database',
       run: async () => {
         await deleteEmptyCommandCardsQuery(sql);
-        return voidSuccess();
+        const storedCall = voidSuccess();
+        return storedCall;
       },
-    }),
+    });
+    return stored;
+  },
 
   createCommandCardVersion: (
     card: CommandCard,
-  ): Promise<DataErrorSignature<CommandCard>> =>
-    storageOp({
+  ): Promise<DataErrorSignature<CommandCard>> => {
+    const stored = storageOp({
       logger,
       context: 'creating command card version in database',
       message: 'Failed to create command card version in database',
       run: async () => {
         const existingCard = await commandCardExistsQuery(sql, card.id);
         if (existingCard.length === 0) {
-          return notFound('Command card not found');
+          const storedCall = notFound('Command card not found');
+          return storedCall;
         }
 
         const writeVersion: WriteCommandCardVersionDb =
@@ -152,12 +171,14 @@ const createCommandCardStorage = (
           data: commandCardVersionMapperToDomain(rows[0]),
         };
       },
-    }),
+    });
+    return stored;
+  },
 
   deleteCommandCardVersion: (
     card: CommandCard,
-  ): Promise<DataErrorSignature<void>> =>
-    storageOp({
+  ): Promise<DataErrorSignature<void>> => {
+    const stored = storageOp({
       logger,
       context: 'deleting command card version from database',
       message: 'Failed to delete command card version from database',
@@ -170,14 +191,17 @@ const createCommandCardStorage = (
           versionMinor: minor,
           versionPatch: patch,
         });
-        return voidSuccess();
+        const storedCall = voidSuccess();
+        return storedCall;
       },
-    }),
+    });
+    return stored;
+  },
 
   getLatestCommandCardCertifications: (): Promise<
     DataErrorSignature<CommandCardCertificationStatus[]>
-  > =>
-    storageOp({
+  > => {
+    const stored = storageOp({
       logger,
       context: 'getting latest command card certifications from database',
       message: 'Failed to get latest command card certifications from database',
@@ -195,18 +219,21 @@ const createCommandCardStorage = (
           ),
         };
       },
-    }),
+    });
+    return stored;
+  },
 
   certifyCommandCardVersions: (
     commandCardIds: string[],
-  ): Promise<DataErrorSignature<void>> =>
-    storageOp({
+  ): Promise<DataErrorSignature<void>> => {
+    const stored = storageOp({
       logger,
       context: 'certifying command card versions in database',
       message: 'Failed to certify command card versions in database',
       run: async () => {
         if (commandCardIds.length === 0) {
-          return voidSuccess();
+          const storedCall = voidSuccess();
+          return storedCall;
         }
 
         const rulesVersionRows = await getLatestRulesVersionIdQuery(sql);
@@ -223,9 +250,12 @@ const createCommandCardStorage = (
           commandCardIds,
           rulesVersionRows[0].rules_version_id,
         );
-        return voidSuccess();
+        const storedCall = voidSuccess();
+        return storedCall;
       },
-    }),
+    });
+    return stored;
+  },
 });
 
 export { createCommandCardStorage };

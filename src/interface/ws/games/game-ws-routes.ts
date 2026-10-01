@@ -16,7 +16,13 @@ import type {
 import { implementInGameSeatWs } from '../implement-in-game-seat-ws';
 
 type SeatOpenResult = Awaited<
-  ReturnType<InGameSeatWsHandler<GameWsParams, PlayerChoiceEvent>['onOpen']>
+  ReturnType<
+    InGameSeatWsHandler<
+      GameWsParams,
+      PlayerChoiceEvent,
+      GameSeatConnection
+    >['onOpen']
+  >
 >;
 
 type SeatChoiceResult = Awaited<
@@ -37,7 +43,11 @@ type SeatSnapshotResult = Awaited<
 const createSeatHandlers = (
   side: 'white' | 'black',
   gameSessionUseCases: GameSessionUseCasesPort,
-): InGameSeatWsHandler<GameWsParams, PlayerChoiceEvent> => ({
+): InGameSeatWsHandler<
+  GameWsParams,
+  PlayerChoiceEvent,
+  GameSeatConnection
+> => ({
   onOpen: async (
     context: WsSeatConnectionContext<GameWsParams>,
     send: (message: unknown) => void,
@@ -63,7 +73,7 @@ const createSeatHandlers = (
   onPlayerChoice: async (
     context: WsSeatConnectionContext<GameWsParams>,
     choice: PlayerChoiceEvent,
-    _handle: unknown,
+    _handle: GameSeatConnection,
   ): Promise<SeatChoiceResult> => {
     const result = await gameSessionUseCases.submitPlayerChoice({
       gameId: context.params.gameId,
@@ -84,11 +94,9 @@ const createSeatHandlers = (
   },
   onRequestGameSnapshot: async (
     _context: WsSeatConnectionContext<GameWsParams>,
-    handle: unknown,
+    handle: GameSeatConnection,
   ): Promise<SeatSnapshotResult> => {
-    const result = await gameSessionUseCases.sendGameSnapshot(
-      handle as GameSeatConnection,
-    );
+    const result = await gameSessionUseCases.sendGameSnapshot(handle);
     if (!result.success) {
       return {
         choiceRejected: {
@@ -102,9 +110,9 @@ const createSeatHandlers = (
   },
   onClose: (
     _context: WsSeatConnectionContext<GameWsParams>,
-    handle: unknown,
+    handle: GameSeatConnection,
   ): void => {
-    gameSessionUseCases.unregisterSeatConnection(handle as GameSeatConnection);
+    gameSessionUseCases.unregisterSeatConnection(handle);
   },
 });
 

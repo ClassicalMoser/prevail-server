@@ -10,7 +10,7 @@ import type {
   CommandCard,
   UnitType,
 } from '@classicalmoser/prevail-rules/domain';
-import { createGameSessionUseCases } from '@application';
+import { createGameSessionUseCases } from './game-session-use-cases';
 import { createInMemoryEnginePorts } from '@infrastructure';
 import type {
   DataErrorSignature,

@@ -15,16 +15,22 @@ const commandCardAssetKey = (
   cardId: string,
   version: string,
   assetType: AssetType,
-): string =>
-  cardAssetKey({
+): string => {
+  const key = cardAssetKey({
     kind: 'command',
     cardId,
     version,
     assetType,
   });
+  return key;
+};
 
-const commandCardAssetTargets = (card: CommandCard): CommandCardAssetTarget[] =>
-  cardAssetTargets('command', card);
+const commandCardAssetTargets = (
+  card: CommandCard,
+): CommandCardAssetTarget[] => {
+  const targets = cardAssetTargets('command', card);
+  return targets;
+};
 
 export type { CommandCardAssetTarget };
 export {

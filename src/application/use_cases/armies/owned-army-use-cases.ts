@@ -22,40 +22,62 @@ const createOwnedArmyUseCases = (
 ): OwnedArmyUseCasesPort => ({
   getOwnedArmies: async (
     ownerAuthSub: string,
-  ): Promise<DataErrorSignature<Army[]>> =>
-    deps.ownedArmyStorage.getOwnedArmies(ownerAuthSub),
+  ): Promise<DataErrorSignature<Army[]>> => {
+    const armies = await deps.ownedArmyStorage.getOwnedArmies(ownerAuthSub);
+    return armies;
+  },
 
   getOwnedArmyById: async (
     ownerAuthSub: string,
     armyId: string,
-  ): Promise<DataErrorSignature<Army>> =>
-    deps.ownedArmyStorage.getOwnedArmyById(ownerAuthSub, armyId),
+  ): Promise<DataErrorSignature<Army>> => {
+    const army = await deps.ownedArmyStorage.getOwnedArmyById(
+      ownerAuthSub,
+      armyId,
+    );
+    return army;
+  },
 
   createOwnedArmy: async (
     ownerAuthSub: string,
-  ): Promise<DataErrorSignature<string>> =>
-    deps.ownedArmyStorage.createOwnedArmy(ownerAuthSub, UNTITLED_ARMY_NAME),
+  ): Promise<DataErrorSignature<string>> => {
+    const armyId = await deps.ownedArmyStorage.createOwnedArmy(
+      ownerAuthSub,
+      UNTITLED_ARMY_NAME,
+    );
+    return armyId;
+  },
 
   updateOwnedArmy: async (
     ownerAuthSub: string,
     armyId: string,
     body: ArmyWriteBody,
-  ): Promise<DataErrorSignature<EmptyObject>> =>
-    mapVoidToEmptyObject(
-      await deps.ownedArmyStorage.updateOwnedArmy(ownerAuthSub, armyId, {
-        armyName: armyDisplayName(body.units),
-        units: body.units,
-        commandCards: body.commandCards,
-      }),
-    ),
+  ): Promise<DataErrorSignature<EmptyObject>> => {
+    const write = {
+      armyName: armyDisplayName(body.units),
+      units: body.units,
+      commandCards: body.commandCards,
+    };
+    const updated = await deps.ownedArmyStorage.updateOwnedArmy(
+      ownerAuthSub,
+      armyId,
+      write,
+    );
+    const result = mapVoidToEmptyObject(updated);
+    return result;
+  },
 
   archiveOwnedArmy: async (
     ownerAuthSub: string,
     armyId: string,
-  ): Promise<ErrorSignature | NoContentSignature> =>
-    mapVoidToNoContent(
-      await deps.ownedArmyStorage.archiveOwnedArmy(ownerAuthSub, armyId),
-    ),
+  ): Promise<ErrorSignature | NoContentSignature> => {
+    const archived = await deps.ownedArmyStorage.archiveOwnedArmy(
+      ownerAuthSub,
+      armyId,
+    );
+    const result = mapVoidToNoContent(archived);
+    return result;
+  },
 });
 
 export type { OwnedArmyUseCasesDeps };
