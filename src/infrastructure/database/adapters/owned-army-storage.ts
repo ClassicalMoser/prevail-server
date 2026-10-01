@@ -40,7 +40,8 @@ import {
   insertArmyUnitCardQuery,
   updateArmyQuery,
 } from '../queries';
-import type { Sql } from '../sql-type';
+import { transactionClient } from '../transaction-client';
+import type { Sql, SqlClient } from '../sql-type';
 import { handleError } from '@utils';
 
 /**
@@ -97,24 +98,98 @@ const hydrateArmy = async (sql: Sql, row: ArmyDb): Promise<Army> => {
  * Command-card quantity stays 1 because the domain army stores cards by
  * identity, not by a stack count.
  *
- * @param sql - postgres.js client.
+ * @param client - Open transaction, or a root client when the caller has no
+ * transaction. The army update passes the transaction so a failed insert
+ * rolls these deletes back.
  * @param armyId - Army whose composition is being replaced.
  * @param army - Units and command cards to persist.
  */
 const replaceArmyComposition = async (
-  sql: Sql,
+  client: SqlClient,
   armyId: string,
   army: Pick<OwnedArmyWrite, 'units' | 'commandCards'>,
 ): Promise<void> => {
-  await deleteArmyUnitCardsQuery(sql, armyId);
-  await deleteArmyCommandCardsQuery(sql, armyId);
+  await deleteArmyUnitCardsQuery(client, armyId);
+  await deleteArmyCommandCardsQuery(client, armyId);
 
   for (const row of toArmyUnitCardRows(armyId, army.units)) {
-    await insertArmyUnitCardQuery(sql, row);
+    await insertArmyUnitCardQuery(client, row);
   }
   for (const row of toArmyCommandCardRows(armyId, army.commandCards)) {
-    await insertArmyCommandCardQuery(sql, row);
+    await insertArmyCommandCardQuery(client, row);
   }
+};
+
+interface ArmyRename {
+  userId: string;
+  armyId: string;
+  armyName: string;
+}
+
+/**
+ * Rename a live owned army.
+ *
+ * An empty result means the army is missing, archived, or owned by someone
+ * else. The caller stops before any join-row write.
+ *
+ * @param client - Connection or open transaction.
+ * @param rename - Owner, army, and the display name to store.
+ * @returns `true` when a live army row was updated.
+ */
+const renameOwnedArmy = async (
+  client: SqlClient,
+  rename: ArmyRename,
+): Promise<boolean> => {
+  const params = {
+    armyId: rename.armyId,
+    userId: rename.userId,
+    armyName: rename.armyName,
+  };
+  const updatedRows: ArmyDb[] = await updateArmyQuery(client, params);
+  const renamed = updatedRows.length > 0;
+  return renamed;
+};
+
+interface OwnedArmySave {
+  userId: string;
+  armyId: string;
+  write: OwnedArmyWrite;
+}
+
+/**
+ * Rename an owned army and replace its composition on one transaction.
+ *
+ * postgres.js commits when the callback returns and rolls back when it
+ * throws. A missing army returns before any join write, so that commit
+ * stores nothing. A later insert failure throws, and the rename plus the
+ * deletes are undone.
+ *
+ * @param sql - postgres.js client. `begin` supplies the transaction handle.
+ * @param save - Owner, army, and the name plus composition to store.
+ * @returns `true` when the army row was updated.
+ */
+const saveOwnedArmy = async (
+  sql: Sql,
+  save: OwnedArmySave,
+): Promise<boolean> => {
+  const saved = await sql.begin(async (tx) => {
+    const client = transactionClient(tx);
+    const rename: ArmyRename = {
+      userId: save.userId,
+      armyId: save.armyId,
+      armyName: save.write.armyName,
+    };
+    const renamed = await renameOwnedArmy(client, rename);
+    if (!renamed) {
+      const missing = false;
+      return missing;
+    }
+
+    await replaceArmyComposition(client, save.armyId, save.write);
+    const wrote = true;
+    return wrote;
+  });
+  return saved;
 };
 
 /**
@@ -240,30 +315,35 @@ const createOwnedArmyStorage = (
         return userResult;
       }
 
-      const updatedRows: ArmyDb[] = await updateArmyQuery(sql, {
-        armyId,
+      const save: OwnedArmySave = {
         userId: userResult.data.userId,
-        armyName: write.armyName,
-      });
-      if (updatedRows.length === 0) {
-        return {
+        armyId,
+        write,
+      };
+      const wrote = await saveOwnedArmy(sql, save);
+      if (!wrote) {
+        const missing: DataErrorSignature<void> = {
           success: false,
           message: 'Army not found',
           status: 404,
         };
+        return missing;
       }
 
-      await replaceArmyComposition(sql, armyId, write);
-
-      return { success: true, data: undefined };
+      const updated: DataErrorSignature<void> = {
+        success: true,
+        data: undefined,
+      };
+      return updated;
     } catch (error) {
-      return handleError({
+      const failure = handleError({
         error,
         logger,
         context: 'updating owned army in database',
         message: 'Failed to update owned army in database',
         status: 500,
       });
+      return failure;
     }
   },
 
