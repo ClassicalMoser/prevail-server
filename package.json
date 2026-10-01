@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit",
     "fmt": "oxfmt .",
     "lint": "oxlint .",
+    "lint:fix": "oxlint . --fix",
     "validate": "oxlint . && oxfmt . && tsc --noEmit",
     "test": "vitest"
   },
