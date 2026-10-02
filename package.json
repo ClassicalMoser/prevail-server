@@ -27,6 +27,7 @@
   "devDependencies": {
     "@types/node": "^25.9.1",
     "@types/ws": "^8.18.1",
+    "@vitest/coverage-v8": "4.1.9",
     "classicalmoser-oxlint-config": "link:../../classicalmoser-oxlint-config",
     "eslint-plugin-command": "^3.5.2",
     "eslint-plugin-import-boundaries": "^0.8.2",
