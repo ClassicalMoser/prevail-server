@@ -5,12 +5,10 @@ import type {
   UnitCardRendererPort,
 } from '@ports';
 import type { CardAssetTarget } from '../assets/card-asset-keys';
-import type { ProjectCardAssetsOps } from '../assets/project-card-assets';
-import {
-  allCardAssetsExist,
-  ensureCardProjection,
-  projectCardVersion,
-} from '../assets/project-card-assets';
+import type { ProjectCardAssetsOps } from '../assets/project-card-assets-ops';
+import { allCardAssetsExist } from '../assets/all-card-assets-exist';
+import { ensureCardProjection } from '../assets/ensure-card-projection';
+import { projectCardVersion } from '../assets/project-card-version';
 import { renderDetailsForAssetType } from '../assets/render-details-for-asset-type';
 import { unitCardAssetTargets } from '../assets/unit-card-asset-keys';
 

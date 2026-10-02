@@ -6,12 +6,10 @@ import type {
 } from '@ports';
 import type { CardAssetTarget } from '../assets/card-asset-keys';
 import { commandCardAssetTargets } from '../assets/command-card-asset-keys';
-import type { ProjectCardAssetsOps } from '../assets/project-card-assets';
-import {
-  allCardAssetsExist,
-  ensureCardProjection,
-  projectCardVersion,
-} from '../assets/project-card-assets';
+import type { ProjectCardAssetsOps } from '../assets/project-card-assets-ops';
+import { allCardAssetsExist } from '../assets/all-card-assets-exist';
+import { ensureCardProjection } from '../assets/ensure-card-projection';
+import { projectCardVersion } from '../assets/project-card-version';
 import { renderDetailsForAssetType } from '../assets/render-details-for-asset-type';
 import type { UnitIdToNameMap } from './replace-command-card-ids-with-names';
 import { replaceCommandCardUnitIdsWithNames } from './replace-command-card-ids-with-names';
