@@ -13,6 +13,17 @@ const toFetchError = (
   status,
 });
 
+/**
+ * Download unit artwork into the Typst workspace after origin checks.
+ *
+ * Redirects are rejected. Bodies over 10 MiB fail with 400. On success the
+ * boolean data is `true` so the renderer can set `unitImage` in details.
+ *
+ * @param imageUrl - Absolute artwork URL from the unit type.
+ * @param destinationPath - Path inside the render workspace to write.
+ * @param allowedMediaOrigin - Origin allowlist from process env.
+ * @returns Success with `data: true`, or an error envelope.
+ */
 const fetchUnitArtwork = async (
   imageUrl: string,
   destinationPath: string,

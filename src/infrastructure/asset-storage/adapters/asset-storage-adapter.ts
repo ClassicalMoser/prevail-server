@@ -8,6 +8,12 @@ interface AssetStorageConfig {
   client: S3Client;
 }
 
+/**
+ * Close an R2 client and bucket into the {@link AssetStorage} port.
+ *
+ * @param config - Bucket name and S3 client pointed at R2.
+ * @returns Port methods that put immutably and probe existence by key.
+ */
 const createAssetStorage = (config: AssetStorageConfig): AssetStorage => ({
   putImmutable: async (key, body, assetType): Promise<UploadResult> =>
     await putImmutable({

@@ -19,6 +19,14 @@ import { tryParseGetRequest } from '../parse-route-request';
 import { handleError } from '@utils';
 import { jsonSuccessContentType } from './json-success-content-type';
 
+/**
+ * Register a contract GET route: parse params/query, then invoke the handler.
+ *
+ * @param contract - GET contract (path, auth, validators).
+ * @param logger - Logger for unexpected handler throws.
+ * @param options - Handler that receives the parsed request and auth.
+ * @returns A {@link RegisteredRoute} for the Fastify registry.
+ */
 const implementGetRoute = <
   TParams extends Record<string, unknown>,
   TQuery extends Record<string, unknown>,

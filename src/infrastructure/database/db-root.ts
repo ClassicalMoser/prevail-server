@@ -9,6 +9,13 @@ import {
 import postgres from 'postgres';
 import type { Sql } from './sql-type';
 
+/**
+ * Open one Postgres client and wire every catalog/army storage adapter.
+ *
+ * @param logger - Logger passed into each adapter for storageOp failures.
+ * @param connectionString - Postgres URL from process env.
+ * @returns Aggregate {@link StoragePort} for use-case factories.
+ */
 const createDbRoot = (
   logger: LoggerPort,
   connectionString: string,

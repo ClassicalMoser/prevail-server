@@ -4,6 +4,12 @@ import type { InMemoryEnginePortHooks } from './in-memory-engine-port-hooks';
 import { ok, okVoid } from './port-response';
 import { streamKey } from './stream-key';
 
+/**
+ * In-process round snapshots keyed by game and round, with optional save hooks.
+ *
+ * @param hooks - Callbacks fired when a snapshot is saved (for WS fanout).
+ * @returns A RoundSnapshotStorage implementation backed by a Map.
+ */
 const createInMemoryRoundSnapshotStorage = (
   hooks: InMemoryEnginePortHooks,
 ): RoundSnapshotStorage => {

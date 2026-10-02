@@ -4,6 +4,12 @@ import type { InMemoryEnginePortHooks } from './in-memory-engine-port-hooks';
 import { fail, ok, okVoid } from './port-response';
 import { streamKey } from './stream-key';
 
+/**
+ * In-process event stream per game round, with optional append hooks.
+ *
+ * @param hooks - Callbacks fired when events are appended (for WS fanout).
+ * @returns An EventStreamStorage implementation backed by a Map.
+ */
 const createInMemoryEventStreamStorage = (
   hooks: InMemoryEnginePortHooks,
 ): EventStreamStorage => {

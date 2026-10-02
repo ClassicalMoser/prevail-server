@@ -17,6 +17,15 @@ interface UseCasesRootDeps {
   gameSessionUseCases: GameSessionUseCasesPort;
 }
 
+/**
+ * Wire catalog, army, and game-session use cases onto one port tree.
+ *
+ * Composition owns the wiring; individual create*UseCases factories stay
+ * focused on one subdomain.
+ *
+ * @param deps - Storage, renderers, asset store, and live game session.
+ * @returns The aggregate use-cases port consumed by HTTP/WS registries.
+ */
 const createUseCasesRoot = (deps: UseCasesRootDeps): UseCasesPort => ({
   commandCardUseCases: createCommandCardUseCases({
     commandCardStorage: deps.storagePort.commandCardStorage,

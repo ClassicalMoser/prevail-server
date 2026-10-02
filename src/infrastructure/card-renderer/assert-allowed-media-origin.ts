@@ -6,6 +6,13 @@ const toOriginError = (message: string): DataErrorSignature<never> => ({
   status: 400,
 });
 
+/**
+ * Parse a URL string, or return a 400 envelope with the given message.
+ *
+ * @param value - Candidate absolute URL.
+ * @param invalidMessage - Wire message when `new URL` throws.
+ * @returns A URL, or an error signature.
+ */
 const parseUrl = (
   value: string,
   invalidMessage: string,
@@ -17,6 +24,16 @@ const parseUrl = (
   }
 };
 
+/**
+ * Ensure a unit artwork URL matches the configured media origin.
+ *
+ * Blocks SSRF-style fetches of arbitrary hosts during card render. Empty
+ * configuration is a 500 so misconfigured deploys fail closed.
+ *
+ * @param imageUrl - Artwork URL from the unit type.
+ * @param allowedOriginValue - Allowed origin from process env.
+ * @returns Success, or a 400/500 error envelope.
+ */
 const assertAllowedMediaOrigin = (
   imageUrl: string,
   allowedOriginValue: string,

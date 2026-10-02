@@ -127,6 +127,13 @@ const createSeatHandlers = (
   },
 });
 
+/**
+ * WebSocket seat routes for white and black in a live game.
+ *
+ * @param gameSessionUseCases - Game session use cases for seat lifecycle.
+ * @param logger - Passed into the seat implementers for unexpected failures.
+ * @returns The game WS route registry.
+ */
 const createGameWsRoutes = (
   gameSessionUseCases: GameSessionUseCasesPort,
   logger: LoggerPort,

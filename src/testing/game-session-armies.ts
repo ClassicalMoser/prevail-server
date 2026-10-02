@@ -5,7 +5,9 @@ import type {
 } from '@classicalmoser/prevail-rules/domain';
 import type { DataErrorSignature, OwnedArmyStorage } from '@ports';
 
+/** Stable white-side army id for game-session fixtures. */
 const whiteArmyId = '550e8400-e29b-41d4-a716-446655440001';
+/** Stable black-side army id for game-session fixtures. */
 const blackArmyId = '550e8400-e29b-41d4-a716-446655440002';
 
 /** Empty composition. Enough for create and seat-auth cases. */

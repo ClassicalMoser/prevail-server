@@ -4,6 +4,17 @@ import { promisify } from 'node:util';
 
 const execFile = promisify(execFileCallback);
 
+/**
+ * Compile a Typst template in a workspace and return stdout as bytes.
+ *
+ * Output goes to `-` so the renderer never leaves a file on disk besides the
+ * workspace inputs. Fonts resolve from the workspace root.
+ *
+ * @param workspaceDir - Temporary directory with templates and JSON inputs.
+ * @param templatePath - Absolute path to the `.typ` entry file.
+ * @param format - Typst `--format` value (`svg`, `pdf`, …).
+ * @returns Compiled artifact bytes.
+ */
 const runTypstCompile = async (
   workspaceDir: string,
   templatePath: string,
@@ -31,6 +42,13 @@ const runTypstCompile = async (
   return compiled;
 };
 
+/**
+ * Resolve a template path inside a render workspace.
+ *
+ * @param workspaceDir - Temporary workspace root.
+ * @param templateName - `command.typ` or `unit.typ`.
+ * @returns Absolute path under `templates/`.
+ */
 const templatePathInWorkspace = (
   workspaceDir: string,
   templateName: 'command.typ' | 'unit.typ',

@@ -10,6 +10,13 @@ import {
   requireSubject,
 } from '../route-definitions';
 
+/**
+ * HTTP routes for live game sessions (create vs bot today).
+ *
+ * @param gameSessionUseCases - Game session use cases.
+ * @param logger - Passed into the route helpers for unexpected failures.
+ * @returns The game route registry.
+ */
 const createGameRoutes = (
   gameSessionUseCases: GameSessionUseCasesPort,
   logger: LoggerPort,

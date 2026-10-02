@@ -5,6 +5,7 @@
  * from the contract validators so handlers only wire use-case calls.
  */
 
+/** Success Content-Type for JSON route responses. */
 const jsonSuccessContentType = 'application/json' as const;
 
 export { jsonSuccessContentType };

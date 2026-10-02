@@ -17,6 +17,16 @@ import {
   implementPostRoute,
 } from '@interface/http/route-definitions';
 
+/**
+ * HTTP routes for the unit-card catalog.
+ *
+ * Reads are public. Mutations require a subject. Preview returns an SVG body
+ * through the media post helper instead of a JSON envelope.
+ *
+ * @param unitCardUseCases - Unit-card use cases.
+ * @param logger - Passed into the route helpers for unexpected failures.
+ * @returns The unit-card route registry.
+ */
 const createUnitCardRoutes = (
   unitCardUseCases: UnitCardUseCasesPort,
   logger: LoggerPort,

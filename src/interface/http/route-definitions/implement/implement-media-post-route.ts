@@ -22,6 +22,17 @@ import { tryParseBodyRouteRequest } from '../parse-route-request';
 
 import { handleError } from '@utils';
 
+/**
+ * Register a contract media POST route whose success body is raw bytes.
+ *
+ * Content-Type comes from the contract (for example `image/svg+xml` for
+ * card preview) rather than JSON.
+ *
+ * @param contract - Media POST contract (path, auth, validators, content type).
+ * @param logger - Logger for unexpected handler throws.
+ * @param options - Handler that returns a media payload envelope.
+ * @returns A {@link RegisteredRoute} for the Fastify registry.
+ */
 const implementMediaPostRoute = <
   TParams extends Record<string, unknown>,
   TQuery extends Record<string, unknown>,

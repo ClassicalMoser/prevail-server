@@ -19,6 +19,14 @@ import { tryParseBodyRouteRequest } from '../parse-route-request';
 import { handleError } from '@utils';
 import { jsonSuccessContentType } from './json-success-content-type';
 
+/**
+ * Register a contract PUT route: parse params/query/body, then invoke the handler.
+ *
+ * @param contract - PUT contract (path, auth, validators).
+ * @param logger - Logger for unexpected handler throws.
+ * @param options - Handler that receives the parsed request and auth.
+ * @returns A {@link RegisteredRoute} for the Fastify registry.
+ */
 const implementPutRoute = <
   TParams extends Record<string, unknown>,
   TQuery extends Record<string, unknown>,

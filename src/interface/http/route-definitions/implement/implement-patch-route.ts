@@ -19,6 +19,14 @@ import { tryParseBodyRouteRequest } from '../parse-route-request';
 import { handleError } from '@utils';
 import { jsonSuccessContentType } from './json-success-content-type';
 
+/**
+ * Register a contract PATCH route: parse params/query/body, then invoke the handler.
+ *
+ * @param contract - PATCH contract (path, auth, validators).
+ * @param logger - Logger for unexpected handler throws.
+ * @param options - Handler that receives the parsed request and auth.
+ * @returns A {@link RegisteredRoute} for the Fastify registry.
+ */
 const implementPatchRoute = <
   TParams extends Record<string, unknown>,
   TQuery extends Record<string, unknown>,

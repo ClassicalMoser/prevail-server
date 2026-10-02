@@ -20,6 +20,7 @@ import { registerHttp } from './register-http';
 import { registerWs } from './register-ws';
 import { createCorsOptions } from './cors-options';
 
+/** Process-wide Fastify instance; configured by {@link configureApp}. */
 const app = FastifyInstance({ logger: true });
 
 const logger: LoggerPort = {

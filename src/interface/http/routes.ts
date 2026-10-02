@@ -3,6 +3,13 @@ import { createOwnedArmyRoutes } from './armies';
 import { createCommandCardRoutes, createUnitCardRoutes } from './cards';
 import { createGameRoutes } from './games';
 
+/**
+ * Assemble every HTTP route registry for the process.
+ *
+ * @param useCases - Aggregate use-case port tree.
+ * @param logger - Logger passed into each route implementer.
+ * @returns Flat registry registered by composition.
+ */
 const createRoutes = (
   useCases: UseCasesPort,
   logger: LoggerPort,

@@ -5,6 +5,15 @@ import type {
 } from '@classicalmoser/prevail-rules/domain';
 import { fail, ok, okVoid } from './port-response';
 
+/**
+ * In-process {@link GameStorage} keyed by game id.
+ *
+ * Used by the live game engine until durable game rows exist. Authoritative
+ * state is stored as `Game`; visibility unions are narrowed at the STYLE-listed
+ * edges when loading back for rules.
+ *
+ * @returns A GameStorage implementation backed by a Map.
+ */
 const createInMemoryGameStorage = (): GameStorage => {
   const games = new Map<string, Game>();
 

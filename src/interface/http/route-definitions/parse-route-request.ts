@@ -46,6 +46,13 @@ type ParamsQueryValidators<
   TQuery extends Record<string, unknown>,
 > = Pick<GetRouteValidators<TParams, TQuery, unknown>, 'params' | 'query'>;
 
+/**
+ * Validate path params and query against contract Zod schemas.
+ *
+ * @param wire - Raw Fastify request fields.
+ * @param validators - Params and query schemas from the contract.
+ * @returns Parsed params/query, or a 400 error for the failing part.
+ */
 const tryParseParamsQuery = <
   TParams extends Record<string, unknown>,
   TQuery extends Record<string, unknown>,
@@ -72,6 +79,13 @@ const tryParseParamsQuery = <
   };
 };
 
+/**
+ * Parse a GET wire request into typed params, query, and headers.
+ *
+ * @param wire - Raw Fastify request fields.
+ * @param validators - GET contract validators.
+ * @returns Parsed GET request, or a 400 error envelope.
+ */
 const tryParseGetRequest = <
   TParams extends Record<string, unknown>,
   TQuery extends Record<string, unknown>,
@@ -94,6 +108,13 @@ const tryParseGetRequest = <
   };
 };
 
+/**
+ * Parse a body-bearing wire request (POST/PUT/PATCH/media) into typed fields.
+ *
+ * @param wire - Raw Fastify request fields.
+ * @param validators - Contract validators including body.
+ * @returns Parsed route request, or a 400 error for params, query, or body.
+ */
 const tryParseBodyRouteRequest = <
   TParams extends Record<string, unknown>,
   TQuery extends Record<string, unknown>,
@@ -133,6 +154,13 @@ const tryParseBodyRouteRequest = <
   };
 };
 
+/**
+ * Parse a DELETE wire request into typed params, query, and headers.
+ *
+ * @param wire - Raw Fastify request fields.
+ * @param validators - DELETE contract validators.
+ * @returns Parsed request shaped like GET (no body), or a 400 error.
+ */
 const tryParseDeleteRequest = <
   TParams extends Record<string, unknown>,
   TQuery extends Record<string, unknown>,

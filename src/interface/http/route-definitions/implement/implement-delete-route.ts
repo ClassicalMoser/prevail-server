@@ -19,6 +19,16 @@ import { tryParseDeleteRequest } from '../parse-route-request';
 import { handleError } from '@utils';
 import { jsonSuccessContentType } from './json-success-content-type';
 
+/**
+ * Register a contract DELETE route: parse params/query, then invoke the handler.
+ *
+ * Success status is 204. Handlers return no-content or an error envelope.
+ *
+ * @param contract - DELETE contract (path, auth, validators).
+ * @param logger - Logger for unexpected handler throws.
+ * @param options - Handler that receives the parsed request and auth.
+ * @returns A {@link RegisteredRoute} for the Fastify registry.
+ */
 const implementDeleteRoute = <
   TParams extends Record<string, unknown>,
   TQuery extends Record<string, unknown>,
