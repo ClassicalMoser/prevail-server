@@ -18,7 +18,7 @@ import type {
   RegisteredRoute,
 } from '@ports';
 
-import { tryParseBodyRouteRequest } from '../parse-route-request';
+import { tryParseBodyRouteRequest } from '../parse/try-parse-body-route-request';
 
 import { handleError } from '@utils';
 

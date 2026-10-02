@@ -35,7 +35,7 @@ Each helper:
 4. Calls the typed handler
 5. Catches unexpected errors → `handleError` → 500 envelope
 
-Request parsing lives in `parse-route-request.ts`. Invalid input becomes:
+Request parsing lives in `parse/`. Invalid input becomes:
 
 - `Invalid params` / `Invalid query` / `Invalid body` (Zod issue details are not currently forwarded)
 

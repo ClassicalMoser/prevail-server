@@ -14,7 +14,7 @@ import type {
   RouteHandler,
 } from '@ports';
 
-import { tryParseBodyRouteRequest } from '../parse-route-request';
+import { tryParseBodyRouteRequest } from '../parse/try-parse-body-route-request';
 
 import { handleError } from '@utils';
 import { jsonSuccessContentType } from './json-success-content-type';

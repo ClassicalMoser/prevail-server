@@ -14,7 +14,7 @@ import type {
   RegisteredRoute,
 } from '@ports';
 
-import { tryParseGetRequest } from '../parse-route-request';
+import { tryParseGetRequest } from '../parse/try-parse-get-request';
 
 import { handleError } from '@utils';
 import { jsonSuccessContentType } from './json-success-content-type';

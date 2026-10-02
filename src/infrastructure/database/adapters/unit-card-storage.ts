@@ -33,7 +33,9 @@ import {
 } from '../mappers';
 import type { Sql } from '../sql-type';
 import type { UnitType } from '@classicalmoser/prevail-rules/domain';
-import { notFound, storageOp, voidSuccess } from './storage-op';
+import { notFound } from './not-found';
+import { storageOp } from './storage-op';
+import { voidSuccess } from './void-success';
 
 const mapUnitCardVersions = (versions: UnitCardVersionDb[]): UnitType[] =>
   versions.map((version) => unitCardVersionMapperToDomain(version));

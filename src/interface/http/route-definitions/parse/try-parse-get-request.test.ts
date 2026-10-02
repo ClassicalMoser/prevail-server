@@ -1,12 +1,6 @@
-import type {
-  GetRouteValidators,
-  PostRouteValidators,
-} from '@classicalmoser/prevail-contracts';
+import type { GetRouteValidators } from '@classicalmoser/prevail-contracts';
 import type { WireRouteRequest } from '@ports';
-import {
-  tryParseBodyRouteRequest,
-  tryParseGetRequest,
-} from './parse-route-request';
+import { tryParseGetRequest } from './try-parse-get-request';
 
 interface ParseSuccess<T> {
   success: true;
@@ -43,31 +37,6 @@ const getValidators = {
       }
       return fail;
     },
-  },
-  query: {
-    safeParse: (): ParseOutcome<Record<string, never>> => pass({}),
-  },
-  return: {
-    safeParse: (value: unknown): ParseOutcome<unknown> => pass(value),
-  },
-};
-
-const bodyValidators = {
-  body: {
-    safeParse: (value: unknown): ParseOutcome<{ name: string }> => {
-      if (
-        typeof value === 'object' &&
-        value !== null &&
-        'name' in value &&
-        typeof value.name === 'string'
-      ) {
-        return pass({ name: value.name });
-      }
-      return fail;
-    },
-  },
-  params: {
-    safeParse: (): ParseOutcome<Record<string, never>> => pass({}),
   },
   query: {
     safeParse: (): ParseOutcome<Record<string, never>> => pass({}),
@@ -133,31 +102,6 @@ describe('tryParseGetRequest function', () => {
           params: { id: 'card-1' },
           query: {},
         },
-      });
-    },
-  );
-});
-
-describe('tryParseBodyRouteRequest function', () => {
-  it(
-    'returns invalidBody when the body fails the schema',
-    { timeout: 5000 },
-    () => {
-      expect.hasAssertions();
-
-      const parsed = tryParseBodyRouteRequest(
-        wire({ body: { name: 1 } }),
-        bodyValidators as unknown as PostRouteValidators<
-          Record<string, never>,
-          Record<string, never>,
-          { name: string },
-          unknown
-        >, // stub safeParse doubles; ZodType is too large to fake fully
-      );
-
-      expect(parsed).toStrictEqual({
-        error: { message: 'Invalid body', status: 400, success: false },
-        ok: false,
       });
     },
   );

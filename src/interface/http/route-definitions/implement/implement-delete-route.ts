@@ -14,7 +14,7 @@ import type {
   RouteInvokeResult,
 } from '@ports';
 
-import { tryParseDeleteRequest } from '../parse-route-request';
+import { tryParseDeleteRequest } from '../parse/try-parse-delete-request';
 
 import { handleError } from '@utils';
 import { jsonSuccessContentType } from './json-success-content-type';
