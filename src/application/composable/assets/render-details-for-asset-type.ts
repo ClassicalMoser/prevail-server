@@ -1,5 +1,14 @@
 import type { AssetType, RenderDetails } from '@ports';
 
+/**
+ * Map a stored asset type onto the Typst render details for that file.
+ *
+ * Bleed is only on for `pdf-bleed`. Unit artwork embedding stays off here;
+ * callers that need a portrait set `unitImage` on the details they pass.
+ *
+ * @param assetType - Target format in object storage.
+ * @returns Details the card renderer sends into Typst.
+ */
 const renderDetailsForAssetType = (assetType: AssetType): RenderDetails => {
   switch (assetType) {
     case 'svg': {

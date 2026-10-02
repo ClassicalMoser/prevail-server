@@ -12,11 +12,26 @@ interface PutImmutableParams {
   assetType: AssetType;
 }
 
+/**
+ * Whether an S3/R2 error is a precondition failure (object already there).
+ *
+ * @param error - Thrown value from PutObject with IfNoneMatch.
+ * @returns True for HTTP 412.
+ */
 const isPreconditionFailed = (error: unknown): boolean => {
   const status = httpStatusCode(error);
   return status === 412;
 };
 
+/**
+ * Write an object only if the key does not already exist.
+ *
+ * Uses `IfNoneMatch: *` so concurrent projectors do not overwrite a versioned
+ * asset. A 412 is reported as `already-exists` rather than thrown.
+ *
+ * @param params - Client, bucket, key, bytes, and asset type for Content-Type.
+ * @returns `written` on create, or `already-exists` when the key was present.
+ */
 const putImmutable = async (
   params: PutImmutableParams,
 ): Promise<UploadResult> => {

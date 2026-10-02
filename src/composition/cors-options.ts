@@ -16,10 +16,21 @@ const CORS_ALLOWED_METHODS = [
   'DELETE',
 ] as const;
 
+/** Headers browser clients may send on cross-origin requests (auth + JSON). */
 const CORS_ALLOWED_HEADERS = ['Content-Type', 'Authorization'] as const;
 
+/** How long browsers may cache a successful CORS preflight (24h). */
 const CORS_PREFLIGHT_MAX_AGE_SECONDS = 86_400;
 
+/**
+ * Build Fastify CORS options for the configured client origins.
+ *
+ * Methods and headers are explicit so authenticated DELETE (and future
+ * PUT/PATCH) survive preflight under fastify-cors v11+ safelist defaults.
+ *
+ * @param allowedOrigins - Absolute origins allowed to call the API with credentials.
+ * @returns Options passed to `@fastify/cors`.
+ */
 const createCorsOptions = (
   allowedOrigins: readonly string[],
 ): FastifyCorsOptions => ({

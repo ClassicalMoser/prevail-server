@@ -12,6 +12,15 @@ import type { RandomSource } from '../random-source';
 import { pickOne } from '../pick-one';
 import { shuffleCopy } from '../shuffle-copy';
 
+/**
+ * Build a ranged-attack choice for the first shuffled attacker with a target.
+ *
+ * Attackers are shuffled so the bot does not always prefer the same unit.
+ * Supporting units stay empty; the auto-picker only commits a primary shot.
+ *
+ * @param input - Legal options, acting side, live state, and random source.
+ * @returns A perform-ranged-attack event, or undefined when no shot is legal.
+ */
 const pickRangedAttack = (input: {
   options: Extract<
     LegalPlayerChoiceOptions,

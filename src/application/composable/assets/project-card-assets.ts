@@ -18,6 +18,11 @@ const toUploadError = (error: unknown): DataErrorSignature<void> => ({
  *
  * A render failure is returned as-is. A thrown upload becomes an error
  * envelope so the caller can stop the rest of the projection.
+ *
+ * @param assetStorage - Immutable object store for card assets.
+ * @param target - Key and type for the object being written.
+ * @param renderResult - Bytes from the renderer, or a prior render failure.
+ * @returns Success when the object is stored, or an error envelope.
  */
 const putRenderedAsset = async (
   assetStorage: AssetStorage,
@@ -45,6 +50,14 @@ interface ProjectCardAssetsOps<TCard> {
   ) => Promise<DataErrorSignature<Buffer>>;
 }
 
+/**
+ * Render one target for a card and upload it when the render succeeds.
+ *
+ * @param ops - Storage, target list, and render callback for this card kind.
+ * @param card - Card version being projected.
+ * @param target - Single asset key and type to write.
+ * @returns Success when the object is stored, or the first render/upload error.
+ */
 const projectCardAsset = async <TCard>(
   ops: ProjectCardAssetsOps<TCard>,
   card: TCard,
@@ -57,6 +70,10 @@ const projectCardAsset = async <TCard>(
  *
  * Targets are written in order. The first failure stops the rest so a half
  * written version is not reported as complete.
+ *
+ * @param ops - Storage, target list, and render callback for this card kind.
+ * @param card - Card version being projected.
+ * @returns Success when every target is stored, or the first failure.
  */
 const projectCardVersion = async <TCard>(
   ops: ProjectCardAssetsOps<TCard>,
@@ -71,6 +88,13 @@ const projectCardVersion = async <TCard>(
   return { success: true, data: undefined };
 };
 
+/**
+ * Collect asset targets whose keys are not yet in storage.
+ *
+ * @param ops - Storage and target list for this card kind.
+ * @param card - Card version whose keys are checked.
+ * @returns Targets that still need a render.
+ */
 const findMissingCardAssetTargets = async <TCard>(
   ops: Pick<ProjectCardAssetsOps<TCard>, 'assetStorage' | 'targets'>,
   card: TCard,
@@ -84,6 +108,16 @@ const findMissingCardAssetTargets = async <TCard>(
   return missing;
 };
 
+/**
+ * Whether every projected asset for this card version already exists.
+ *
+ * Used before certification so a card is not stamped until its print and
+ * preview files are present.
+ *
+ * @param ops - Storage and target list for this card kind.
+ * @param card - Card version to check.
+ * @returns True when every target key exists in storage.
+ */
 const allCardAssetsExist = async <TCard>(
   ops: Pick<ProjectCardAssetsOps<TCard>, 'assetStorage' | 'targets'>,
   card: TCard,
@@ -96,6 +130,16 @@ const allCardAssetsExist = async <TCard>(
   return true;
 };
 
+/**
+ * Render only the missing assets for a card version.
+ *
+ * Certification heals holes this way so an interrupted prior projection can
+ * finish without rewriting keys that already exist.
+ *
+ * @param ops - Storage, target list, and render callback for this card kind.
+ * @param card - Card version to heal.
+ * @returns Success when every missing target is stored, or the first failure.
+ */
 const ensureCardProjection = async <TCard>(
   ops: ProjectCardAssetsOps<TCard>,
   card: TCard,

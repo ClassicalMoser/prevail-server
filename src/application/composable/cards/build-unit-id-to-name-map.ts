@@ -1,6 +1,16 @@
 import type { DataErrorSignature, UnitCardStorage } from '@ports';
 import type { UnitIdToNameMap } from './replace-command-card-ids-with-names';
 
+/**
+ * Load display names for the unit type ids referenced on a command card.
+ *
+ * Deduplicates the id list before the storage round trip. A missing id is a
+ * 404 so the print pipeline does not invent placeholder names for live cards.
+ *
+ * @param unitCardStorage - Catalog unit storage.
+ * @param unitIds - Unit type ids collected from a command card.
+ * @returns A map from unit id to name, or a storage/404 failure.
+ */
 const buildUnitIdToNameMap = async (
   unitCardStorage: UnitCardStorage,
   unitIds: string[],

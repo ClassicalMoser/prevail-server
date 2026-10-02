@@ -22,6 +22,12 @@ interface CommandCardProjectionDeps {
   unitIdToNameMap: UnitIdToNameMap;
 }
 
+/**
+ * Build the projection ops that render a command card with unit names inlined.
+ *
+ * @param deps - Storage, renderer, and the unit id→name map for print.
+ * @returns Ops consumed by the shared card projection helpers.
+ */
 const commandCardProjectOps = (
   deps: CommandCardProjectionDeps,
 ): ProjectCardAssetsOps<CommandCard> => ({
@@ -42,18 +48,39 @@ const commandCardProjectOps = (
   },
 });
 
+/**
+ * Render and store every asset for one command-card version.
+ *
+ * @param deps - Storage, renderer, and unit name map.
+ * @param card - Command card version to project.
+ * @returns Success when every target is stored, or the first failure.
+ */
 const projectCommandCardVersion = async (
   deps: CommandCardProjectionDeps,
   card: CommandCard,
 ): Promise<DataErrorSignature<void>> =>
   projectCardVersion(commandCardProjectOps(deps), card);
 
+/**
+ * Whether every command-card asset for this version already exists.
+ *
+ * @param assetStorage - Immutable object store.
+ * @param card - Command card version to check.
+ * @returns True when svg, pdf, and bleed keys are present.
+ */
 const allCommandCardAssetsExist = async (
   assetStorage: AssetStorage,
   card: CommandCard,
 ): Promise<boolean> =>
   allCardAssetsExist({ assetStorage, targets: commandCardAssetTargets }, card);
 
+/**
+ * Render only the missing assets for one command-card version.
+ *
+ * @param deps - Storage, renderer, and unit name map.
+ * @param card - Command card version to heal.
+ * @returns Success when every missing target is stored, or the first failure.
+ */
 const ensureCommandCardProjection = async (
   deps: CommandCardProjectionDeps,
   card: CommandCard,

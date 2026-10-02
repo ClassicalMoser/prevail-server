@@ -1,5 +1,6 @@
 import type { UnitCount } from '@classicalmoser/prevail-rules/domain';
 
+/** Fallback label when an owned army has no units yet. */
 const UNTITLED_ARMY_NAME = 'Untitled army';
 
 /**

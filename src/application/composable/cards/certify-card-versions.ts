@@ -24,6 +24,18 @@ interface CertifyCardVersionsOps<TCard, TContext = undefined> {
   cardId: (card: TCard) => string;
 }
 
+/**
+ * Certify uncertified card versions whose schema and assets are ready.
+ *
+ * Uncertified rows are filtered through the schema check, optionally prepared
+ * (for example a unit-name map), then healed when assets are missing. Only
+ * cards that still have every asset after heal are stamped. The returned lists
+ * come from a fresh `getLatest` so callers see the post-write certification
+ * state by entity id.
+ *
+ * @param ops - Storage, schema, projection, and certify callbacks for one catalog.
+ * @returns Certified and uncertified id lists after the write, or the first failure.
+ */
 const certifyCardVersions = async <TCard, TContext = undefined>(
   ops: CertifyCardVersionsOps<TCard, TContext>,
 ): Promise<DataErrorSignature<CertificationResults>> => {

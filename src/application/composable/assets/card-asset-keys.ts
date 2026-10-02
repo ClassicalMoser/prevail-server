@@ -14,8 +14,18 @@ interface CardAssetKeyInput {
   assetType: AssetType;
 }
 
+/** Asset types projected for every catalog card version. */
 const CARD_ASSET_TYPES: AssetType[] = ['svg', 'pdf', 'pdf-bleed'];
 
+/**
+ * Build the immutable R2 object key for one card asset.
+ *
+ * SVG lives under `svg/`. Print PDFs (trim and bleed) share the `print/`
+ * folder so a version's print pair stays adjacent in the bucket listing.
+ *
+ * @param input - Kind, card id, version, and which asset type to key.
+ * @returns The object key under the card asset prefix.
+ */
 const cardAssetKey = ({
   kind,
   cardId,
@@ -43,6 +53,16 @@ const cardAssetKey = ({
   }
 };
 
+/**
+ * List every asset target for one card version.
+ *
+ * Projection and certification walk this list in order. A missing key means
+ * that version is not fully projected yet.
+ *
+ * @param kind - Command or unit prefix in the object key.
+ * @param card - Card identity and version used in the key.
+ * @returns One target per {@link CARD_ASSET_TYPES} entry.
+ */
 const cardAssetTargets = (
   kind: CardAssetKind,
   card: { id: string; version: string },

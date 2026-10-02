@@ -19,6 +19,12 @@ interface UnitCardProjectionDeps {
   unitCardRenderer: UnitCardRendererPort;
 }
 
+/**
+ * Build the projection ops that render a unit card for each asset type.
+ *
+ * @param deps - Storage and unit-card renderer.
+ * @returns Ops consumed by the shared card projection helpers.
+ */
 const unitCardProjectOps = (
   deps: UnitCardProjectionDeps,
 ): ProjectCardAssetsOps<UnitType> => ({
@@ -34,18 +40,39 @@ const unitCardProjectOps = (
     ),
 });
 
+/**
+ * Render and store every asset for one unit-card version.
+ *
+ * @param deps - Storage and unit-card renderer.
+ * @param unitType - Unit type version to project.
+ * @returns Success when every target is stored, or the first failure.
+ */
 const projectUnitCardVersion = async (
   deps: UnitCardProjectionDeps,
   unitType: UnitType,
 ): Promise<DataErrorSignature<void>> =>
   projectCardVersion(unitCardProjectOps(deps), unitType);
 
+/**
+ * Whether every unit-card asset for this version already exists.
+ *
+ * @param assetStorage - Immutable object store.
+ * @param unitType - Unit type version to check.
+ * @returns True when svg, pdf, and bleed keys are present.
+ */
 const allUnitCardAssetsExist = async (
   assetStorage: AssetStorage,
   unitType: UnitType,
 ): Promise<boolean> =>
   allCardAssetsExist({ assetStorage, targets: unitCardAssetTargets }, unitType);
 
+/**
+ * Render only the missing assets for one unit-card version.
+ *
+ * @param deps - Storage and unit-card renderer.
+ * @param unitType - Unit type version to heal.
+ * @returns Success when every missing target is stored, or the first failure.
+ */
 const ensureUnitCardProjection = async (
   deps: UnitCardProjectionDeps,
   unitType: UnitType,

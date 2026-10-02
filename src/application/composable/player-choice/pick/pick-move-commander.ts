@@ -7,6 +7,17 @@ import type {
 import type { RandomSource } from '../random-source';
 import { pickOne } from '../pick-one';
 
+/**
+ * Build a move-commander choice by drawing one legal destination.
+ *
+ * Returns undefined when the commander has no starting coordinate or the
+ * destination list is empty so the caller can fall through to another pick.
+ *
+ * @param options - Legal move-commander options from the rules kernel.
+ * @param actingPlayer - Side making the choice.
+ * @param random - Source of the destination draw.
+ * @returns A move-commander player-choice event, or undefined when unpickable.
+ */
 const pickMoveCommander = (
   options: Extract<LegalPlayerChoiceOptions, { choiceType: 'moveCommander' }>,
   actingPlayer: PlayerSide,
