@@ -2,12 +2,8 @@
  * Command cards store unit type IDs in the domain model, but the print renderer
  * (Typst) displays human-readable unit names on the card face.
  *
- * This module bridges that gap with a two-step pipeline:
- *   1. getCommandCardUnitIds  — collect every unit type ID referenced on a card
- *   2. replaceUnitIdsWithNames — swap those IDs for display names before render
- *
- * The caller is responsible for building the ID→name map via unit storage.
- * See buildUnitIdToNameMap. buildPlaceholderUnitIdToNameMap remains for tests.
+ * Collect ids with {@link getCommandCardUnitIds}, build a map via
+ * {@link buildUnitIdToNameMap}, then call this before render.
  */
 import type {
   CommandCard,
@@ -15,23 +11,13 @@ import type {
   UnitSupport,
 } from '@classicalmoser/prevail-rules/domain';
 import type { PrintCommandCard } from '@ports';
-
-/** Lookup table produced by a batch unit-name query. Keys are unit type IDs. */
-type UnitIdToNameMap = ReadonlyMap<string, string>;
-
-/**
- * Stand-in map builder for development and testing.
- * Replace with a real storage query once unit name lookup is wired up.
- */
-const buildPlaceholderUnitIdToNameMap = (unitIds: string[]): UnitIdToNameMap =>
-  new Map(unitIds.map((id) => [id, `NAME_${id.slice(0, 5)}...`]));
+import type { UnitIdToNameMap } from './unit-id-to-name-map';
 
 /**
  * Name for a unit type id, or throw when the map has no entry.
  *
  * A missing id means the caller looked up cards that are not on this card.
  * The throw aborts the render so the route boundary can report the failure.
- * Callers that can recover should check the map before calling.
  */
 const getUnitName = (unitIdToNameMap: UnitIdToNameMap, id: string): string => {
   const name = unitIdToNameMap.get(id);
@@ -45,34 +31,9 @@ const getUnitName = (unitIdToNameMap: UnitIdToNameMap, id: string): string => {
 const replaceUnitIdsWithNames = (
   unitIds: string[],
   unitIdToNameMap: UnitIdToNameMap,
-): string[] => unitIds.map((id) => getUnitName(unitIdToNameMap, id));
-
-/**
- * Collect all unit type IDs referenced anywhere on a command card.
- *
- * A card can reference unit types in three places:
- *   - command restrictions  (which units may execute the command)
- *   - round effect restrictions  (which units the round effect applies to)
- *   - unit support  (which unit type the card supports, when supportType is 'unitType')
- *
- * Returns a deduplicated list suitable for a single batch name lookup.
- */
-const getCommandCardUnitIds = (card: CommandCard): string[] => {
-  const commandUnitRestrictionIds = card.command.restrictions.unitRestrictions;
-  const roundEffectUnitRestrictionIds =
-    card.roundEffect?.restrictions.unitRestrictions ?? [];
-  const unitSupport = card.unitSupport;
-
-  const unitIds = [
-    ...commandUnitRestrictionIds,
-    ...roundEffectUnitRestrictionIds,
-  ];
-
-  if (unitSupport.supportType === 'unitType') {
-    unitIds.push(unitSupport.unitTypeId);
-  }
-
-  return [...new Set(unitIds)];
+): string[] => {
+  const names = unitIds.map((id) => getUnitName(unitIdToNameMap, id));
+  return names;
 };
 
 /**
@@ -121,6 +82,10 @@ const replaceRoundEffectUnitIds = (
  * Produce a PrintCommandCard by replacing every unit type ID on the card
  * with its display name. The card shape is unchanged — only the string
  * values in restriction and support fields differ.
+ *
+ * @param card - Domain command card with unit type ids.
+ * @param unitIdToNameMap - Map from unit type id to display name.
+ * @returns A print card whose restriction/support strings are names.
  */
 const replaceCommandCardUnitIdsWithNames = (
   card: CommandCard,
@@ -154,17 +119,13 @@ const replaceCommandCardUnitIdsWithNames = (
     unitIdToNameMap,
   );
 
-  return {
+  const printCard: PrintCommandCard = {
     ...card,
     command: commandWithNames,
     roundEffect: roundEffectWithNames,
     unitSupport: unitSupportWithNames,
   };
+  return printCard;
 };
 
-export type { UnitIdToNameMap };
-export {
-  buildPlaceholderUnitIdToNameMap,
-  getCommandCardUnitIds,
-  replaceCommandCardUnitIdsWithNames,
-};
+export { replaceCommandCardUnitIdsWithNames };

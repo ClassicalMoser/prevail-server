@@ -1,9 +1,6 @@
-export type { UnitIdToNameMap } from './cards/replace-command-card-ids-with-names';
-export {
-  buildPlaceholderUnitIdToNameMap,
-  getCommandCardUnitIds,
-  replaceCommandCardUnitIdsWithNames,
-} from './cards/replace-command-card-ids-with-names';
+export type { UnitIdToNameMap } from './cards/print/unit-id-to-name-map';
+export { getCommandCardUnitIds } from './cards/print/get-command-card-unit-ids';
+export { replaceCommandCardUnitIdsWithNames } from './cards/print/replace-command-card-unit-ids-with-names';
 export type { CardAssetKind, CardAssetTarget } from './assets/card-asset-keys';
 export {
   CARD_ASSET_TYPES,
@@ -24,18 +21,14 @@ export {
 } from './assets/unit-card-asset-keys';
 export { renderDetailsForAssetType } from './assets/render-details-for-asset-type';
 export { buildUnitIdToNameMap } from './cards/build-unit-id-to-name-map';
-export type { CommandCardProjectionDeps } from './cards/project-command-card-version';
-export {
-  allCommandCardAssetsExist,
-  ensureCommandCardProjection,
-  projectCommandCardVersion,
-} from './cards/project-command-card-version';
-export type { UnitCardProjectionDeps } from './cards/project-unit-card-version';
-export {
-  allUnitCardAssetsExist,
-  ensureUnitCardProjection,
-  projectUnitCardVersion,
-} from './cards/project-unit-card-version';
+export type { CommandCardProjectionDeps } from './cards/command/command-card-project-ops';
+export { allCommandCardAssetsExist } from './cards/command/all-command-card-assets-exist';
+export { ensureCommandCardProjection } from './cards/command/ensure-command-card-projection';
+export { projectCommandCardVersion } from './cards/command/project-command-card-version';
+export type { UnitCardProjectionDeps } from './cards/unit/unit-card-project-ops';
+export { allUnitCardAssetsExist } from './cards/unit/all-unit-card-assets-exist';
+export { ensureUnitCardProjection } from './cards/unit/ensure-unit-card-projection';
+export { projectUnitCardVersion } from './cards/unit/project-unit-card-version';
 export { certifyCardVersions } from './cards/certify-card-versions';
 export type {
   CardCertificationStatus,

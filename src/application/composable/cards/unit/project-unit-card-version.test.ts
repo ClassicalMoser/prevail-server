@@ -1,10 +1,7 @@
 import assert from 'node:assert/strict';
 import { tempUnits } from '@classicalmoser/prevail-rules/domain';
 import type { AssetStorage, UnitCardRendererPort, UploadResult } from '@ports';
-import {
-  allUnitCardAssetsExist,
-  projectUnitCardVersion,
-} from './project-unit-card-version';
+import { projectUnitCardVersion } from './project-unit-card-version';
 
 const unit = tempUnits[0];
 assert.ok(unit !== undefined);
@@ -25,23 +22,6 @@ const renderer = (): UnitCardRendererPort => ({
     data: Buffer.from('svg'),
     success: true,
   }),
-});
-
-describe('allUnitCardAssetsExist function', () => {
-  it(
-    'returns false when any unit asset key is missing',
-    { timeout: 5000 },
-    async () => {
-      expect.hasAssertions();
-
-      const exists = await allUnitCardAssetsExist(
-        assetStorage(new Set()),
-        unit,
-      );
-
-      expect(exists).toBe(false);
-    },
-  );
 });
 
 describe('projectUnitCardVersion function', () => {

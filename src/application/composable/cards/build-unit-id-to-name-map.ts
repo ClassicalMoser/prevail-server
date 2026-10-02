@@ -1,5 +1,5 @@
 import type { DataErrorSignature, UnitCardStorage } from '@ports';
-import type { UnitIdToNameMap } from './replace-command-card-ids-with-names';
+import type { UnitIdToNameMap } from './print/unit-id-to-name-map';
 
 /**
  * Load display names for the unit type ids referenced on a command card.

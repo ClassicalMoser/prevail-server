@@ -5,17 +5,15 @@ import type {
   CommandCardRendererPort,
   UploadResult,
 } from '@ports';
-import {
-  allCommandCardAssetsExist,
-  projectCommandCardVersion,
-} from './project-command-card-version';
-import {
-  buildPlaceholderUnitIdToNameMap,
-  getCommandCardUnitIds,
-} from './replace-command-card-ids-with-names';
+import type { UnitIdToNameMap } from '../print/unit-id-to-name-map';
+import { getCommandCardUnitIds } from '../print/get-command-card-unit-ids';
+import { projectCommandCardVersion } from './project-command-card-version';
 
 const card = tempCommandCards[0];
 assert.ok(card !== undefined);
+
+const placeholderUnitIdToNameMap = (unitIds: string[]): UnitIdToNameMap =>
+  new Map(unitIds.map((id) => [id, `NAME_${id.slice(0, 5)}...`]));
 
 const assetStorage = (existing: Set<string>): AssetStorage => ({
   objectExists: async (key): Promise<boolean> => existing.has(key),
@@ -35,23 +33,6 @@ const renderer = (): CommandCardRendererPort => ({
   }),
 });
 
-describe('allCommandCardAssetsExist function', () => {
-  it(
-    'returns false when any command asset key is missing',
-    { timeout: 5000 },
-    async () => {
-      expect.hasAssertions();
-
-      const exists = await allCommandCardAssetsExist(
-        assetStorage(new Set()),
-        card,
-      );
-
-      expect(exists).toBe(false);
-    },
-  );
-});
-
 describe('projectCommandCardVersion function', () => {
   it(
     'renders and stores every command asset target',
@@ -64,7 +45,7 @@ describe('projectCommandCardVersion function', () => {
         {
           assetStorage: assetStorage(existing),
           commandCardRenderer: renderer(),
-          unitIdToNameMap: buildPlaceholderUnitIdToNameMap(
+          unitIdToNameMap: placeholderUnitIdToNameMap(
             getCommandCardUnitIds(card),
           ),
         },
