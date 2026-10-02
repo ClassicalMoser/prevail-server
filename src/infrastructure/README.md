@@ -21,13 +21,13 @@ infrastructure/
 
 ## Database (`database/`)
 
-| Piece        | Role                                                                         |
-| ------------ | ---------------------------------------------------------------------------- |
-| `queries/`   | Tagged SQL functions                                                         |
-| `db-types/`  | Row shapes as returned by postgres                                           |
-| `mappers/`   | One function per file. Row ↔ domain or port shape. The barrel is `index.ts`. |
-| `adapters/`  | Implement `*Storage` ports                                                   |
-| `db-root.ts` | Builds `StoragePort` from a connection string                                |
+| Piece        | Role                                                                                                       |
+| ------------ | ---------------------------------------------------------------------------------------------------------- |
+| `queries/`   | Tagged SQL, grouped by table (`army/record`, `army/composition`, card `read` and `write`)                  |
+| `db-types/`  | Row shapes as returned by postgres                                                                         |
+| `mappers/`   | One function per file, grouped (`army`, `command-card`, `unit-card`, `version`). The barrel is `index.ts`. |
+| `adapters/`  | Implement `*Storage` ports                                                                                 |
+| `db-root.ts` | Builds `StoragePort` from a connection string                                                              |
 
 ### Pattern
 

@@ -3,11 +3,11 @@ import { createInitialGameState } from '@classicalmoser/prevail-rules/domain';
 import type { GameForVisibility } from '@classicalmoser/prevail-rules/domain';
 import type { DataErrorSignature } from '@ports';
 import { randomUUID } from 'node:crypto';
-import { BOT_PLAYER_ID } from '@application/composable/game-session/bot-player-id';
-import { enqueue } from '@application/composable/game-session/enqueue';
-import type { GameSessionStore } from '@application/composable/game-session/game-session-store';
-import { takeBotTurns } from '@application/composable/game-session/take-bot-turns';
-import { VS_BOT_GAME_MODE } from '@application/composable/game-session/vs-bot-game-mode';
+import { BOT_PLAYER_ID } from '@application/composable/game-session/bot/bot-player-id';
+import { enqueue } from '@application/composable/game-session/session/enqueue';
+import type { GameSessionStore } from '@application/composable/game-session/session/game-session-store';
+import { takeBotTurns } from '@application/composable/game-session/bot/take-bot-turns';
+import { VS_BOT_GAME_MODE } from '@application/composable/game-session/bot/vs-bot-game-mode';
 
 /**
  * Create a mini vs-bot game from two armies the subject owns.

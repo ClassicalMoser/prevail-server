@@ -3,10 +3,10 @@ import type {
   PlayerSide,
 } from '@classicalmoser/prevail-rules/domain';
 import type { DataErrorSignature } from '@ports';
-import { enqueue } from '@application/composable/game-session/enqueue';
-import type { GameSessionStore } from '@application/composable/game-session/game-session-store';
-import { subjectForSeat } from '@application/composable/game-session/subject-for-seat';
-import { takeBotTurns } from '@application/composable/game-session/take-bot-turns';
+import { enqueue } from '@application/composable/game-session/session/enqueue';
+import type { GameSessionStore } from '@application/composable/game-session/session/game-session-store';
+import { subjectForSeat } from '@application/composable/game-session/session/subject-for-seat';
+import { takeBotTurns } from '@application/composable/game-session/bot/take-bot-turns';
 
 interface SubmitPlayerChoiceInput {
   gameId: string;

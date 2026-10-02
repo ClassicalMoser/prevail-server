@@ -1,9 +1,9 @@
 import type { DataErrorSignature, GameSeatConnection } from '@ports';
-import { getConnections } from '@application/composable/game-session/get-connections';
-import type { GameSessionStore } from '@application/composable/game-session/game-session-store';
-import { loadAuthoritativeGame } from '@application/composable/game-session/load-authoritative-game';
-import { sendGameSnapshotToConnection } from '@application/composable/game-session/send-game-snapshot-to-connection';
-import { subjectForSeat } from '@application/composable/game-session/subject-for-seat';
+import { getConnections } from '@application/composable/game-session/fanout/get-connections';
+import type { GameSessionStore } from '@application/composable/game-session/session/game-session-store';
+import { loadAuthoritativeGame } from '@application/composable/game-session/session/load-authoritative-game';
+import { sendGameSnapshotToConnection } from '@application/composable/game-session/fanout/send-game-snapshot-to-connection';
+import { subjectForSeat } from '@application/composable/game-session/session/subject-for-seat';
 
 /**
  * Resend the current seat-visible snapshot to an already registered socket.

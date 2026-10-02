@@ -40,9 +40,13 @@ application/
 │   ├── games/          # GameSessionUseCasesPort methods and its composer
 │   └── use-cases-root.ts
 ├── composable/
-│   ├── game-session/   # Queue, fan-out, seat projection, bot turn loop
-│   ├── player-choice/  # Samples a legal player choice; not a port method
-│   └── …               # Card projection, asset keys, certification
+│   ├── assets/         # R2 keys and asset projection
+│   ├── cards/          # Card version projection and certification
+│   ├── game-session/
+│   │   ├── bot/        # Bot identity and the turn loop
+│   │   ├── fanout/     # Seat delivery
+│   │   └── session/    # Store, queue, and authoritative loads
+│   └── player-choice/  # Samples a legal choice; individual picks live in pick/
 └── index.ts
 ```
 

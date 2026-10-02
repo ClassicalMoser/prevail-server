@@ -3,10 +3,10 @@ import type { EnginePorts } from '@classicalmoser/prevail-rules/application';
 import type { Event, GameState } from '@classicalmoser/prevail-rules/domain';
 import type { GameSessionUseCasesPort, OwnedArmyStorage } from '@ports';
 import { createVsBotGame } from './create-vs-bot-game';
-import { DEFAULT_BOT_TURN_GAP_MS } from '@application/composable/game-session/default-bot-turn-gap';
-import { fanoutEvent } from '@application/composable/game-session/fanout-event';
-import { fanoutRoundSnapshot } from '@application/composable/game-session/fanout-round-snapshot';
-import type { GameSessionStore } from '@application/composable/game-session/game-session-store';
+import { DEFAULT_BOT_TURN_GAP_MS } from '@application/composable/game-session/bot/default-bot-turn-gap';
+import { fanoutEvent } from '@application/composable/game-session/fanout/fanout-event';
+import { fanoutRoundSnapshot } from '@application/composable/game-session/fanout/fanout-round-snapshot';
+import type { GameSessionStore } from '@application/composable/game-session/session/game-session-store';
 import { getSeatSubject } from './get-seat-subject';
 import { registerSeatConnection } from './register-seat-connection';
 import { sendGameSnapshot } from './send-game-snapshot';
@@ -69,5 +69,5 @@ const createGameSessionUseCases = (
 };
 
 export type { GameSessionRuntime, GameSessionUseCasesDeps };
-export { BOT_SUBJECT } from '@application/composable/game-session/bot-subject';
+export { BOT_SUBJECT } from '@application/composable/game-session/bot/bot-subject';
 export { createGameSessionUseCases };

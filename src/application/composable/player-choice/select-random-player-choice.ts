@@ -4,14 +4,14 @@ import type {
   PlayerChoiceEvent,
   PlayerSide,
 } from '@classicalmoser/prevail-rules/domain';
-import { pickAssignUnitSupport } from './pick-assign-unit-support';
-import { pickEventForPlayer } from './pick-event-for-player';
-import { pickIssueCommand } from './pick-issue-command';
-import { pickMoveCommander } from './pick-move-commander';
-import { pickMoveUnit } from './pick-move-unit';
-import { pickRangedAttack } from './pick-ranged-attack';
-import { pickRoutDiscard } from './pick-rout-discard';
-import { pickSetupUnits } from './pick-setup-units';
+import { pickAssignUnitSupport } from './pick/pick-assign-unit-support';
+import { pickEventForPlayer } from './pick/pick-event-for-player';
+import { pickIssueCommand } from './pick/pick-issue-command';
+import { pickMoveCommander } from './pick/pick-move-commander';
+import { pickMoveUnit } from './pick/pick-move-unit';
+import { pickRangedAttack } from './pick/pick-ranged-attack';
+import { pickRoutDiscard } from './pick/pick-rout-discard';
+import { pickSetupUnits } from './pick/pick-setup-units';
 import { defaultRandom } from './random-source';
 import type { RandomSource } from './random-source';
 

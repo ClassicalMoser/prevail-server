@@ -1,11 +1,11 @@
 import type { DataErrorSignature, GameSeatConnection } from '@ports';
-import { enqueue } from '@application/composable/game-session/enqueue';
-import { getConnections } from '@application/composable/game-session/get-connections';
-import type { GameSessionStore } from '@application/composable/game-session/game-session-store';
-import { loadAuthoritativeGame } from '@application/composable/game-session/load-authoritative-game';
-import { sendGameSnapshotToConnection } from '@application/composable/game-session/send-game-snapshot-to-connection';
-import { subjectForSeat } from '@application/composable/game-session/subject-for-seat';
-import { takeBotTurns } from '@application/composable/game-session/take-bot-turns';
+import { enqueue } from '@application/composable/game-session/session/enqueue';
+import { getConnections } from '@application/composable/game-session/fanout/get-connections';
+import type { GameSessionStore } from '@application/composable/game-session/session/game-session-store';
+import { loadAuthoritativeGame } from '@application/composable/game-session/session/load-authoritative-game';
+import { sendGameSnapshotToConnection } from '@application/composable/game-session/fanout/send-game-snapshot-to-connection';
+import { subjectForSeat } from '@application/composable/game-session/session/subject-for-seat';
+import { takeBotTurns } from '@application/composable/game-session/bot/take-bot-turns';
 
 /**
  * Admit a seat socket and send its opening snapshot.

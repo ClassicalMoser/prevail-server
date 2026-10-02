@@ -1,6 +1,6 @@
 import type { GameSeatConnection } from '@ports';
-import { getConnections } from '@application/composable/game-session/get-connections';
-import type { GameSessionStore } from '@application/composable/game-session/game-session-store';
+import { getConnections } from '@application/composable/game-session/fanout/get-connections';
+import type { GameSessionStore } from '@application/composable/game-session/session/game-session-store';
 
 /**
  * Drop a closed socket from the game's connection set.
