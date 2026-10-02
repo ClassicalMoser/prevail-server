@@ -23,13 +23,14 @@ const storageOp = async <T>(
   try {
     return await input.run();
   } catch (error) {
-    return handleError({
+    const failure = handleError({
       error,
       logger: input.logger,
       context: input.context,
       message: input.message,
       status: 500,
     });
+    return failure;
   }
 };
 

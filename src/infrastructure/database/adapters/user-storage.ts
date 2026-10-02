@@ -33,13 +33,14 @@ const createUserStorage = (logger: LoggerPort, sql: Sql): UserStorage => ({
       }
       return { success: true, data: userMapperToDomain(rows[0]) };
     } catch (error) {
-      return handleError({
+      const failure = handleError({
         error,
         logger,
         context: 'getting user by id from database',
         message: 'Failed to get user from database',
         status: 500,
       });
+      return failure;
     }
   },
 
@@ -55,13 +56,14 @@ const createUserStorage = (logger: LoggerPort, sql: Sql): UserStorage => ({
       }
       return { success: true, data: userMapperToDomain(rows[0]) };
     } catch (error) {
-      return handleError({
+      const failure = handleError({
         error,
         logger,
         context: 'getting user by auth sub from database',
         message: 'Failed to get user from database',
         status: 500,
       });
+      return failure;
     }
   },
 
@@ -86,13 +88,14 @@ const createUserStorage = (logger: LoggerPort, sql: Sql): UserStorage => ({
         throw insertError;
       }
     } catch (error) {
-      return handleError({
+      const failure = handleError({
         error,
         logger,
         context: 'ensuring user by auth sub in database',
         message: 'Failed to ensure user in database',
         status: 500,
       });
+      return failure;
     }
   },
 });

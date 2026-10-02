@@ -84,11 +84,12 @@ const hydrateArmy = async (sql: Sql, row: ArmyDb): Promise<Army> => {
     ]),
   );
 
-  return toArmy({
+  const army = toArmy({
     armyId: row.army_id,
     units: buildUnitCounts(unitRows, unitTypesById),
     commandCards: buildCommandCards(commandRows, cardsById),
   });
+  return army;
 };
 
 /**
@@ -231,13 +232,14 @@ const createOwnedArmyStorage = (
       }
       return { success: true, data: armies };
     } catch (error) {
-      return handleError({
+      const failure = handleError({
         error,
         logger,
         context: 'getting owned armies from database',
         message: 'Failed to get owned armies from database',
         status: 500,
       });
+      return failure;
     }
   },
 
@@ -264,13 +266,14 @@ const createOwnedArmyStorage = (
         data: await hydrateArmy(sql, rows[0]),
       };
     } catch (error) {
-      return handleError({
+      const failure = handleError({
         error,
         logger,
         context: 'getting owned army by id from database',
         message: 'Failed to get owned army from database',
         status: 500,
       });
+      return failure;
     }
   },
 
@@ -294,13 +297,14 @@ const createOwnedArmyStorage = (
         data: rows[0].army_id,
       };
     } catch (error) {
-      return handleError({
+      const failure = handleError({
         error,
         logger,
         context: 'creating owned army in database',
         message: 'Failed to create owned army in database',
         status: 500,
       });
+      return failure;
     }
   },
 
@@ -363,13 +367,14 @@ const createOwnedArmyStorage = (
 
       return { success: true, data: undefined };
     } catch (error) {
-      return handleError({
+      const failure = handleError({
         error,
         logger,
         context: 'archiving owned army in database',
         message: 'Failed to archive owned army in database',
         status: 500,
       });
+      return failure;
     }
   },
 });

@@ -87,12 +87,22 @@ const registerRoutes = (
         if (route.auth.authRequired) {
           const token = extractBearerToken(wireRequest.headers);
           if (token === undefined) {
-            return sendRouteResult(fastifyReply, unauthorized, route);
+            const sentUnauthorized = sendRouteResult(
+              fastifyReply,
+              unauthorized,
+              route,
+            );
+            return sentUnauthorized;
           }
 
           const authResult = await authPort.checkToken(token, route.auth);
           if ('success' in authResult) {
-            return sendRouteResult(fastifyReply, authResult, route);
+            const sentAuthFailure = sendRouteResult(
+              fastifyReply,
+              authResult,
+              route,
+            );
+            return sentAuthFailure;
           }
 
           wireRequest = {
@@ -102,7 +112,8 @@ const registerRoutes = (
         }
 
         const result = await route.invoke(wireRequest);
-        return sendRouteResult(fastifyReply, result, route);
+        const sent = sendRouteResult(fastifyReply, result, route);
+        return sent;
       },
     });
   }

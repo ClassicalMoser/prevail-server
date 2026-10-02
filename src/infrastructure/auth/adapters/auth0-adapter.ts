@@ -105,13 +105,14 @@ const createAuth0Adapter = (
           return unauthorized;
         }
 
-        return handleError({
+        const failure = handleError({
           error,
           logger,
           context: 'verifying Auth0 access token',
           message: 'Failed to verify Auth0 access token',
           status: 500,
         });
+        return failure;
       }
     },
   };

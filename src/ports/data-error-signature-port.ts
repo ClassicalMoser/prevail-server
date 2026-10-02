@@ -53,7 +53,8 @@ const mapVoidToNoContent = (
   if (!result.success) {
     return result;
   }
-  return noContentSuccess();
+  const noContent = noContentSuccess();
+  return noContent;
 };
 
 /**
@@ -70,7 +71,8 @@ const mapVoidToEmptyObject = (
   if (!result.success) {
     return result;
   }
-  return emptyObjectSuccess();
+  const emptyObject = emptyObjectSuccess();
+  return emptyObject;
 };
 
 export type {

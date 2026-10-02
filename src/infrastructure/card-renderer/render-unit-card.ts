@@ -31,11 +31,13 @@ const resolveUnitImage = async (
     return { success: true, data: false };
   }
 
-  return fetchUnitArtwork(
+  const destinationPath = path.join(workspaceDir, 'unit-image.png');
+  const fetched = await fetchUnitArtwork(
     imageUrl,
-    path.join(workspaceDir, 'unit-image.png'),
+    destinationPath,
     allowedMediaOrigin,
   );
+  return fetched;
 };
 
 /**

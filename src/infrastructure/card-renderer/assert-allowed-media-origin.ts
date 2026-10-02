@@ -18,9 +18,11 @@ const parseUrl = (
   invalidMessage: string,
 ): URL | DataErrorSignature<never> => {
   try {
-    return new URL(value);
+    const url = new URL(value);
+    return url;
   } catch {
-    return toOriginError(invalidMessage);
+    const invalid = toOriginError(invalidMessage);
+    return invalid;
   }
 };
 
@@ -60,11 +62,13 @@ const assertAllowedMediaOrigin = (
   }
 
   if (imageOrigin.origin !== allowedOrigin.origin) {
-    return toOriginError('Image URL origin is not allowed');
+    const originRejected = toOriginError('Image URL origin is not allowed');
+    return originRejected;
   }
 
   if (imageOrigin.protocol !== 'https:' && imageOrigin.protocol !== 'http:') {
-    return toOriginError('Image URL must use http or https');
+    const protocolRejected = toOriginError('Image URL must use http or https');
+    return protocolRejected;
   }
 
   return { success: true };

@@ -37,13 +37,18 @@ const fetchUnitArtwork = async (
   try {
     const response = await fetch(imageUrl, { redirect: 'manual' });
     if (response.status >= 300 && response.status < 400) {
-      return toFetchError('Redirects are not allowed for unit artwork', 400);
+      const redirectRejected = toFetchError(
+        'Redirects are not allowed for unit artwork',
+        400,
+      );
+      return redirectRejected;
     }
 
     if (!response.ok) {
-      return toFetchError(
+      const fetchFailed = toFetchError(
         `Failed to fetch unit artwork (${response.status} ${response.statusText})`,
       );
+      return fetchFailed;
     }
 
     const contentLength = response.headers.get('content-length');
@@ -51,12 +56,17 @@ const fetchUnitArtwork = async (
       typeof contentLength === 'string' &&
       Number(contentLength) > MAX_ARTWORK_BYTES
     ) {
-      return toFetchError('Unit artwork exceeds size limit', 400);
+      const tooLargeHeader = toFetchError(
+        'Unit artwork exceeds size limit',
+        400,
+      );
+      return tooLargeHeader;
     }
 
     const buffer = Buffer.from(await response.arrayBuffer());
     if (buffer.length > MAX_ARTWORK_BYTES) {
-      return toFetchError('Unit artwork exceeds size limit', 400);
+      const tooLargeBody = toFetchError('Unit artwork exceeds size limit', 400);
+      return tooLargeBody;
     }
 
     await writeFile(destinationPath, buffer);
@@ -64,7 +74,8 @@ const fetchUnitArtwork = async (
   } catch (error: unknown) {
     const message =
       error instanceof Error ? error.message : 'Failed to fetch unit artwork';
-    return toFetchError(message);
+    const fetchError = toFetchError(message);
+    return fetchError;
   }
 };
 

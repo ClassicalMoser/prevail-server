@@ -35,22 +35,27 @@ const registerSeatConnection = async (
     };
   }
 
-  return enqueue(store, connection.gameId, async () => {
-    if (connection.side === meta.humanSide) {
-      await takeBotTurns(store, connection.gameId);
-    }
-    const afterBots = await loadAuthoritativeGame(
-      store,
-      connection.gameId,
-      meta.gameMode,
-    );
-    if (afterBots === undefined) {
-      return { message: 'Game not found', status: 404, success: false };
-    }
-    getConnections(store, connection.gameId).add(connection);
-    sendGameSnapshotToConnection(connection, afterBots);
-    return { data: undefined, success: true };
-  });
+  const registered: DataErrorSignature<void> = await enqueue(
+    store,
+    connection.gameId,
+    async (): Promise<DataErrorSignature<void>> => {
+      if (connection.side === meta.humanSide) {
+        await takeBotTurns(store, connection.gameId);
+      }
+      const afterBots = await loadAuthoritativeGame(
+        store,
+        connection.gameId,
+        meta.gameMode,
+      );
+      if (afterBots === undefined) {
+        return { message: 'Game not found', status: 404, success: false };
+      }
+      getConnections(store, connection.gameId).add(connection);
+      sendGameSnapshotToConnection(connection, afterBots);
+      return { data: undefined, success: true };
+    },
+  );
+  return registered;
 };
 
 export { registerSeatConnection };

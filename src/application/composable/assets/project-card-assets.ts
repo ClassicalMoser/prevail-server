@@ -37,7 +37,8 @@ const putRenderedAsset = async (
     await assetStorage.putImmutable(target.key, renderResult.data, target.type);
     return { success: true, data: undefined };
   } catch (error: unknown) {
-    return toUploadError(error);
+    const uploadError = toUploadError(error);
+    return uploadError;
   }
 };
 

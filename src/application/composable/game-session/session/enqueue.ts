@@ -23,7 +23,8 @@ const enqueue = async <T>(
     } catch {
       // Keep the per-game queue moving after a prior failure.
     }
-    return work();
+    const result = await work();
+    return result;
   })();
   store.submitQueues.set(gameId, run);
   return run;
