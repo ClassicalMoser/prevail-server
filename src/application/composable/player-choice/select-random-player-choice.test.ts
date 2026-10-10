@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import type {
   Command,
+  CommandCard,
   LegalPlayerChoiceOptions,
 } from '@classicalmoser/prevail-rules/domain';
 import {
@@ -32,6 +33,19 @@ const firstAlways: RandomSource = {
 const unitType = tempUnits[0];
 assert.ok(unitType !== undefined);
 
+/** Sample deck card. Fails the suite if that name leaves the fixture. */
+const commandCardNamed = (name: string): CommandCard => {
+  const card = tempCommandCards.find((candidate) => candidate.name === name);
+  assert.ok(card !== undefined);
+  return card;
+};
+
+const strike = commandCardNamed('Strike');
+const evade = commandCardNamed('Evade');
+const volley = commandCardNamed('Volley');
+const charge = commandCardNamed('Charge');
+const move = commandCardNamed('Move');
+
 const issuePhase = (
   remainingCommandsFirstPlayer: Command[],
 ): {
@@ -61,16 +75,16 @@ const seedPlayableIssueState = (
     awaitingPlay: null,
     burnt: [],
     discarded: [],
-    inHand: [tempCommandCards[0]!],
-    inPlay: tempCommandCards[1]!,
+    inHand: [strike],
+    inPlay: evade,
     played: [],
   });
   next = updatePlayerCardState(next, 'white', {
     awaitingPlay: null,
     burnt: [],
     discarded: [],
-    inHand: [tempCommandCards[2]!],
-    inPlay: tempCommandCards[3]!,
+    inHand: [volley],
+    inPlay: charge,
     played: [],
   });
   return next;
@@ -127,10 +141,8 @@ describe('selectRandomPlayerChoice function', () => {
     () => {
       expect.hasAssertions();
 
-      const whiteCard = tempCommandCards[0];
-      const blackCard = tempCommandCards[1];
-      assert.ok(whiteCard !== undefined);
-      assert.ok(blackCard !== undefined);
+      const whiteCard = strike;
+      const blackCard = evade;
 
       const options: LegalPlayerChoiceOptions = {
         choiceType: 'chooseCard',
@@ -242,7 +254,7 @@ describe('selectRandomPlayerChoice function', () => {
       expect.hasAssertions();
 
       const command: Command = {
-        ...tempCommandCards[0]!.command,
+        ...strike.command,
         number: 1,
         restrictions: {
           inspirationRangeRestriction: -1,
@@ -292,7 +304,7 @@ describe('selectRandomPlayerChoice function', () => {
       expect.hasAssertions();
 
       const command: Command = {
-        ...tempCommandCards[0]!.command,
+        ...strike.command,
         number: 1,
         restrictions: {
           inspirationRangeRestriction: -1,
@@ -366,7 +378,7 @@ describe('selectRandomPlayerChoice function', () => {
     () => {
       expect.hasAssertions();
 
-      const moveCard = tempCommandCards[4]!;
+      const moveCard = move;
       const options: LegalPlayerChoiceOptions = {
         choiceType: 'commitToMovement',
         events: [
@@ -453,11 +465,11 @@ describe('selectRandomPlayerChoice function', () => {
       const unitA = createUnitInstance('white', unitType, 1);
       const unitB = createUnitInstance('white', unitType, 2);
       const cardA = {
-        ...tempCommandCards[0]!,
+        ...strike,
         unitSupport: { count: 1, supportType: 'generic' as const },
       };
       const cardB = {
-        ...tempCommandCards[1]!,
+        ...evade,
         unitSupport: { count: 1, supportType: 'generic' as const },
       };
 
@@ -469,7 +481,7 @@ describe('selectRandomPlayerChoice function', () => {
         awaitingPlay: null,
         burnt: [],
         discarded: [],
-        inHand: [tempCommandCards[2]!],
+        inHand: [volley],
         inPlay: null,
         played: [],
       });
@@ -545,7 +557,7 @@ describe('selectRandomPlayerChoice function', () => {
       // Range 0: only the commander-space unit is a legal start. Segment still
       // includes the western neighbor; firstAlways picks that neighbor as end.
       const command: Command = {
-        ...tempCommandCards[4]!.command,
+        ...move.command,
         number: 1,
         restrictions: {
           inspirationRangeRestriction: 0,

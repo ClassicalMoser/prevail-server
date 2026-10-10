@@ -170,20 +170,27 @@ describe('registerSeatConnection function', () => {
       assert.ok(options.choiceType === 'setupUnits');
 
       const { setupUnits } = options;
-      const unitPlacements = setupUnits.units.map((unit, index) => ({
-        placement: {
-          coordinate: setupUnits.coordinates[index]!,
-          facing: 'south' as const,
-        },
-        unit,
-      }));
+      const unitPlacements = setupUnits.units.map((unit, index) => {
+        const coordinate = setupUnits.coordinates[index];
+        assert.ok(coordinate !== undefined);
+        const placement = {
+          placement: {
+            coordinate,
+            facing: 'south' as const,
+          },
+          unit,
+        };
+        return placement;
+      });
+      const firstPlacement = unitPlacements[0];
+      assert.ok(firstPlacement !== undefined);
 
       const messages: GameSessionOutbound[] = [];
       const submitPromise = runtime.submitPlayerChoice({
         gameId: created.data,
         playerChoice: {
           choiceType: 'setupUnits',
-          commanderCoordinate: unitPlacements[0]!.placement.coordinate,
+          commanderCoordinate: firstPlacement.placement.coordinate,
           eventNumber: options.expectedEventNumber,
           eventType: PLAYER_CHOICE_EVENT_TYPE,
           player: 'white',
