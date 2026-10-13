@@ -13,6 +13,7 @@ const versionRow = (): CommandCardVersionDb => ({
     modifiers: card.modifiers,
     roundEffect: card.roundEffect,
     unitSupport: card.unitSupport,
+    cost: 15,
   },
   command_card_id: card.id,
   command_card_name: card.name,
@@ -35,6 +36,7 @@ describe('commandCardVersionMapperToDomain function', () => {
         id: card.id,
         name: card.name,
         version: '2.3.4',
+        cost: 15,
       });
       expect(mapped.initiative).toBe(card.initiative);
     },

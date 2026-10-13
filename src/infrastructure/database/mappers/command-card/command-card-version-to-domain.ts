@@ -9,9 +9,10 @@ import { formatVersionTriple } from '../version/format-version-triple';
 /**
  * Rebuild a domain command card from a version row.
  *
- * Identity and name live in columns. The rest of the card is the JSON
- * definition. The version string is rebuilt from the triple columns so a
- * stale `version` inside the JSON cannot disagree with the row.
+ * Identity and name live in columns. Initiative, modifiers, command, round
+ * effect, unit support, and cost come from the JSON definition. The version
+ * string is rebuilt from the triple columns so a stale `version` inside the
+ * JSON cannot disagree with the row.
  *
  * @param version - One command-card version row.
  * @returns The domain card for that row.

@@ -2,7 +2,12 @@ import type { CommandCard } from '@classicalmoser/prevail-rules/domain';
 
 type PartialCard = Pick<
   CommandCard,
-  'initiative' | 'modifiers' | 'command' | 'roundEffect' | 'unitSupport'
+  | 'initiative'
+  | 'modifiers'
+  | 'command'
+  | 'roundEffect'
+  | 'unitSupport'
+  | 'cost'
 >;
 
 interface CommandCardDb {

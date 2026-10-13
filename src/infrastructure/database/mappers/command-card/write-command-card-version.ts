@@ -1,6 +1,9 @@
 import type { CommandCard } from '@classicalmoser/prevail-rules/domain';
 import { commandCardSchema } from '@classicalmoser/prevail-rules/domain';
-import type { WriteCommandCardVersionDb } from '@infrastructure/database/db-types';
+import type {
+  PartialCard,
+  WriteCommandCardVersionDb,
+} from '@infrastructure/database/db-types';
 import { parseVersionTriple } from '../version/parse-version-triple';
 
 /**
@@ -8,7 +11,8 @@ import { parseVersionTriple } from '../version/parse-version-triple';
  *
  * `commandCardSchema.parse` rejects a card the domain would not accept, so a
  * bad write fails before it is inserted. Identity, name, and the version
- * triple are columns. The definition stores the rules payload only.
+ * triple are columns. Cost stays in the definition with the rest of the
+ * rules payload.
  *
  * @param card - Domain card to persist as a new version.
  * @returns The row shape the insert query expects.
@@ -18,12 +22,13 @@ const writeCommandCardVersionMapper = (
 ): WriteCommandCardVersionDb => {
   const validatedCard = commandCardSchema.parse(card);
   const versionTriple = parseVersionTriple(validatedCard.version);
-  const definition = {
+  const definition: PartialCard = {
     initiative: validatedCard.initiative,
     modifiers: validatedCard.modifiers,
     command: validatedCard.command,
     roundEffect: validatedCard.roundEffect,
     unitSupport: validatedCard.unitSupport,
+    cost: validatedCard.cost,
   };
   const cardWrite: WriteCommandCardVersionDb = {
     command_card_id: validatedCard.id,

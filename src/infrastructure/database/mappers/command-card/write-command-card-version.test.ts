@@ -13,6 +13,7 @@ describe('writeCommandCardVersionMapper function', () => {
       const source = tempCommandCards[4];
       const card: CommandCard = {
         ...source,
+        cost: 7,
         initiative: 3,
         version: '2.3.4',
       };
@@ -27,7 +28,7 @@ describe('writeCommandCardVersionMapper function', () => {
         version_minor: 3,
         version_patch: 4,
       });
-      expect(definition).toMatchObject({ initiative: 3 });
+      expect(definition).toMatchObject({ cost: 7, initiative: 3 });
     },
   );
 });

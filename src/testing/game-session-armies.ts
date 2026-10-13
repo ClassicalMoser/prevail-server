@@ -63,6 +63,7 @@ const commandCard = (
       restrictionType: 'none',
     },
   },
+  cost: 10,
   unitSupport: { count: 1, supportType: 'generic' },
   version: '1.0.0',
 });

@@ -17,6 +17,7 @@ const toVersion = (
       command: card.command,
       roundEffect: card.roundEffect,
       unitSupport: card.unitSupport,
+      cost: card.cost,
     },
     version_major: 1,
     version_minor: 0,
