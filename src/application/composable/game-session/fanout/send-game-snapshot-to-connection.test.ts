@@ -6,6 +6,7 @@ import { sendGameSnapshotToConnection } from './send-game-snapshot-to-connection
 const placeholderArmy = {
   commandCards: [],
   id: '550e8400-e29b-41d4-a716-446655440099',
+  name: 'Test Army',
   units: [],
 };
 

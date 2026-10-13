@@ -3,7 +3,7 @@ import type {
   EmptyObject,
 } from '@classicalmoser/prevail-contracts';
 import type { Army } from '@classicalmoser/prevail-rules/domain';
-import { UNTITLED_ARMY_NAME, armyDisplayName } from '@domain';
+import { UNTITLED_ARMY_NAME } from '@domain';
 import type {
   DataErrorSignature,
   ErrorSignature,
@@ -21,8 +21,8 @@ interface OwnedArmyUseCasesDeps {
  * Owned-army use cases.
  *
  * Reads delegate to storage. Create stores the untitled display name.
- * Update renames the list from the first unit type via `armyDisplayName`
- * and returns an empty object so the HTTP contract can answer 200.
+ * Update stores the name the client sent with the composition and returns
+ * an empty object so the HTTP contract can answer 200.
  * Archive maps a void write to 204.
  *
  * @param deps - Owned-army storage.
@@ -65,7 +65,7 @@ const createOwnedArmyUseCases = (
     body: ArmyWriteBody,
   ): Promise<DataErrorSignature<EmptyObject>> => {
     const write = {
-      armyName: armyDisplayName(body.units),
+      armyName: body.name,
       units: body.units,
       commandCards: body.commandCards,
     };

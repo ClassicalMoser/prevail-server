@@ -53,7 +53,7 @@ import { handleError } from '@utils';
  *
  * @param sql - postgres.js client.
  * @param row - Army identity row, including the display name and owner.
- * @returns The domain army. The display name stays on the row, not on `Army`.
+ * @returns The domain army, including the row's display name.
  */
 const hydrateArmy = async (sql: Sql, row: ArmyDb): Promise<Army> => {
   const unitRows = await getArmyUnitCardsQuery(sql, row.army_id);
@@ -86,6 +86,7 @@ const hydrateArmy = async (sql: Sql, row: ArmyDb): Promise<Army> => {
 
   const army = toArmy({
     armyId: row.army_id,
+    armyName: row.army_name,
     units: buildUnitCounts(unitRows, unitTypesById),
     commandCards: buildCommandCards(commandRows, cardsById),
   });

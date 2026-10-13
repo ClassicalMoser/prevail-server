@@ -21,7 +21,7 @@ import {
  * Every route requires an authenticated subject. The subject is the owner
  * key; handlers do not read a user id from the path. Create and archive use
  * the contract success status. Update sends the body through the use case,
- * which derives the display name.
+ * which stores the name that arrived with the army.
  *
  * @param ownedArmyUseCases - Army use cases.
  * @param logger - Passed into the route helpers for unexpected failures.

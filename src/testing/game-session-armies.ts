@@ -14,6 +14,7 @@ const blackArmyId = '550e8400-e29b-41d4-a716-446655440002';
 const army = (id: string): Army => ({
   commandCards: [],
   id,
+  name: 'Test Army',
   units: [],
 });
 
@@ -79,6 +80,7 @@ const miniArmy = (id: string): Army => ({
     [0, 1].map((copy) => commandCard(initiative, initiative * 10 + copy)),
   ),
   id,
+  name: 'Test Army',
   units: [{ count: 4, unitType: unitType({ cost: 10, morale: 2 }) }],
 });
 

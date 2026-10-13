@@ -15,6 +15,7 @@ describe('army function', () => {
       expect(army(whiteArmyId)).toStrictEqual({
         commandCards: [],
         id: whiteArmyId,
+        name: 'Test Army',
         units: [],
       });
     },

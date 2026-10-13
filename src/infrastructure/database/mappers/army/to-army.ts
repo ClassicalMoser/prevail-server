@@ -5,20 +5,23 @@ import type {
 } from '@classicalmoser/prevail-rules/domain';
 
 /**
- * Build the domain army from an id and its already-mapped composition.
+ * Build the domain army from its id, display name, and mapped composition.
  *
- * Display name is a server concern and is not part of rules `Army`.
+ * Rules `Army` carries the name. The army row already stores it, and this
+ * mapper copies that string onto the domain value.
  *
- * @param params - Army id plus units and command cards in domain shape.
+ * @param params - Army id, display name, and domain units and command cards.
  * @returns The domain army.
  */
 const toArmy = (params: {
   armyId: string;
+  armyName: string;
   units: UnitCount[];
   commandCards: CommandCard[];
 }): Army => {
   const army: Army = {
     id: params.armyId,
+    name: params.armyName,
     units: params.units,
     commandCards: params.commandCards,
   };

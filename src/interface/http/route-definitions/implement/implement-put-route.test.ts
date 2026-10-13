@@ -17,7 +17,7 @@ const logger: LoggerPort = {
 const armyId = '550e8400-e29b-41d4-a716-446655440001';
 
 const body = {
-  armyName: 'Legion',
+  name: 'Legion',
   commandCards: [],
   units: [],
 };

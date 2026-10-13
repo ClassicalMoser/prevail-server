@@ -58,7 +58,7 @@ A test should be almost as easy to read as its name. The `it` title states the f
 
 Oxlint adds three house rules on top of that:
 
-- The `describe` title is a string, and it is not the imported function's name. Use `describe('armyDisplayName function', ...)`.
+- The `describe` title is a string, and it is not the imported function's name. Use `describe('toArmy function', ...)`.
 - Every `it` sets `{ timeout: 5000 }`. A process inject test may use a longer timeout.
 - A test body has at most five `expect` calls. `expect.hasAssertions()` counts, and it belongs at the top of the body.
 

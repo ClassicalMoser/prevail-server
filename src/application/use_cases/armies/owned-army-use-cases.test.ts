@@ -6,14 +6,16 @@ import { createOwnedArmyUseCases } from './owned-army-use-cases';
 const ownerAuthSub = 'auth0|owner-1';
 
 const emptyArmy = (id: string): Army => ({
-  id,
-  units: [],
   commandCards: [],
+  id,
+  name: 'Test Army',
+  units: [],
 });
 
 const emptyWriteBody = (): ArmyWriteBody => ({
-  units: [],
   commandCards: [],
+  name: 'Test Army',
+  units: [],
 });
 
 const buildStorage = (
@@ -111,7 +113,7 @@ describe('updateOwnedArmy', () => {
 
       expect(result).toStrictEqual({ success: true, data: {} });
       expect(updateOwnedArmy).toHaveBeenCalledWith(ownerAuthSub, 'army-1', {
-        armyName: 'Untitled army',
+        armyName: 'Test Army',
         units: body.units,
         commandCards: body.commandCards,
       });

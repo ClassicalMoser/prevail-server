@@ -1,1 +1,1 @@
-export { UNTITLED_ARMY_NAME, armyDisplayName } from './army-display-name';
+export { UNTITLED_ARMY_NAME } from './army-display-name';
