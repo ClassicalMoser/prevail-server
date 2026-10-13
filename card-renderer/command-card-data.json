@@ -5,12 +5,12 @@
       "number": 1,
       "restrictions": {
         "inspirationRangeRestriction": 1,
-        "traitRestrictions": [],
-        "unitRestrictions": []
+        "restrictionType": "none"
       },
       "size": "units",
       "type": "movement"
     },
+    "cost": 10,
     "id": "00000000-0000-4000-8000-000000000001",
     "initiative": 1,
     "modifiers": ["attack"],
@@ -19,11 +19,10 @@
       "modifiers": [{ "type": "attack", "value": 1 }],
       "restrictions": {
         "inspirationRangeRestriction": 1,
-        "traitRestrictions": [],
-        "unitRestrictions": []
+        "restrictionType": "none"
       }
     },
-    "unitSupport": { "count": 0, "supportType": "generic" },
+    "unitSupport": { "count": 1, "supportType": "generic" },
     "version": "1.0.0"
   }
 }

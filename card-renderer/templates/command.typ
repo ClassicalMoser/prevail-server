@@ -1,11 +1,11 @@
-// Template for Command Cards
+// Command card face.
+//
+// The page is the trim size, plus an eighth-inch bleed when details.json
+// asks for it. Bands painted under the trim continue into that margin so a
+// wandering cut still shows the right field.
 
-// Card size
 #let trim-width = 2.5in
 #let trim-height = 3.5in
-
-// Bleed (written by render-unit-card.ts -> details.json). When on, the
-// page grows by an eighth-inch on every edge so trimming stays clean.
 #let bleed = if json("../details.json").bleed { 0.125in } else { 0pt }
 
 #set page(
@@ -13,268 +13,319 @@
   height: trim-height + 2 * bleed,
   margin: 0pt,
 )
-
-// All individual items center-aligned
 #set align(center)
 #set image(fit: "contain")
 
--------------------------------------------------------
-// Get the data from json
-
 #let card = json("../command-card-data.json").card
 
-// Saving the main data elements to easy-access variables.
-// A bit verbose but saves a lot of lookups and centralizes
+// Palette. Display type is white. The art field is ivory.
+// Range figures and round-effect type are bronze; labels are muted.
+#let c-light = color.oklch(100%, 0.0, 0deg)
+#let c-umber = color.oklch(17%, 0.04, 92deg)
+#let c-bronze = color.oklch(66.37%, 0.0711, 84.05deg)
+#let c-roundfx = color.oklch(28%, 0.027, 45deg)
+#let c-oxblood = color.oklch(32%, 0.075, 25deg)
+#let c-ivory = color.oklch(83%, 0.033, 79deg)
+#let c-muted = color.oklch(65%, 0.032, 81deg)
 
-// The name of the card
-#let name = card.name
-// Initiative (string from number)
-#let initiative = str(card.initiative)
-// First commit icon (card-level modifiers are stat names, e.g. "attack")
-#let first-commit-icon = card.modifiers.at(0)
-// Second commit icon (usually absent)
-#let second-commit-icon = if card.modifiers.len() > 1 {
-  card.modifiers.at(1)
-} else {
-  none
-}
-
-// Command Elements
-#let command-type = card.command.type
-#let command-number = card.command.number
-#let command-size = card.command.size
-
-#let command-modifiers = card.command.modifiers
-
-#let command-unit-restrictions = card.command.restrictions.unitRestrictions
-#let command-trait-restrictions = card.command.restrictions.traitRestrictions
-#let command-range-restriction = card.command.restrictions.inspirationRangeRestriction
-
-// Round Effect Elements
-#let round-effect-modifiers = card.roundEffect.modifiers
-
-#let round-unit-restrictions = card.roundEffect.restrictions.unitRestrictions
-#let round-trait-restrictions = card.roundEffect.restrictions.traitRestrictions
-#let round-range-restriction = card.roundEffect.restrictions.inspirationRangeRestriction
-
-// Supported Units
-#let supported-units = card.unitSupport
-#let support-number = supported-units.count
-#let support-type = supported-units.supportType
-#let supported-trait = if ("trait" in supported-units) { supported-units.trait } else { none }
-#let supported-unit-type = if ("unitTypeId" in supported-units) { supported-units.unitTypeId } else { none }
-
-
-
--------------------------------------------------------
-
-// Load the svg icons
-#let show-icon(icon-name, color) = image(
-  ("../icons/" + color + "/" + icon-name + "-" + color + ".svg")
-)
-
-// Set up our color palette
-#let c-umber = color.oklch(17%, 0.04, 92deg) // header/command band
-#let c-vellum = color.oklch(81%, 0.03, 92deg) // illustration field
-#let c-bronze = color.oklch(66.37%, 0.0711, 84.05deg) // icons, horsemen
-#let c-roundfx = color.oklch(28%, 0.027, 45deg) // round effect band
-#let c-oxblood = color.oklch(25%, 0.055, 25deg) // initiative/ commit boxes
-#let c-ivory = color.oklch(93%, 0.027, 89deg) //primary text on dark
-#let c-muted = color.oklch(65%, 0.032, 81deg) // secondary text (labels, footer)
-
-// Set font default
 #set text(font: "TeX Gyre Pagella", size: 9pt)
 
-// Create display font function
+// Icons live at the render-workspace root, one directory above this file.
+#let show-icon(icon-name, color) = image(
+  "../icons/" + color + "/" + icon-name + "-" + color + ".svg",
+)
+
 #let display-text(content, size: 12pt) = text(
   font: "Cinzel",
   size: size,
-  fill: c-ivory,
-  content
+  fill: c-light,
+  content,
 )
 
 #let capitalize(word) = upper(word.at(0)) + word.slice(1)
 
--------------------------------------------------------
-// Derivation of display text
+// Trait ids are lowercase words. The face shows them as one title-case phrase,
+// whether the card requires every trait or supports a single one.
+#let trait-phrase(traits) = traits.map(capitalize).join(" ")
 
-// Convert size to singular if command number is 1
-#let command-singular = command-number == 1
-#let command-size-formatted = if command-singular {
-  if command-size == "lines" {
-    "Line"
+#let number-sign(number) = if number < 0 { "–" } else { "+" }
+
+// Centers a piece on the surrounding text's cap-height midline.
+// em is the surrounding text size, so the call stays outside any size change.
+#let on-midline(body) = box(baseline: 50% - 0.35em, body)
+
+// Commit icons are stat names. The schema allows one or two.
+#let first-commit-icon = card.modifiers.at(0)
+#let second-commit-icon = card.modifiers.at(1, default: none)
+
+// "1 Unit Moves" / "4 Units Move". The leading space sits on the noun and
+// the verb so the pieces concatenate without a join.
+#let command-phrase(command) = {
+  let singular = command.number == 1
+  let noun = if command.size == "lines" {
+    if singular { " Line" } else { " Lines" }
   } else {
-    "Unit"
+    if singular { " Unit" } else { " Units" }
   }
-} else {
-  if command-size == "lines" {
-    "Lines"
+  let verb = if command.type == "rangedAttack" {
+    if singular { " Shoots" } else { " Shoot" }
   } else {
-    "Units"
+    if singular { " Moves" } else { " Move" }
   }
+  str(command.number) + noun + verb
 }
 
-// Show user-friendly command type
-#let command-type-formatted = if command-type == "rangedAttack" {
-  "RANGED ATTACK"
-} else {
-  "MOVE"
+// "with" only when the command itself carries modifiers.
+#let command-with(modifiers) = if modifiers.len() > 0 {
+  text(size: 7pt, fill: c-light, " with ")
 }
 
-// Format command text
-#let command-text = command-type-formatted + " with " + str(command-number) + " " + command-size-formatted
-
-// Derivation of Unit and Trait Restriction Arrays
-
-// Put Unit Restrictions in all caps
-#let format-unit-restriction(units) = units.map(smallcaps)
-
-// Join trait restrictions into a string
-#let string-trait-restrictions(traits) = if traits.len() == 0 { () } else { (traits.map(capitalize).join(", "),) }
-
-#let combined-retrictions(units, traits) = format-unit-restriction(units) + (string-trait-restrictions(traits))
-
-#let display-restriction-text(item) = text(
-  fill: c-muted,
-  size: 7pt,
-  item
-)
-
-#let display-generic-restriction-text(item) = text(
-  fill: c-muted,
-  item
-)
-
-#let combined-command-restrictions = combined-retrictions(
-  command-unit-restrictions, command-trait-restrictions
-).map(display-restriction-text)
-
-#let display-command-restrictions = if combined-command-restrictions.len() == 0 {
-  (display-generic-restriction-text("ANY"),)
-} else {
-  combined-command-restrictions
+// A restriction is a range plus at most one filter. -1 means no range.
+// Traits are one phrase (the unit must have all of them). Unit types are
+// one row each (the unit must be one of them). Those strings are already
+// display names; the print step swapped ids before this file runs.
+#let restriction-view(restrictions) = {
+  let range = if restrictions.inspirationRangeRestriction < 0 {
+    none
+  } else {
+    restrictions.inspirationRangeRestriction
+  }
+  let labels = if restrictions.restrictionType == "trait" {
+    (trait-phrase(restrictions.traitRestrictions),)
+  } else if restrictions.restrictionType == "unitType" {
+    restrictions.unitRestrictions.map(smallcaps)
+  } else {
+    ()
+  }
+  (range: range, labels: labels)
 }
 
-#let combined-round-restrictions = combined-retrictions(
-  round-unit-restrictions, round-trait-restrictions
-).map(display-restriction-text)
+#let signed-value(modifier, text-size, sign-color) = on-midline(text(
+  size: text-size,
+  fill: sign-color,
+  number-sign(modifier.value) + str(calc.abs(modifier.value)),
+))
 
-#let display-round-restrictions = if combined-round-restrictions.len() == 0 {
-  (display-generic-restriction-text("ALL"),)
-} else {
-  combined-round-restrictions
+#let modifier-icon(modifier, icon-size, icon-variant) = on-midline(box(
+  height: icon-size,
+  width: icon-size,
+  inset: 1pt,
+  show-icon(modifier.type, icon-variant),
+))
+
+#let inline-modifiers(
+  modifiers,
+  text-size,
+  icon-size,
+  sign-color,
+  icon-variant,
+) = {
+  if modifiers.len() == 0 {
+    return none
+  }
+  let marks = modifiers.map(modifier => {
+    signed-value(modifier, text-size, sign-color)
+    modifier-icon(modifier, icon-size, icon-variant)
+  })
+  box(marks.join(" "))
 }
 
--------------------------------------------------------
-
-// Display Components
-
-#let vertical-box(content-array) = if content-array.len()== 0 {
-  [] 
-} else {
+// One rounded box for whatever this restriction uses: the filter and the
+// range, side by side. Sized to its content. None when both are absent.
+#let restriction-box(view) = {
+  let filter = if view.labels.len() > 0 {
+    text(fill: c-muted, size: 7pt, stack(spacing: 4pt, ..view.labels))
+  }
+  let range = if view.range != none {
+    text(fill: c-bronze, size: 10pt, {
+      str(view.range)
+      h(2pt)
+      on-midline(box(height: 1.4em, show-icon("commander", "bronze")))
+    })
+  }
+  let parts = (filter, range).filter(part => part != none)
+  if parts.len() == 0 {
+    return none
+  }
   box(
-    height: 100%,
-    width: 100%,
-    stack(
-      spacing: 0pt,
-      ..content-array
-      .map((item) =>
-        align(horizon, box(
-          height: 100% / content-array.len(),
-          width: 100%,
-          inset:0pt,
-          item
-        ))
-      )
-    )
-  )
-}
-
-#let number-sign(number) = if number < 0 {"– "} else {"+ "}
-
-#let display-modifier(modifier) = box(
-  height: 100%,
-  width: 100%,
-  align(horizon,
+    fill: c-roundfx,
+    inset: (x: 6pt, y: 4pt),
+    radius: 4pt,
     grid(
-      align: right,
-      columns: (50%,50% ),
-      inset: 3pt,
-      align(
-        right,
-        text(
-          fill: c-bronze,
-          size: 8pt,
-          number-sign(modifier.value)
-          + str(calc.abs(modifier.value))
-        )
-      ),
-      align(center,(image("../icons/bronze/" + modifier.type + "-bronze.svg")))
-    )
+      columns: parts.len(),
+      column-gutter: 6pt,
+      align: horizon,
+      ..parts,
+    ),
   )
-)
-
-#let display-range(number) = if number != none {
-  box(
-    height: 100%,
-    [
-      #show-icon("commander", "bronze")
-      #place(center + horizon, str(number))
-    ]
-  )
-} else {
-  []
 }
 
--------------------------------------------------------
-// BLEED UNDERLAY:
-// Full-page-width bands continue each horizontal region's color out into
-// the trimmed-off margin, plus left-edge patches so the oxblood initiative
-// and commit boxes bleed correctly. Entirely hidden under the card when
-// bleed = 0.
-//
-// Region boundaries as fractions of trim-height (top -> bottom):
-//   title          0      – 10%      umber
-//   art field      10%    – 45%      ivory
-//   command box    45%    – 72.5%    umber
-//   round effects  72.5%  – 91.75%   roundfx
-//   unit support   91.75% – 100%     umber
+#let unit-support-label(unit-support) = text(size: 7pt, fill: c-muted, {
+  let count = unit-support.count
+  str(count)
+  if count > 1 { " Units" } else { " Unit" }
+  if unit-support.supportType == "trait" {
+    " – " + trait-phrase((unit-support.trait,))
+  } else if unit-support.supportType == "unitType" {
+    " – "
+    smallcaps(unit-support.unitTypeId)
+  }
+})
 
-#let r-art   = 0.10   * trim-height
-#let r-cmd   = 0.45   * trim-height
-#let r-round = 0.725  * trim-height
-#let r-supp  = 0.9175 * trim-height
+#let command-text = command-phrase(card.command)
+#let command-modifiers = card.command.modifiers
+#let command-restrictions = restriction-view(card.command.restrictions)
+#let round-modifiers = card.roundEffect.modifiers
+#let round-restrictions = restriction-view(card.roundEffect.restrictions)
 
-// Full-width bands (match each region's right edge). The first reaches up
-// into the top bleed; the last reaches down into the bottom bleed.
+// Region tops as fractions of trim-height.
+//   title     0    – 10%    umber
+//   art       10%  – 45%    ivory
+//   the rest  45%  – 100%   umber (command, round effect, unit support)
+// Round-effect filters are pills on that umber, not a full-width band.
+#let r-art = 0.10 * trim-height
+#let r-cmd = 0.45 * trim-height
+
 #place(top + left, box(width: 100%, height: bleed + r-art, fill: c-umber))
-#place(top + left, dy: bleed + r-art,
-  box(width: 100%, height: r-cmd - r-art, fill: c-ivory))
-#place(top + left, dy: bleed + r-cmd,
-  box(width: 100%, height: r-round - r-cmd, fill: c-umber))
-#place(top + left, dy: bleed + r-round,
-  box(width: 100%, height: r-supp - r-round, fill: c-roundfx))
-#place(top + left, dy: bleed + r-supp,
-  box(width: 100%, height: bleed + (trim-height - r-supp), fill: c-umber))
-
-// Left-edge oxblood corrections. Initiative sits in the top-left corner, so
-// its patch fills the top bleed above it as well; the commit boxes touch
-// only the left edge, so theirs fill the left bleed strip.
-#let oxblood-left(dy, h, w) = place(
-  top + left, dy: dy, box(width: w, height: h, fill: c-oxblood),
+#place(
+  top + left,
+  dy: bleed + r-art,
+  box(width: 100%, height: r-cmd - r-art, fill: c-ivory),
+)
+#place(
+  top + left,
+  dy: bleed + r-cmd,
+  box(width: 100%, height: trim-height - r-cmd + bleed, fill: c-umber),
 )
 
-// Initiative: card-local 0–15% tall, 20% wide.
+// Initiative fills the top-left corner, so its patch includes the top bleed.
+// Commit boxes only touch the left edge.
+#let oxblood-left(dy, height, width) = place(
+  top + left,
+  dy: dy,
+  box(width: width, height: height, fill: c-oxblood),
+)
+
 #oxblood-left(0pt, bleed + 0.15 * trim-height, bleed + 0.20 * trim-width)
-// Commit modifier 1: card-local 17.5–27.5%.
 #oxblood-left(bleed + 0.175 * trim-height, 0.10 * trim-height, bleed)
-// Commit modifier 2: only when present (card-local 30–40%).
 #if second-commit-icon != none {
   oxblood-left(bleed + 0.30 * trim-height, 0.10 * trim-height, bleed)
 }
 
--------------------------------------------------------
-// The trim layout (within the bleed)
+#let title-band(name) = place(
+  top + right,
+  box(
+    height: 10%,
+    width: 80%,
+    inset: 8pt,
+    fill: c-umber,
+    display-text(size: 12pt, name),
+  ),
+)
+
+#let art-field(icon-name) = {
+  place(
+    top,
+    dy: 10%,
+    box(
+      height: 35%,
+      width: 100%,
+      fill: c-ivory,
+      inset: 12%,
+      show-icon(icon-name, "black"),
+    ),
+  )
+  // Washes the icon back to a watermark.
+  place(
+    top,
+    dy: 10%,
+    box(
+      height: 35%,
+      width: 100%,
+      fill: c-ivory.transparentize(15%),
+    ),
+  )
+}
+
+#let initiative-badge(initiative) = place(
+  top + left,
+  box(
+    height: 15%,
+    width: 20%,
+    inset: 10pt,
+    fill: c-oxblood,
+    align(center, display-text(size: 24pt, initiative)),
+  ),
+)
+
+#let commit-badge(icon-name, dy) = place(
+  top + left,
+  dy: dy,
+  box(
+    height: 10%,
+    width: 15%,
+    inset: 4pt,
+    fill: c-oxblood,
+    align(center, show-icon(icon-name, "white")),
+  ),
+)
+
+#let command-band(phrase, modifiers, restrictions) = place(
+  top,
+  box(
+    height: 42.5%,
+    width: 100%,
+    inset: 2pt,
+    {
+      place(
+        top + center,
+        align(
+          horizon,
+          box(height: 60%, {
+            display-text(phrase, size: 11pt)
+            command-with(modifiers)
+            inline-modifiers(modifiers, 9pt, 18pt, c-light, "white")
+          }),
+        ),
+      )
+      place(center + bottom, dy: -2pt, restriction-box(restrictions))
+    },
+  ),
+)
+
+#let round-band(modifiers, restrictions) = place(
+  bottom,
+  dy: -15%,
+  box(
+    height: 42.5%,
+    width: 100%,
+    inset: 2pt,
+    {
+      place(
+        top + center,
+        align(
+          horizon,
+          box(height: 55%, width: 70%, {
+            inline-modifiers(modifiers, 10pt, 16pt, c-bronze, "bronze")
+            text(fill: c-bronze, " this round")
+          }),
+        ),
+      )
+      place(center + bottom, dy: -2pt, restriction-box(restrictions))
+    },
+  ),
+)
+
+#let support-band(label) = place(
+  bottom,
+  box(
+    height: 15%,
+    width: 100%,
+    inset: 7pt,
+    label,
+  ),
+)
+
 #place(
   top + center,
   dy: bleed,
@@ -282,251 +333,21 @@
     width: trim-width,
     height: trim-height,
     {
-      // Title Area
-      place(
-        top + right,
-        dx:0%,
-        dy:0%,
-        box(
-          height: 10%,
-          width: 80%,
-          inset: 8pt,
-          fill: c-umber,
-          [
-            // We'll need some conditional logic
-            // to make it fit when name is long
-            #display-text(size: 12pt, name)
-          ]
-        )
-      )
-      
-      // Art Section
-      place(
-        top,
-        dx: 0%,
-        dy: 10%,
-        box(
-          height: 35%,
-          width: 100%,
-          fill: c-ivory,
-          inset: 12%,
-          show-icon(first-commit-icon, "black")
-        )  
-      )
-      
-      // Second Rectangle to lighten to a water mark.
-      place(
-        top,
-        dx: 0%,
-        dy: 10%,
-        box(
-          height: 35%,
-          width: 100%,
-          fill: c-ivory.transparentize(15%),
-        )
-      )
-      
-      
-      
-      // Initiative Area
-      place(
-        top + left,
-        dx:0%,
-        dy:0%,
-        box(
-          height: 15%,
-          width: 20%,
-          inset: 10pt,
-          fill: c-oxblood,
-          [
-            #align(center, display-text(
-              size: 24pt,
-              initiative
-            ))
-          ]
-        )
-      )
-      
-      // Commit Modifier 1
-      place(
-        top + left,
-        dx:0%,
-        dy:17.5%,
-        box(
-          height: 10%,
-          width: 15%,
-          inset: 4pt,
-          fill: c-oxblood,
-          [
-            #align(center, show-icon(
-              first-commit-icon,
-              "bronze"
-            ))
-          ]
-        )
-      )
-      
-      // Conditional Commit Modifier 2
-      place(
-        top + left,
-        dx:0%,
-        dy:30%,
-        {
-          if second-commit-icon != none [
-            #box(
-              height: 10%,
-              width: 15%,
-              inset: 4pt,
-              fill: c-oxblood,
-              [
-                #align(center, show-icon(
-                  second-commit-icon,
-                  "bronze"
-                ))
-              ]
-            )
-          ]
-        }
-      )
-      
-      // Main Box
+      title-band(card.name)
+      art-field(first-commit-icon)
+      initiative-badge(str(card.initiative))
+      commit-badge(first-commit-icon, 17.5%)
+      if second-commit-icon != none {
+        commit-badge(second-commit-icon, 30%)
+      }
       place(
         bottom,
-        dx:0%,
-        dy:0%,
-        box(
-          height: 55%,
-          width: 100%,
-          [
-            // Command Box
-            #place(
-              top,
-              dx:0%,
-              dy:0%,
-              box(
-                height: 50%,
-                width: 100%,
-                inset: 4pt,
-                fill: c-umber,
-                [
-                  #place(
-                    top + center,
-                    box(
-                      inset: 4pt,
-                      text(
-                        size: 9pt,
-                        fill: c-ivory,
-                        command-text
-                      )
-                    )
-                  )
-                  #place(
-                    left + bottom,
-                    box(
-                      height: 70%,
-                      width: 27.5%,
-                      vertical-box(
-                        (command-modifiers.map(display-modifier))
-                      )
-                    )
-                  )
-                  #place(
-                    center + bottom,
-                    box(
-                      height: 70%,
-                      width: 45%,
-                      vertical-box(display-command-restrictions)
-                    )
-                  )
-                  #if command-range-restriction > -1 {
-                    place(
-                      right + bottom,
-                      box(
-                        height: 70%,
-                        inset: 4pt,
-                        display-range(command-range-restriction)
-                      )
-                    )
-                  }
-                ]
-              )
-            )
-            
-            // Round Effects Box
-            #place(
-              bottom,
-              dx:0%,
-              dy:-15%,
-              box(
-                height: 35%,
-                width: 100%,
-                inset: 4pt,
-                fill: c-roundfx,
-                [
-                  #place(
-                    left + bottom,
-                    box(
-                      height: 100%,
-                      width: 27.5%,
-                      vertical-box(
-                        (round-effect-modifiers.map(display-modifier))
-                      )
-                    )
-                  )
-                  #place(
-                    center + bottom,
-                    box(
-                      height: 100%,
-                      width: 45%,
-                      vertical-box(display-round-restrictions)
-                    )
-                  )
-                  #if round-range-restriction > -1 {
-                    place(
-                      right + bottom,
-                      box(
-                        height: 100%,
-                        inset: 4pt,
-                        display-range(round-range-restriction)
-                      )
-                    )
-                  }
-                ]
-              )
-            )
-            
-            // Unit Support Box
-            #place(
-              bottom,
-              dx:0%,
-              dy:0%,
-              box(
-                height: 15%,
-                width: 100%,
-                inset: 7pt,
-                fill: c-umber,
-                [
-                  #text(size: 7pt, fill: c-muted, [
-                    #support-number
-                    #if support-number > 1{
-                      "Units"
-                    } else {
-                      "Unit"
-                    } —
-                    #if (support-type == "generic") {
-                      "ANY"
-                    } else if (support-type == "trait") {
-                      supported-trait        
-                    } else if (support-type == "unitType") {
-                      supported-unit-type
-                    }
-                  ])
-                ]
-              )
-            )
-          ]
-        )
+        box(height: 55%, width: 100%, {
+          command-band(command-text, command-modifiers, command-restrictions)
+          round-band(round-modifiers, round-restrictions)
+          support-band(unit-support-label(card.unitSupport))
+        }),
       )
-    }
-  )
+    },
+  ),
 )
