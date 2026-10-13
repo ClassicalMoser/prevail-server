@@ -7,6 +7,7 @@
  */
 import type {
   CommandCard,
+  Restrictions,
   RoundEffect,
   UnitSupport,
 } from '@classicalmoser/prevail-rules/domain';
@@ -57,31 +58,59 @@ const replaceUnitSupportIdWithName = (
   };
 };
 
-/** Swap unit restriction IDs for display names on the round effect, if present. */
-const replaceRoundEffectUnitIds = (
-  roundEffect: RoundEffect,
+/**
+ * Swap unit-type restriction ids for display names.
+ *
+ * Trait filters and open restrictions have no unit type ids. Those variants
+ * are returned as they arrived so a spread cannot attach `unitRestrictions`
+ * to a variant that does not carry them.
+ *
+ * @param restrictions - Command or round-effect restriction.
+ * @param unitIdToNameMap - Map from unit type id to display name.
+ * @returns The same restriction, with unit type ids replaced when present.
+ */
+const replaceRestrictionUnitIds = (
+  restrictions: Restrictions,
   unitIdToNameMap: UnitIdToNameMap,
-): RoundEffect => {
-  const restrictions = roundEffect.restrictions;
+): Restrictions => {
+  if (restrictions.restrictionType !== 'unitType') {
+    return restrictions;
+  }
+
   const unitRestrictionIds = restrictions.unitRestrictions;
   const unitRestrictionNames = replaceUnitIdsWithNames(
     unitRestrictionIds,
     unitIdToNameMap,
   );
-
-  return {
-    ...roundEffect,
-    restrictions: {
-      ...restrictions,
-      unitRestrictions: unitRestrictionNames,
-    },
+  const namedRestrictions: Restrictions = {
+    inspirationRangeRestriction: restrictions.inspirationRangeRestriction,
+    restrictionType: 'unitType',
+    unitRestrictions: unitRestrictionNames,
   };
+  return namedRestrictions;
+};
+
+/** Swap unit restriction IDs for display names on the round effect. */
+const replaceRoundEffectUnitIds = (
+  roundEffect: RoundEffect,
+  unitIdToNameMap: UnitIdToNameMap,
+): RoundEffect => {
+  const restrictions = roundEffect.restrictions;
+  const restrictionsWithNames = replaceRestrictionUnitIds(
+    restrictions,
+    unitIdToNameMap,
+  );
+  const roundEffectWithNames: RoundEffect = {
+    ...roundEffect,
+    restrictions: restrictionsWithNames,
+  };
+  return roundEffectWithNames;
 };
 
 /**
  * Produce a PrintCommandCard by replacing every unit type ID on the card
- * with its display name. The card shape is unchanged — only the string
- * values in restriction and support fields differ.
+ * with its display name. Only a `unitType` restriction and unit-type support
+ * carry those ids. Trait filters and open restrictions are left as they are.
  *
  * @param card - Domain command card with unit type ids.
  * @param unitIdToNameMap - Map from unit type id to display name.
@@ -93,18 +122,13 @@ const replaceCommandCardUnitIdsWithNames = (
 ): PrintCommandCard => {
   const command = card.command;
   const commandRestrictions = command.restrictions;
-  const commandUnitRestrictionIds = commandRestrictions.unitRestrictions;
-  const commandUnitRestrictionNames = replaceUnitIdsWithNames(
-    commandUnitRestrictionIds,
+  const commandRestrictionsWithNames = replaceRestrictionUnitIds(
+    commandRestrictions,
     unitIdToNameMap,
   );
-
   const commandWithNames = {
     ...command,
-    restrictions: {
-      ...commandRestrictions,
-      unitRestrictions: commandUnitRestrictionNames,
-    },
+    restrictions: commandRestrictionsWithNames,
   };
 
   const roundEffect = card.roundEffect;

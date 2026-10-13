@@ -1,22 +1,48 @@
-import type { CommandCard } from '@classicalmoser/prevail-rules/domain';
+import type {
+  CommandCard,
+  Restrictions,
+} from '@classicalmoser/prevail-rules/domain';
+
+/**
+ * Unit type ids named by a restriction, when the filter is a unit-type list.
+ *
+ * A trait filter and an open restriction name no unit types. Callers collect
+ * ids for a name lookup and must not read `unitRestrictions` off the other
+ * variants.
+ *
+ * @param restrictions - Command or round-effect restriction.
+ * @returns The unit type ids, or an empty list when this variant has none.
+ */
+const unitIdsFromRestrictions = (restrictions: Restrictions): string[] => {
+  if (restrictions.restrictionType !== 'unitType') {
+    const noUnitIds: string[] = [];
+    return noUnitIds;
+  }
+  const unitIds = [...restrictions.unitRestrictions];
+  return unitIds;
+};
 
 /**
  * Collect all unit type IDs referenced anywhere on a command card.
  *
  * A card can reference unit types in three places:
- *   - command restrictions  (which units may execute the command)
- *   - round effect restrictions  (which units the round effect applies to)
- *   - unit support  (which unit type the card supports, when supportType is 'unitType')
+ *   - command restrictions, when `restrictionType` is `unitType`
+ *   - round effect restrictions, on that same variant
+ *   - unit support, when `supportType` is `unitType`
  *
- * Returns a deduplicated list suitable for a single batch name lookup.
+ * Trait filters and open restrictions contribute nothing. The list is
+ * deduplicated so one batch name lookup covers the card.
  *
  * @param card - Domain command card to scan.
  * @returns Unique unit type ids referenced on the card.
  */
 const getCommandCardUnitIds = (card: CommandCard): string[] => {
-  const commandUnitRestrictionIds = card.command.restrictions.unitRestrictions;
-  const roundEffectUnitRestrictionIds =
-    card.roundEffect?.restrictions.unitRestrictions ?? [];
+  const commandUnitRestrictionIds = unitIdsFromRestrictions(
+    card.command.restrictions,
+  );
+  const roundEffectUnitRestrictionIds = unitIdsFromRestrictions(
+    card.roundEffect.restrictions,
+  );
   const unitSupport = card.unitSupport;
 
   const unitIds = [

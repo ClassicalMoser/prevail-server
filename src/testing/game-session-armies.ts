@@ -47,8 +47,7 @@ const commandCard = (
     number: 1,
     restrictions: {
       inspirationRangeRestriction: 1,
-      traitRestrictions: [],
-      unitRestrictions: [],
+      restrictionType: 'none',
     },
     size: 'units',
     type: 'movement',
@@ -61,8 +60,7 @@ const commandCard = (
     modifiers: [{ type: 'attack', value: 1 }],
     restrictions: {
       inspirationRangeRestriction: 1,
-      traitRestrictions: [],
-      unitRestrictions: [],
+      restrictionType: 'none',
     },
   },
   unitSupport: { count: 1, supportType: 'generic' },

@@ -10,7 +10,9 @@ import type { UnitIdToNameMap } from '../print/unit-id-to-name-map';
 import { getCommandCardUnitIds } from '../print/get-command-card-unit-ids';
 import { commandCardProjectOps } from './command-card-project-ops';
 
-const card = tempCommandCards[0];
+const card = tempCommandCards.find(
+  (candidate) => candidate.name === 'Fearless Velites',
+);
 assert.ok(card !== undefined);
 
 const placeholderUnitIdToNameMap = (unitIds: string[]): UnitIdToNameMap =>
@@ -33,10 +35,11 @@ describe('commandCardProjectOps function', () => {
         renderCommandCard: async (
           printCard,
         ): Promise<DataErrorSignature<Buffer>> => {
-          renderedWithNames =
-            printCard.command.restrictions.unitRestrictions.every((value) =>
-              value.startsWith('NAME_'),
-            );
+          const restrictions = printCard.command.restrictions;
+          assert.ok(restrictions.restrictionType === 'unitType');
+          renderedWithNames = restrictions.unitRestrictions.every((value) =>
+            value.startsWith('NAME_'),
+          );
           return { data: Buffer.from('svg'), success: true };
         },
       };

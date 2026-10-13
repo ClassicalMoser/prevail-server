@@ -21,8 +21,7 @@ const command: Command = {
   number: 1,
   restrictions: {
     inspirationRangeRestriction: -1,
-    traitRestrictions: [],
-    unitRestrictions: [],
+    restrictionType: 'none',
   },
   size: 'units',
 };

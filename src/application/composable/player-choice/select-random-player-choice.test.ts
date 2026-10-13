@@ -258,8 +258,7 @@ describe('selectRandomPlayerChoice function', () => {
         number: 1,
         restrictions: {
           inspirationRangeRestriction: -1,
-          traitRestrictions: [],
-          unitRestrictions: [],
+          restrictionType: 'none',
         },
         size: 'units',
       };
@@ -308,8 +307,7 @@ describe('selectRandomPlayerChoice function', () => {
         number: 1,
         restrictions: {
           inspirationRangeRestriction: -1,
-          traitRestrictions: [],
-          unitRestrictions: [],
+          restrictionType: 'none',
         },
         size: 'units',
       };
@@ -561,8 +559,7 @@ describe('selectRandomPlayerChoice function', () => {
         number: 1,
         restrictions: {
           inspirationRangeRestriction: 0,
-          traitRestrictions: [],
-          unitRestrictions: [],
+          restrictionType: 'none',
         },
         size: 'lines',
       };
