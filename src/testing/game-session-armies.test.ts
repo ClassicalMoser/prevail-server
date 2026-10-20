@@ -1,7 +1,9 @@
+import { armySchemaForMode } from '@classicalmoser/prevail-rules/domain';
 import {
   army,
   miniArmy,
   ownedArmyStorage,
+  standardArmy,
   whiteArmyId,
 } from './game-session-armies';
 
@@ -31,8 +33,24 @@ describe('miniArmy function', () => {
 
       const built = miniArmy(whiteArmyId);
 
+      expect(armySchemaForMode('mini').safeParse(built).success).toBe(true);
       expect(built.commandCards).toHaveLength(8);
       expect(built.units).toHaveLength(1);
+    },
+  );
+});
+
+describe('standardArmy function', () => {
+  it(
+    'fills a standard-mode-legal command set and one unit',
+    { timeout: 5000 },
+    () => {
+      expect.hasAssertions();
+
+      const built = standardArmy(whiteArmyId);
+
+      expect(armySchemaForMode('standard').safeParse(built).success).toBe(true);
+      expect(built.commandCards).toHaveLength(12);
     },
   );
 });

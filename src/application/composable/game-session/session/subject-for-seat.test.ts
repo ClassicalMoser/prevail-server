@@ -12,6 +12,7 @@ describe('subjectForSeat function', () => {
         gameMode: 'mini' as const,
         humanSide: 'white' as const,
         humanSubject: 'auth0|human',
+        kind: 'vsBot' as const,
       };
 
       expect(subjectForSeat(meta, 'white')).toBe('auth0|human');

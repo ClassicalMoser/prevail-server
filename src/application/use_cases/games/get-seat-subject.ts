@@ -16,7 +16,7 @@ const getSeatSubject = (
   side: PlayerSide,
 ): string | undefined => {
   const meta = store.metaByGameId.get(gameId);
-  if (meta === undefined) {
+  if (meta === undefined || meta.kind !== 'vsBot') {
     return undefined;
   }
   const subject = subjectForSeat(meta, side);

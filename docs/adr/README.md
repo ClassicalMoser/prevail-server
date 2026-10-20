@@ -31,7 +31,7 @@ These are intentional slice constraints, not oopsies:
 - **No game persistence** — in-memory only; fabricate UUIDs as needed.
 - **Transient sessions** — process restart drops live games.
 - **Bot army from creator’s owned list** — until rules ships a real bot-army builder.
-- **Mini-only vs-bot** — locked in the create contract.
+- **Playable modes are mini and standard** — tutorial and epic stay off these create routes.
 
 ## Real follow-ups
 

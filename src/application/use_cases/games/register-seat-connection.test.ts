@@ -6,13 +6,7 @@ import {
 import type { GameSessionOutbound } from '@ports';
 import assert from 'node:assert/strict';
 import { createInMemoryEnginePorts } from '@infrastructure';
-import {
-  army,
-  blackArmyId,
-  miniArmy,
-  ownedArmyStorage,
-  whiteArmyId,
-} from '@testing';
+import { blackArmyId, miniArmy, ownedArmyStorage, whiteArmyId } from '@testing';
 import { createGameSessionUseCases } from './game-session-use-cases';
 
 describe('registerSeatConnection function', () => {
@@ -27,8 +21,8 @@ describe('registerSeatConnection function', () => {
         botTurnGapMs: 0,
         enginePorts,
         ownedArmyStorage: ownedArmyStorage({
-          [blackArmyId]: army(blackArmyId),
-          [whiteArmyId]: army(whiteArmyId),
+          [blackArmyId]: miniArmy(blackArmyId),
+          [whiteArmyId]: miniArmy(whiteArmyId),
         }),
       });
 

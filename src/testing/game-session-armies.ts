@@ -69,6 +69,13 @@ const commandCard = (
   version: '1.0.0',
 });
 
+const commandSet = (perInitiative: number): CommandCard[] =>
+  ([1, 2, 3, 4] as const).flatMap((initiative) =>
+    Array.from({ length: perInitiative }, (_, copy) =>
+      commandCard(initiative, initiative * 10 + copy),
+    ),
+  );
+
 /**
  * Mini-mode-legal army.
  *
@@ -76,12 +83,23 @@ const commandCard = (
  * Create-only tests use {@link army}.
  */
 const miniArmy = (id: string): Army => ({
-  commandCards: ([1, 2, 3, 4] as const).flatMap((initiative) =>
-    [0, 1].map((copy) => commandCard(initiative, initiative * 10 + copy)),
-  ),
+  commandCards: commandSet(2),
   id,
   name: 'Test Army',
-  units: [{ count: 4, unitType: unitType({ cost: 10, morale: 2 }) }],
+  units: [{ count: 4, unitType: unitType({ cost: 10, morale: 3 }) }],
+});
+
+/**
+ * Standard-mode-legal army.
+ *
+ * Three cards per initiative and enough morale for the standard floor.
+ * Cost stays under the standard cap.
+ */
+const standardArmy = (id: string): Army => ({
+  commandCards: commandSet(3),
+  id,
+  name: 'Test Army',
+  units: [{ count: 4, unitType: unitType({ cost: 10, morale: 5 }) }],
 });
 
 /** In-memory owned-army port that returns the armies this test registered. */
@@ -114,4 +132,11 @@ const ownedArmyStorage = (armies: Record<string, Army>): OwnedArmyStorage => ({
   }),
 });
 
-export { army, blackArmyId, miniArmy, ownedArmyStorage, whiteArmyId };
+export {
+  army,
+  blackArmyId,
+  miniArmy,
+  ownedArmyStorage,
+  standardArmy,
+  whiteArmyId,
+};

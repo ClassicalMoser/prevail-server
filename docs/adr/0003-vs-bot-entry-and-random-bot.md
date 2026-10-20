@@ -21,12 +21,12 @@ command lines, move destinations, setup placements, etc.).
 
 ### Create contract (`CreateVsBotGameBody`)
 
-- `humanSide`, `gameMode: 'mini'`, `whiteArmyId`, `blackArmyId`
+- `humanSide`, `gameMode: 'mini' | 'standard'`, `whiteArmyId`, `blackArmyId`
 - Both army ids must resolve as **owned armies of the creating subject** (stand-in until
   rules supplies a bot army)
 - Human seat subject = Auth0 `sub`; bot seat subject = constant `bot:prevail`
 - Game id is a server-generated UUID; no durable store
-- Mini is locked in contract + use case
+- Create accepts mini or standard. The use case stores that mode and rejects an army that fails it
 
 ### Bot actor
 
@@ -55,7 +55,7 @@ the selector/bootstrap — do not paper over with user-facing `choiceRejected` f
 
 - Matches current client create UX (two owned armies).
 - Bot and future UI share the same legality entry point.
-- Mini-only reduces board/army validation surface while the protocol settles.
+- Mini and standard are the playable create modes. Army composition for the chosen mode is checked before the game is saved.
 
 **Negative**
 

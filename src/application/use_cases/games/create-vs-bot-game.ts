@@ -7,10 +7,13 @@ import { BOT_PLAYER_ID } from '@application/composable/game-session/bot/bot-play
 import { enqueue } from '@application/composable/game-session/session/enqueue';
 import type { GameSessionStore } from '@application/composable/game-session/session/game-session-store';
 import { takeBotTurns } from '@application/composable/game-session/bot/take-bot-turns';
-import { VS_BOT_GAME_MODE } from '@application/composable/game-session/bot/vs-bot-game-mode';
+import { armiesCompositionFailure } from '@application/composable/game-session/session/armies-composition-failure';
 
 /**
- * Create a mini vs-bot game from two armies the subject owns.
+ * Create a vs-bot game from two armies the subject owns.
+ *
+ * `body.gameMode` is mini or standard. Both armies must pass that mode's
+ * composition rules before anything is saved.
  *
  * The human subject is kept in session meta for seat auth. Player fields on
  * the game are UUIDs because the client schema requires them and an Auth0
@@ -56,6 +59,14 @@ const createVsBotGame = async (
 
   const whiteArmy = body.humanSide === 'white' ? humanArmy.data : botArmy.data;
   const blackArmy = body.humanSide === 'black' ? humanArmy.data : botArmy.data;
+  const composition = armiesCompositionFailure(
+    whiteArmy,
+    blackArmy,
+    body.gameMode,
+  );
+  if (composition !== undefined) {
+    return composition;
+  }
 
   // Auth0 subject stays in session meta. Game player fields must be UUIDs.
   const gameId = randomUUID();
@@ -66,13 +77,13 @@ const createVsBotGame = async (
     body.humanSide === 'black' ? humanPlayerId : BOT_PLAYER_ID;
   const gameState = createInitialGameState({
     blackArmy,
-    gameMode: VS_BOT_GAME_MODE,
+    gameMode: body.gameMode,
     whiteArmy,
   });
   const game: GameForVisibility<'authoritative'> = {
     blackArmy,
     blackPlayer: blackPlayerId,
-    gameMode: VS_BOT_GAME_MODE,
+    gameMode: body.gameMode,
     gameState: gameState as GameForVisibility<'authoritative'>['gameState'],
     id: gameId,
     whiteArmy,
@@ -107,9 +118,10 @@ const createVsBotGame = async (
 
   // Remember who may open each seat, then play any bot turns already expected.
   store.metaByGameId.set(gameId, {
-    gameMode: VS_BOT_GAME_MODE,
+    gameMode: body.gameMode,
     humanSide: body.humanSide,
     humanSubject: subject,
+    kind: 'vsBot',
   });
 
   await enqueue(store, gameId, async () => {

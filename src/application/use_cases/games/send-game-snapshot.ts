@@ -19,7 +19,7 @@ const sendGameSnapshot = async (
   connection: GameSeatConnection,
 ): Promise<DataErrorSignature<void>> => {
   const meta = store.metaByGameId.get(connection.gameId);
-  if (meta === undefined) {
+  if (meta === undefined || meta.kind !== 'vsBot') {
     return { message: 'Game not found', status: 404, success: false };
   }
   const expectedSubject = subjectForSeat(meta, connection.side);

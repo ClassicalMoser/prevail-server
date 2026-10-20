@@ -2,14 +2,17 @@ import { createGameRunner } from '@classicalmoser/prevail-rules/application';
 import type { EnginePorts } from '@classicalmoser/prevail-rules/application';
 import type { Event, GameState } from '@classicalmoser/prevail-rules/domain';
 import type { GameSessionUseCasesPort, OwnedArmyStorage } from '@ports';
+import { createBotVsBotGame } from './create-bot-vs-bot-game';
 import { createVsBotGame } from './create-vs-bot-game';
 import { DEFAULT_BOT_TURN_GAP_MS } from '@application/composable/game-session/bot/default-bot-turn-gap';
 import { fanoutEvent } from '@application/composable/game-session/fanout/fanout-event';
 import { fanoutRoundSnapshot } from '@application/composable/game-session/fanout/fanout-round-snapshot';
 import type { GameSessionStore } from '@application/composable/game-session/session/game-session-store';
+import { getBotVsBotGame } from './get-bot-vs-bot-game';
 import { getSeatSubject } from './get-seat-subject';
 import { registerSeatConnection } from './register-seat-connection';
 import { sendGameSnapshot } from './send-game-snapshot';
+import { stepBotVsBotGame } from './step-bot-vs-bot-game';
 import { submitPlayerChoice } from './submit-player-choice';
 import { unregisterSeatConnection } from './unregister-seat-connection';
 
@@ -54,14 +57,20 @@ const createGameSessionUseCases = (
   };
 
   return {
+    createBotVsBotGame: (subject, body) =>
+      createBotVsBotGame(store, subject, body),
     createVsBotGame: (subject, body) => createVsBotGame(store, subject, body),
     fanoutEvent: (gameId, event) => fanoutEvent(store, gameId, event),
     fanoutRoundSnapshot: (gameId, roundNumber, gameState) =>
       fanoutRoundSnapshot({ gameId, gameState, roundNumber, store }),
+    getBotVsBotGame: (subject, gameId) =>
+      getBotVsBotGame(store, subject, gameId),
     getSeatSubject: (gameId, side) => getSeatSubject(store, gameId, side),
     registerSeatConnection: (connection) =>
       registerSeatConnection(store, connection),
     sendGameSnapshot: (connection) => sendGameSnapshot(store, connection),
+    stepBotVsBotGame: (subject, gameId) =>
+      stepBotVsBotGame(store, subject, gameId),
     submitPlayerChoice: (input) => submitPlayerChoice(store, input),
     unregisterSeatConnection: (connection) =>
       unregisterSeatConnection(store, connection),

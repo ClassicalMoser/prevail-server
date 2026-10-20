@@ -25,6 +25,7 @@ describe('getSeatSubject function', () => {
         gameMode: 'mini',
         humanSide: 'white',
         humanSubject: 'auth0|human',
+        kind: 'vsBot',
       });
 
       expect(getSeatSubject(store, 'game-1', 'white')).toBe('auth0|human');

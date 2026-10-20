@@ -39,7 +39,7 @@ Opponent `chooseCard` (and commit\*) card fields are redacted to `'hidden'` via 
 
 ## Entry point: create vs-bot game
 
-`POST /games/vs-bot` (`createVsBotGameContract`) creates an in-memory **mini** game from the caller's two owned army ids (`whiteArmyId` / `blackArmyId`) and returns the game id. The bot seat auto-plays random legal choices when it is their turn. The authenticated human connects to:
+`POST /games/vs-bot` (`createVsBotGameContract`) creates an in-memory **mini or standard** game from the caller's two owned army ids (`whiteArmyId` / `blackArmyId`) and returns the game id. The bot seat auto-plays random legal choices when it is their turn. The authenticated human connects to:
 
 - `/ws/games/id/:gameId/white` or
 - `/ws/games/id/:gameId/black`

@@ -3,6 +3,7 @@ export {
   blackArmyId,
   miniArmy,
   ownedArmyStorage,
+  standardArmy,
   whiteArmyId,
 } from './game-session-armies';
 export { gameSessionStore } from './game-session-store';

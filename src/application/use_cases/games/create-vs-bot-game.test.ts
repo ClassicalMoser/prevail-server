@@ -10,6 +10,7 @@ import {
   blackArmyId,
   miniArmy,
   ownedArmyStorage,
+  standardArmy,
   whiteArmyId,
 } from '@testing';
 import { createGameSessionUseCases } from './game-session-use-cases';
@@ -37,8 +38,8 @@ describe('createVsBotGame function', () => {
         botTurnGapMs: 0,
         enginePorts,
         ownedArmyStorage: ownedArmyStorage({
-          [blackArmyId]: army(blackArmyId),
-          [whiteArmyId]: army(whiteArmyId),
+          [blackArmyId]: miniArmy(blackArmyId),
+          [whiteArmyId]: miniArmy(whiteArmyId),
         }),
       });
       runtimeRef.current = runtime;
@@ -138,6 +139,69 @@ describe('createVsBotGame function', () => {
       });
 
       expect(submitted).toStrictEqual({ data: undefined, success: true });
+    },
+  );
+
+  it(
+    'rejects an army that fails the requested mode',
+    { timeout: 5000 },
+    async () => {
+      expect.hasAssertions();
+
+      const runtime = createGameSessionUseCases({
+        botTurnGapMs: 0,
+        enginePorts: createInMemoryEnginePorts(),
+        ownedArmyStorage: ownedArmyStorage({
+          [blackArmyId]: army(blackArmyId),
+          [whiteArmyId]: army(whiteArmyId),
+        }),
+      });
+
+      const result = await runtime.createVsBotGame('human-sub', {
+        blackArmyId,
+        gameMode: 'mini',
+        humanSide: 'white',
+        whiteArmyId,
+      });
+
+      expect(result).toMatchObject({ status: 400, success: false });
+    },
+  );
+
+  it(
+    'stores the standard mode from the create body',
+    { timeout: 5000 },
+    async () => {
+      expect.hasAssertions();
+
+      const enginePorts = createInMemoryEnginePorts();
+      const runtime = createGameSessionUseCases({
+        botTurnGapMs: 0,
+        enginePorts,
+        ownedArmyStorage: ownedArmyStorage({
+          [blackArmyId]: standardArmy(blackArmyId),
+          [whiteArmyId]: standardArmy(whiteArmyId),
+        }),
+      });
+
+      const created = await runtime.createVsBotGame('auth0|human-sub', {
+        blackArmyId,
+        gameMode: 'standard',
+        humanSide: 'white',
+        whiteArmyId,
+      });
+      expect(created.success).toBe(true);
+      assert.ok(created.success);
+
+      const game = await enginePorts.gameStorage.getGame(
+        created.data,
+        'standard',
+      );
+
+      expect(game).toMatchObject({
+        data: { gameMode: 'standard' },
+        result: true,
+      });
     },
   );
 });

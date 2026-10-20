@@ -40,6 +40,7 @@ describe('submitPlayerChoice function', () => {
         gameMode: 'mini',
         humanSide: 'white',
         humanSubject: 'auth0|human',
+        kind: 'vsBot',
       });
 
       const result = await submitPlayerChoice(store, {

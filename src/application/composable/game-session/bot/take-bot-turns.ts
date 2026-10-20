@@ -23,7 +23,7 @@ const takeBotTurns = async (
   gameId: string,
 ): Promise<void> => {
   const meta = store.metaByGameId.get(gameId);
-  if (meta === undefined) {
+  if (meta === undefined || meta.kind !== 'vsBot') {
     return;
   }
   const botSide = otherSide(meta.humanSide);

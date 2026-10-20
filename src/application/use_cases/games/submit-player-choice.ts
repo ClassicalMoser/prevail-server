@@ -32,7 +32,7 @@ const submitPlayerChoice = async (
 ): Promise<DataErrorSignature<void>> =>
   enqueue(store, input.gameId, async () => {
     const meta = store.metaByGameId.get(input.gameId);
-    if (meta === undefined) {
+    if (meta === undefined || meta.kind !== 'vsBot') {
       return { message: 'Game not found', status: 404, success: false };
     }
 
