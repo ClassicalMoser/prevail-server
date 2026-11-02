@@ -2,6 +2,7 @@ import type {
   EnginePorts,
   GameRunner,
 } from '@classicalmoser/prevail-rules/application';
+import { defaultRandom } from '@classicalmoser/prevail-rules/domain';
 import type { GameSessionStore } from '@application';
 import type { OwnedArmyStorage } from '@ports';
 
@@ -21,6 +22,7 @@ const idleRunner = (): GameRunner => ({
 });
 
 const idleEnginePorts = (): EnginePorts => ({
+  random: defaultRandom,
   eventStreamStorage: {
     addEventToStream: vi.fn(),
     flushEventStream: vi.fn(),
