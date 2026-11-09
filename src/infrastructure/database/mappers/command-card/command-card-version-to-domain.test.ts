@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
-import { tempCommandCards } from '@classicalmoser/prevail-rules/domain';
 import type { CommandCardVersionDb } from '@infrastructure/database/db-types';
 import { commandCardVersionMapperToDomain } from './command-card-version-to-domain';
+import { tempCommandCards } from '@testing';
 
 const card = tempCommandCards[0];
 assert.ok(card !== undefined);

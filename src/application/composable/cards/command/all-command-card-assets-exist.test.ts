@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
-import { tempCommandCards } from '@classicalmoser/prevail-rules/domain';
 import type { AssetStorage, UploadResult } from '@ports';
 import { allCommandCardAssetsExist } from './all-command-card-assets-exist';
+import { tempCommandCards } from '@testing';
 
 const card = tempCommandCards[0];
 assert.ok(card !== undefined);

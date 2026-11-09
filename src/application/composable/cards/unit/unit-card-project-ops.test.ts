@@ -1,5 +1,4 @@
 import assert from 'node:assert/strict';
-import { tempUnits } from '@classicalmoser/prevail-rules/domain';
 import type {
   AssetStorage,
   DataErrorSignature,
@@ -7,6 +6,7 @@ import type {
   UploadResult,
 } from '@ports';
 import { unitCardProjectOps } from './unit-card-project-ops';
+import { tempUnits } from '@testing';
 
 const unit = tempUnits[0];
 assert.ok(unit !== undefined);

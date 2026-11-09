@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
-import { tempUnits } from '@classicalmoser/prevail-rules/domain';
 import type { UnitCardStorage } from '@ports';
 import { buildUnitIdToNameMap } from './build-unit-id-to-name-map';
+import { tempUnits } from '@testing';
 
 const unit = tempUnits[0];
 assert.ok(unit !== undefined);

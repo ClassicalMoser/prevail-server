@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
-import { tempCommandCards } from '@classicalmoser/prevail-rules/domain';
 import {
   commandCardAssetKey,
   commandCardAssetTargets,
 } from './command-card-asset-keys';
+import { tempCommandCards } from '@testing';
 
 const card = tempCommandCards[0];
 assert.ok(card !== undefined);

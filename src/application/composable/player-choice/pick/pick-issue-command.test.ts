@@ -3,11 +3,9 @@ import type {
   Command,
   LegalPlayerChoiceOptions,
 } from '@classicalmoser/prevail-rules/domain';
-import {
-  createEmptyGameState,
-  tempCommandCards,
-} from '@classicalmoser/prevail-rules/domain';
+import { createEmptyGameState } from '@classicalmoser/prevail-rules/domain';
 import { pickIssueCommand } from './pick-issue-command';
+import { tempCommandCards } from '@testing';
 
 const firstAlways = {
   nextFloat: (): number => 0,

@@ -1,75 +1,76 @@
-import {
-  PLAYER_CHOICE_EVENT_TYPE,
-  getLegalUnitMoves,
-} from '@classicalmoser/prevail-rules/domain';
+import { PLAYER_CHOICE_EVENT_TYPE } from '@classicalmoser/prevail-rules/domain';
 import type {
-  GameState,
   LegalPlayerChoiceOptions,
   PlayerChoiceEvent,
   PlayerSide,
-  UnitWithPlacement,
 } from '@classicalmoser/prevail-rules/domain';
 import type { RandomSource } from '../random-source';
 import { pickOne } from '../pick-one';
-import { shuffleCopy } from '../shuffle-copy';
 
 /**
- * Sample one legal move for a unit that can still move.
+ * Name which ordered unit moves next (`chooseMovingUnit`).
  *
- * Destinations come from the rules movement query. A getter that throws, or
- * a unit with an empty destination list, is skipped. The first unit that
- * yields a destination becomes the move.
+ * @param options - Legal options listing the units that may move.
+ * @param actingPlayer - Side choosing.
+ * @param random - Source of the uniform draw.
+ * @returns A choose-moving-unit event, or undefined when the seat is not ours or no unit may move.
  */
-const pickMoveUnit = (input: {
-  options: Extract<LegalPlayerChoiceOptions, { choiceType: 'moveUnit' }>;
-  actingPlayer: PlayerSide;
-  state: GameState;
-  random: RandomSource;
-}): PlayerChoiceEvent | undefined => {
-  const { options, actingPlayer, state, random } = input;
+const pickChooseMovingUnit = (
+  options: Extract<
+    LegalPlayerChoiceOptions,
+    { choiceType: 'chooseMovingUnit' }
+  >,
+  actingPlayer: PlayerSide,
+  random: RandomSource,
+): PlayerChoiceEvent | undefined => {
   const { moveUnits } = options;
   if (moveUnits.player !== actingPlayer) {
     return undefined;
   }
-
-  const match = shuffleCopy([...moveUnits.units], random)
-    .map((unit) => {
-      try {
-        const destinations = [...getLegalUnitMoves(unit, state)];
-        const move: {
-          destinations: UnitWithPlacement['placement'][];
-          unit: (typeof moveUnits.units)[number];
-        } = { destinations, unit };
-        return move;
-      } catch {
-        const destinations: UnitWithPlacement['placement'][] = [];
-        const move: {
-          destinations: UnitWithPlacement['placement'][];
-          unit: (typeof moveUnits.units)[number];
-        } = { destinations, unit };
-        return move;
-      }
-    })
-    .map(({ destinations, unit }) => {
-      const option = { to: pickOne(destinations, random), unit };
-      return option;
-    })
-    .find((entry) => entry.to !== undefined);
-
-  if (match?.to === undefined) {
+  const unit = pickOne(moveUnits.units, random);
+  if (unit === undefined) {
     return undefined;
   }
+  const choice: PlayerChoiceEvent = {
+    choiceType: 'chooseMovingUnit',
+    eventNumber: options.expectedEventNumber,
+    eventType: PLAYER_CHOICE_EVENT_TYPE,
+    player: actingPlayer,
+    unit,
+  };
+  return choice;
+};
 
+/**
+ * Write the move for the unit already named: one random legal ending, sent
+ * as the path the rules supplied for it. The commander stays put.
+ *
+ * @param options - Legal options listing every legal move with its path.
+ * @param actingPlayer - Side moving.
+ * @param random - Source of the uniform draw.
+ * @returns A move-unit event, or undefined when no move is legal.
+ */
+const pickMoveUnit = (
+  options: Extract<LegalPlayerChoiceOptions, { choiceType: 'moveUnit' }>,
+  actingPlayer: PlayerSide,
+  random: RandomSource,
+): PlayerChoiceEvent | undefined => {
+  if (options.playerSource !== actingPlayer) {
+    return undefined;
+  }
+  const move = pickOne(options.moves, random);
+  if (move === undefined) {
+    return undefined;
+  }
   const choice: PlayerChoiceEvent = {
     choiceType: 'moveUnit',
     eventNumber: options.expectedEventNumber,
     eventType: PLAYER_CHOICE_EVENT_TYPE,
     moveCommander: false,
+    path: [...move.path],
     player: actingPlayer,
-    to: match.to,
-    unit: match.unit,
   };
   return choice;
 };
 
-export { pickMoveUnit };
+export { pickChooseMovingUnit, pickMoveUnit };

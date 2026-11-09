@@ -1,5 +1,4 @@
 import assert from 'node:assert/strict';
-import { tempCommandCards } from '@classicalmoser/prevail-rules/domain';
 import type {
   AssetStorage,
   CommandCardRendererPort,
@@ -9,6 +8,7 @@ import type {
 import type { UnitIdToNameMap } from '../print/unit-id-to-name-map';
 import { getCommandCardUnitIds } from '../print/get-command-card-unit-ids';
 import { commandCardProjectOps } from './command-card-project-ops';
+import { tempCommandCards } from '@testing';
 
 const card = tempCommandCards.find(
   (candidate) => candidate.name === 'Fearless Velites',

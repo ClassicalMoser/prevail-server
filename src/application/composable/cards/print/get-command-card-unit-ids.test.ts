@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import type { CommandCard } from '@classicalmoser/prevail-rules/domain';
-import { tempCommandCards } from '@classicalmoser/prevail-rules/domain';
 import { getCommandCardUnitIds } from './get-command-card-unit-ids';
+import { tempCommandCards } from '@testing';
 
 const commandCardNamed = (name: string): CommandCard => {
   const card = tempCommandCards.find((candidate) => candidate.name === name);

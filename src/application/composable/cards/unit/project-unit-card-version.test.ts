@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
-import { tempUnits } from '@classicalmoser/prevail-rules/domain';
 import type { AssetStorage, UnitCardRendererPort, UploadResult } from '@ports';
 import { projectUnitCardVersion } from './project-unit-card-version';
+import { tempUnits } from '@testing';
 
 const unit = tempUnits[0];
 assert.ok(unit !== undefined);

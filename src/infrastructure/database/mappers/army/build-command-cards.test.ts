@@ -1,5 +1,5 @@
-import { tempCommandCards } from '@classicalmoser/prevail-rules/domain';
 import { buildCommandCards } from './build-command-cards';
+import { tempCommandCards } from '@testing';
 
 describe('buildCommandCards function', () => {
   it(

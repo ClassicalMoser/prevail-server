@@ -1,6 +1,6 @@
-import { tempCommandCards } from '@classicalmoser/prevail-rules/domain';
 import type { CommandCard } from '@classicalmoser/prevail-rules/domain';
 import { sortCommandCardsByInitiative } from './sort-command-cards-by-initiative';
+import { tempCommandCards } from '@testing';
 
 const withInitiative = (card: CommandCard, initiative: number): CommandCard => {
   const next: CommandCard = {

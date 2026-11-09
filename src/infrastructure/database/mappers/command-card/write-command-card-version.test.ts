@@ -1,6 +1,6 @@
-import { tempCommandCards } from '@classicalmoser/prevail-rules/domain';
 import type { CommandCard } from '@classicalmoser/prevail-rules/domain';
 import { writeCommandCardVersionMapper } from './write-command-card-version';
+import { tempCommandCards } from '@testing';
 
 describe('writeCommandCardVersionMapper function', () => {
   /** Version columns come from the dotted string. Initiative is stored inside the definition. */

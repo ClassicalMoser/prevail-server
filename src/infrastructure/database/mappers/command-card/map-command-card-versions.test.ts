@@ -1,7 +1,7 @@
-import { tempCommandCards } from '@classicalmoser/prevail-rules/domain';
 import type { CommandCard } from '@classicalmoser/prevail-rules/domain';
 import type { CommandCardVersionDb } from '@infrastructure/database/db-types';
 import { mapCommandCardVersions } from './map-command-card-versions';
+import { tempCommandCards } from '@testing';
 
 const toVersion = (
   card: CommandCard,

@@ -1,11 +1,8 @@
-import {
-  tempCommandCards,
-  tempUnits,
-} from '@classicalmoser/prevail-rules/domain';
 import type { LoggerPort, OwnedArmyWrite, User, UserStorage } from '@ports';
 import type { ArmyCommandCardDb, ArmyDb, ArmyUnitCardDb } from '../db-types';
 import type { Sql } from '../sql-type';
 import { createOwnedArmyStorage } from './owned-army-storage';
+import { tempCommandCards, tempUnits } from '@testing';
 
 /**
  * This suite has no database. `begin` records each statement, applies it to

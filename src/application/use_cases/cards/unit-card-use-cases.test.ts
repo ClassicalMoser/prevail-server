@@ -1,4 +1,3 @@
-import { tempUnits } from '@classicalmoser/prevail-rules/domain';
 import type { UnitType } from '@classicalmoser/prevail-rules/domain';
 import type {
   AssetStorage,
@@ -8,6 +7,7 @@ import type {
   UnitCardUseCasesPort,
 } from '@ports';
 import { createUnitCardUseCases } from './unit-card-use-cases';
+import { tempUnits } from '@testing';
 
 const validUnitA = tempUnits[0];
 const validUnitB = tempUnits[1];

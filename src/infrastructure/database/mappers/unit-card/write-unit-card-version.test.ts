@@ -1,5 +1,5 @@
-import { tempUnits } from '@classicalmoser/prevail-rules/domain';
 import { writeUnitCardVersionMapper } from './write-unit-card-version';
+import { tempUnits } from '@testing';
 
 describe('writeUnitCardVersionMapper function', () => {
   it(

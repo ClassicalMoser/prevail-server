@@ -1,7 +1,6 @@
 import type { ChooseCardEvent } from '@classicalmoser/prevail-rules/domain';
-import { tempCommandCards } from '@classicalmoser/prevail-rules/domain';
 import type { GameSeatConnection, GameSessionOutbound } from '@ports';
-import { gameSessionStore } from '@testing';
+import { gameSessionStore, tempCommandCards } from '@testing';
 import { fanoutEvent } from './fanout-event';
 
 const seat = (

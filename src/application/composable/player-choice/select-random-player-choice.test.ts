@@ -12,13 +12,12 @@ import {
   createEmptyGameState,
   createUnitInstance,
   getLegalPlayerChoiceOptions,
-  tempCommandCards,
-  tempUnits,
   updateBoardState,
   updatePhaseState,
   updatePlayerCardState,
   validatePlayerChoice,
 } from '@classicalmoser/prevail-rules/domain';
+import { tempCommandCards, tempUnits } from '@testing';
 import { selectRandomPlayerChoice } from './select-random-player-choice';
 import type { RandomSource } from './random-source';
 
@@ -33,18 +32,18 @@ const firstAlways: RandomSource = {
 const unitType = tempUnits[0];
 assert.ok(unitType !== undefined);
 
-/** Sample deck card. Fails the suite if that name leaves the fixture. */
-const commandCardNamed = (name: string): CommandCard => {
-  const card = tempCommandCards.find((candidate) => candidate.name === name);
+/** Sample deck card by position; entries are fungible, so none is special. */
+const commandCardAt = (index: number): CommandCard => {
+  const card = tempCommandCards[index];
   assert.ok(card !== undefined);
   return card;
 };
 
-const strike = commandCardNamed('Strike');
-const evade = commandCardNamed('Evade');
-const volley = commandCardNamed('Volley');
-const charge = commandCardNamed('Charge');
-const move = commandCardNamed('Move');
+const strike = commandCardAt(1);
+const evade = commandCardAt(2);
+const volley = commandCardAt(3);
+const charge = commandCardAt(4);
+const move = commandCardAt(0);
 
 const issuePhase = (
   remainingCommandsFirstPlayer: Command[],
@@ -66,11 +65,28 @@ const issuePhase = (
   step: 'firstPlayerIssueCommands',
 });
 
+/**
+ * Keep each army alive in reserve so a fixture that fields one side's units
+ * is not a destroyed army (§11.4), whichever side it fields.
+ */
+const withBothArmiesInReserve = (
+  state: ReturnType<typeof createEmptyGameState>,
+): ReturnType<typeof createEmptyGameState> => ({
+  ...state,
+  reservedUnits: [
+    createUnitInstance('white', unitType, 90),
+    createUnitInstance('black', unitType, 90),
+  ],
+});
+
 /** Transforms empty state starts with empty hands; keep both non-empty for endgame. */
 const seedPlayableIssueState = (
   state: ReturnType<typeof createEmptyGameState>,
 ): ReturnType<typeof createEmptyGameState> => {
-  let next = { ...state, currentInitiative: 'black' as const };
+  let next = {
+    ...withBothArmiesInReserve(state),
+    currentInitiative: 'black' as const,
+  };
   next = updatePlayerCardState(next, 'black', {
     awaitingPlay: null,
     burnt: [],
@@ -472,7 +488,10 @@ describe('selectRandomPlayerChoice function', () => {
       };
 
       let state = createEmptyGameState('mini');
-      state = { ...state, currentInitiative: 'white' };
+      state = {
+        ...withBothArmiesInReserve(state),
+        currentInitiative: 'white',
+      };
       // Transforms empty state has empty hands; keep black non-empty so
       // empty-hand endgame does not preempt assignUnitSupport.
       state = updatePlayerCardState(state, 'black', {

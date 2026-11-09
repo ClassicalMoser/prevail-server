@@ -1,11 +1,8 @@
 import assert from 'node:assert/strict';
 import type { LegalPlayerChoiceOptions } from '@classicalmoser/prevail-rules/domain';
-import {
-  createEmptyGameState,
-  createUnitInstance,
-  tempUnits,
-} from '@classicalmoser/prevail-rules/domain';
-import { pickMoveUnit } from './pick-move-unit';
+import { createUnitInstance } from '@classicalmoser/prevail-rules/domain';
+import { pickChooseMovingUnit, pickMoveUnit } from './pick-move-unit';
+import { tempUnits } from '@testing';
 
 const firstAlways = {
   nextFloat: (): number => 0,
@@ -19,53 +16,98 @@ const placed = {
   unit: createUnitInstance('white', unitType, 0),
 };
 
-const options = (
-  overrides: Partial<
-    Extract<LegalPlayerChoiceOptions, { choiceType: 'moveUnit' }>['moveUnits']
-  > = {},
+const chooseOptions = (
+  units: (typeof placed)[] = [placed],
+): Extract<LegalPlayerChoiceOptions, { choiceType: 'chooseMovingUnit' }> => ({
+  choiceType: 'chooseMovingUnit',
+  expectedEventNumber: 8,
+  moveUnits: { player: 'white', units },
+  playerSource: 'white',
+});
+
+const moveOptions = (
+  moves: Extract<
+    LegalPlayerChoiceOptions,
+    { choiceType: 'moveUnit' }
+  >['moves'] = [
+    {
+      flexibilityUsed: 0,
+      path: [],
+      placement: placed.placement,
+      speedUsed: 0,
+    },
+  ],
 ): Extract<LegalPlayerChoiceOptions, { choiceType: 'moveUnit' }> => ({
   choiceType: 'moveUnit',
-  expectedEventNumber: 8,
-  moveUnits: {
-    player: 'white',
-    units: [placed],
-    ...overrides,
-  },
+  expectedEventNumber: 9,
+  movingUnit: placed,
+  moves,
   playerSource: 'white',
+});
+
+describe('pickChooseMovingUnit function', () => {
+  it(
+    'returns undefined when units belong to the other player',
+    { timeout: 5000 },
+    () => {
+      expect.hasAssertions();
+
+      expect(
+        pickChooseMovingUnit(chooseOptions(), 'black', firstAlways),
+      ).toBeUndefined();
+    },
+  );
+
+  it('returns undefined when no unit may move', { timeout: 5000 }, () => {
+    expect.hasAssertions();
+
+    expect(
+      pickChooseMovingUnit(chooseOptions([]), 'white', firstAlways),
+    ).toBeUndefined();
+  });
+
+  it('names a unit that may move', { timeout: 5000 }, () => {
+    expect.hasAssertions();
+
+    expect(
+      pickChooseMovingUnit(chooseOptions(), 'white', firstAlways),
+    ).toStrictEqual({
+      choiceType: 'chooseMovingUnit',
+      eventNumber: 8,
+      eventType: 'playerChoice',
+      player: 'white',
+      unit: placed,
+    });
+  });
 });
 
 describe('pickMoveUnit function', () => {
   it(
-    'returns undefined when move units belong to the other player',
+    'returns undefined when the seat is the other player',
     { timeout: 5000 },
     () => {
       expect.hasAssertions();
 
-      const choice = pickMoveUnit({
-        actingPlayer: 'black',
-        options: options(),
-        random: firstAlways,
-        state: createEmptyGameState('mini'),
-      });
-
-      expect(choice).toBeUndefined();
+      expect(pickMoveUnit(moveOptions(), 'black', firstAlways)).toBeUndefined();
     },
   );
 
-  it(
-    'returns undefined when no unit yields a legal destination',
-    { timeout: 5000 },
-    () => {
-      expect.hasAssertions();
+  it('returns undefined when no move is legal', { timeout: 5000 }, () => {
+    expect.hasAssertions();
 
-      const choice = pickMoveUnit({
-        actingPlayer: 'white',
-        options: options(),
-        random: firstAlways,
-        state: createEmptyGameState('mini'),
-      });
+    expect(pickMoveUnit(moveOptions([]), 'white', firstAlways)).toBeUndefined();
+  });
 
-      expect(choice).toBeUndefined();
-    },
-  );
+  it('sends the path of a legal move', { timeout: 5000 }, () => {
+    expect.hasAssertions();
+
+    expect(pickMoveUnit(moveOptions(), 'white', firstAlways)).toStrictEqual({
+      choiceType: 'moveUnit',
+      eventNumber: 9,
+      eventType: 'playerChoice',
+      moveCommander: false,
+      path: [],
+      player: 'white',
+    });
+  });
 });

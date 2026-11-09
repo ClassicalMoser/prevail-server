@@ -1,11 +1,9 @@
 import assert from 'node:assert/strict';
 import type { LegalPlayerChoiceOptions } from '@classicalmoser/prevail-rules/domain';
-import {
-  createEmptyGameState,
-  tempCommandCards,
-} from '@classicalmoser/prevail-rules/domain';
+import { createEmptyGameState } from '@classicalmoser/prevail-rules/domain';
 import type { RandomSource } from '@application/composable/player-choice/random-source';
 import { sampleEitherSideChoice } from './sample-either-side-choice';
+import { tempCommandCards } from '@testing';
 
 /** Always picks the first candidate (index 0). */
 const firstAlways: RandomSource = {

@@ -1,7 +1,4 @@
-import {
-  tempCommandCards,
-  tempUnits,
-} from '@classicalmoser/prevail-rules/domain';
+import assert from 'node:assert/strict';
 import type { CommandCard } from '@classicalmoser/prevail-rules/domain';
 import type {
   AssetStorage,
@@ -13,9 +10,14 @@ import type {
 } from '@ports';
 import { createCommandCardUseCases } from './command-card-use-cases';
 import { getCommandCardUnitIds } from '@application/composable';
+import { tempCommandCards, tempUnits } from '@testing';
 
 // Indices 4/5 have unitSupport.count >= 1, satisfying the domain schema.
-const validCardA = tempCommandCards[4];
+// previewCommandCard resolves unit names, so this card must name unit types.
+const validCardA = tempCommandCards.find(
+  (card) => card.unitSupport.supportType === 'unitType',
+);
+assert.ok(validCardA !== undefined);
 const validCardB = tempCommandCards[5];
 
 const invalidCard = {

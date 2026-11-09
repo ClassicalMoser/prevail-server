@@ -1,5 +1,5 @@
-import { tempUnits } from '@classicalmoser/prevail-rules/domain';
 import { buildUnitCounts } from './build-unit-counts';
+import { tempUnits } from '@testing';
 
 describe('buildUnitCounts function', () => {
   it(

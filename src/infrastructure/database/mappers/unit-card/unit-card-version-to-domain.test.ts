@@ -1,6 +1,6 @@
-import { tempUnits } from '@classicalmoser/prevail-rules/domain';
 import type { UnitCardVersionDb } from '@infrastructure/database/db-types';
 import { unitCardVersionMapperToDomain } from './unit-card-version-to-domain';
+import { tempUnits } from '@testing';
 
 describe('unitCardVersionMapperToDomain function', () => {
   it(

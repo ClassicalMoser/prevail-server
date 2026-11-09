@@ -2,7 +2,6 @@ import {
   PLAYER_CHOICE_EVENT_TYPE,
   getLegalLineEndsForIssueCommand,
   getLegalUnitsForIssueCommand,
-  getLineSegmentFromStart,
 } from '@classicalmoser/prevail-rules/domain';
 import type {
   Command,
@@ -15,6 +14,11 @@ import type {
 import type { RandomSource } from '../random-source';
 import { pickOne } from '../pick-one';
 import { shuffleCopy } from '../shuffle-copy';
+
+const same = (a: UnitInstance, b: UnitInstance): boolean =>
+  a.playerSide === b.playerSide &&
+  a.unitType.id === b.unitType.id &&
+  a.instanceNumber === b.instanceNumber;
 
 const doneIssuingCommandsEvent = (
   actingPlayer: PlayerSide,
@@ -80,27 +84,18 @@ const tryBuildIssueCommand = (input: {
   if (end === undefined) {
     return undefined;
   }
-  const segment = getLineSegmentFromStart(command, state, start);
-  const startIndex = segment.findIndex(
-    (uwp) =>
-      uwp.unit.playerSide === start.unit.playerSide &&
-      uwp.unit.unitType.id === start.unit.unitType.id &&
-      uwp.unit.instanceNumber === start.unit.instanceNumber,
-  );
-  const endIndex = segment.findIndex(
-    (uwp) =>
-      uwp.unit.playerSide === end.unit.playerSide &&
-      uwp.unit.unitType.id === end.unit.unitType.id &&
-      uwp.unit.instanceNumber === end.unit.instanceNumber,
-  );
+  // The ends come back in rank order and always include the start, so the
+  // line is the stretch of them between the two ends.
+  const startIndex = ends.findIndex((uwp) => same(uwp.unit, start.unit));
+  const endIndex = ends.findIndex((uwp) => same(uwp.unit, end.unit));
   if (startIndex === -1 || endIndex === -1) {
     return undefined;
   }
   // Validators treat units[0] as the inspired start — keep start→end order.
   const units: UnitInstance[] =
     startIndex <= endIndex
-      ? segment.slice(startIndex, endIndex + 1).map((uwp) => uwp.unit)
-      : segment
+      ? ends.slice(startIndex, endIndex + 1).map((uwp) => uwp.unit)
+      : ends
           .slice(endIndex, startIndex + 1)
           .toReversed()
           .map((uwp) => uwp.unit);

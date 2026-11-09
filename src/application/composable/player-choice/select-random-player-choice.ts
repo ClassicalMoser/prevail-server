@@ -8,8 +8,11 @@ import { pickAssignUnitSupport } from './pick/pick-assign-unit-support';
 import { pickEventForPlayer } from './pick/pick-event-for-player';
 import { pickIssueCommand } from './pick/pick-issue-command';
 import { pickMoveCommander } from './pick/pick-move-commander';
-import { pickMoveUnit } from './pick/pick-move-unit';
-import { pickRangedAttack } from './pick/pick-ranged-attack';
+import { pickChooseMovingUnit, pickMoveUnit } from './pick/pick-move-unit';
+import {
+  pickChooseFiringUnit,
+  pickRangedAttack,
+} from './pick/pick-ranged-attack';
 import { pickRoutDiscard } from './pick/pick-rout-discard';
 import { pickSetupUnits } from './pick/pick-setup-units';
 import { defaultRandom } from './random-source';
@@ -74,6 +77,10 @@ const selectRandomPlayerChoice = (
       const choice = pickEventForPlayer(options.events, actingPlayer, random);
       return choice;
     }
+    case 'commitToRangedDefense': {
+      const choice = pickEventForPlayer(options.events, actingPlayer, random);
+      return choice;
+    }
     case 'doneIssuingCommands': {
       const choice = pickEventForPlayer(options.events, actingPlayer, random);
       return choice;
@@ -86,8 +93,16 @@ const selectRandomPlayerChoice = (
       const choice = pickMoveCommander(options, actingPlayer, random);
       return choice;
     }
+    case 'chooseMovingUnit': {
+      const choice = pickChooseMovingUnit(options, actingPlayer, random);
+      return choice;
+    }
     case 'moveUnit': {
-      const choice = pickMoveUnit({ actingPlayer, options, random, state });
+      const choice = pickMoveUnit(options, actingPlayer, random);
+      return choice;
+    }
+    case 'chooseFiringUnit': {
+      const choice = pickChooseFiringUnit(options, actingPlayer, random);
       return choice;
     }
     case 'issueCommand': {
@@ -95,7 +110,7 @@ const selectRandomPlayerChoice = (
       return choice;
     }
     case 'performRangedAttack': {
-      const choice = pickRangedAttack({ actingPlayer, options, random, state });
+      const choice = pickRangedAttack(options, actingPlayer, random);
       return choice;
     }
     case 'setupUnits': {

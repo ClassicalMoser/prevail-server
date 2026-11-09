@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
-import { tempUnits } from '@classicalmoser/prevail-rules/domain';
 import type { AssetStorage, UnitCardRendererPort, UploadResult } from '@ports';
 import { unitCardAssetTargets } from '@application/composable/assets/unit-card-asset-keys';
 import { ensureUnitCardProjection } from './ensure-unit-card-projection';
+import { tempUnits } from '@testing';
 
 const unit = tempUnits[0];
 assert.ok(unit !== undefined);

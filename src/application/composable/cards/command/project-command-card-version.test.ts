@@ -1,5 +1,4 @@
 import assert from 'node:assert/strict';
-import { tempCommandCards } from '@classicalmoser/prevail-rules/domain';
 import type {
   AssetStorage,
   CommandCardRendererPort,
@@ -8,6 +7,7 @@ import type {
 import type { UnitIdToNameMap } from '../print/unit-id-to-name-map';
 import { getCommandCardUnitIds } from '../print/get-command-card-unit-ids';
 import { projectCommandCardVersion } from './project-command-card-version';
+import { tempCommandCards } from '@testing';
 
 const card = tempCommandCards[0];
 assert.ok(card !== undefined);

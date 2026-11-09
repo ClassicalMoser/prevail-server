@@ -1,5 +1,5 @@
-import { tempUnits } from '@classicalmoser/prevail-rules/domain';
 import { toArmyUnitCardRows } from './to-army-unit-card-rows';
+import { tempUnits } from '@testing';
 
 describe('toArmyUnitCardRows function', () => {
   it(

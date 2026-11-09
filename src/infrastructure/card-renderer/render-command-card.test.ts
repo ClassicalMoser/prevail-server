@@ -2,8 +2,8 @@ import assert from 'node:assert/strict';
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { tempCommandCards } from '@classicalmoser/prevail-rules/domain';
 import { renderCommandCard } from './render-command-card';
+import { tempCommandCards } from '@testing';
 
 vi.mock(import('./run-typst-compile'), async (importOriginal) => {
   const actual = await importOriginal();

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
-import { tempUnits } from '@classicalmoser/prevail-rules/domain';
 import { unitCardAssetKey, unitCardAssetTargets } from './unit-card-asset-keys';
+import { tempUnits } from '@testing';
 
 const unit = tempUnits[0];
 assert.ok(unit !== undefined);

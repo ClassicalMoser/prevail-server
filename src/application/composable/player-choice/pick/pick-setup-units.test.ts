@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import type { LegalPlayerChoiceOptions } from '@classicalmoser/prevail-rules/domain';
-import { tempUnits } from '@classicalmoser/prevail-rules/domain';
 import { pickSetupUnits } from './pick-setup-units';
+import { tempUnits } from '@testing';
 
 const firstAlways = {
   nextFloat: (): number => 0,
