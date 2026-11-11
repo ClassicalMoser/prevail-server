@@ -3,6 +3,7 @@ import type {
   LegalPlayerChoiceOptions,
   PlayerChoiceEvent,
   PlayerSide,
+  UnitSupportAssignment,
 } from '@classicalmoser/prevail-rules/domain';
 import type { RandomSource } from '../random-source';
 import { shuffleCopy } from '../shuffle-copy';
@@ -35,10 +36,7 @@ const pickAssignUnitSupport = (
     return undefined;
   }
   const covered = new Set<string>();
-  const assignments: {
-    unitSupport: (typeof assignUnitSupport.categories)[number]['unitSupport'];
-    units: (typeof assignUnitSupport.categories)[number]['eligibleUnits'][number][];
-  }[] = [];
+  const assignments: UnitSupportAssignment[] = [];
 
   for (const category of shuffleCopy(
     [...assignUnitSupport.categories],
@@ -55,10 +53,9 @@ const pickAssignUnitSupport = (
       for (const unit of available) {
         covered.add(unitInstanceKey(unit));
       }
-      assignments.push({
-        unitSupport: category.unitSupport,
-        units: [...available],
-      });
+      for (const unit of available) {
+        assignments.push({ unit, unitSupport: category.unitSupport });
+      }
     }
   }
 

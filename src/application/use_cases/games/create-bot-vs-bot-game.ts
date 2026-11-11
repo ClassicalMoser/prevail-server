@@ -110,7 +110,7 @@ const createBotVsBotGame = async (
   const streamResult =
     await store.enginePorts.eventStreamStorage.newEventStream(
       gameId,
-      game.gameState.currentRoundNumber,
+      game.gameState.currentRoundState.roundNumber,
     );
   if (!streamResult.result) {
     return {

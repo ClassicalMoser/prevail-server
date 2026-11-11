@@ -35,14 +35,9 @@ Filenames are **kebab-case**. Oxlint enforces that. The rules package uses camel
 
 The project is strict about both. Do not use a type assertion (`as`, `!`) or `@ts-ignore`. The exception is a test that must pass a value the type forbids, and only in a `*.test.ts` file, with a comment on that line saying why.
 
-Two production edges still assert, because the type cannot say the value:
-
-- `PortResponse<void>` does not accept a literal `undefined`. `port-response.ts` returns that response with one assertion.
-- Rules `Game` and `GameState` are visibility unions. Storing an authoritative game, loading one back, and writing `createInitialGameState` onto that game still narrow with an assertion. Those lines are `in-memory-game-storage.ts`, `load-authoritative-game.ts`, and `create-vs-bot-game.ts`.
-
 `schema.parse` throws on an invalid command-card write. That is the insert's failure, described in [`DESIGN.md`](./DESIGN.md).
 
-Do not add another assertion. If a cast is only hiding a type that can be written, write the type. Vendor values (S3 status, Fastify query, Typst stdout, Auth0 permissions, socket handles, parsed JSON) are narrowed with checks, not assertions.
+Do not add an assertion. If a cast is only hiding a type that can be written, write the type. Vendor values (S3 status, Fastify query, Typst stdout, Auth0 permissions, socket handles, parsed JSON) are narrowed with checks, not assertions.
 
 ## Commentary
 

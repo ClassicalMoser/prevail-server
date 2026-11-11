@@ -61,7 +61,7 @@ describe('createVsBotGame function', () => {
   );
 
   it(
-    'initializes the event stream for currentRoundNumber so setup submits',
+    'initializes the event stream for the setup round so setup submits',
     { timeout: 5000 },
     async () => {
       expect.hasAssertions();

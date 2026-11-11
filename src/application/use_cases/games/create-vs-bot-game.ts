@@ -91,7 +91,7 @@ const createVsBotGame = async (
   };
 
   // Persist the game before the stream. The engine appends setup events on
-  // currentRoundNumber, which is 0 during pre-round setup.
+  // the round number, which is 0 during setup.
   const saveResult = await store.enginePorts.gameStorage.saveNewGame(game);
   if (!saveResult.result) {
     return {
@@ -101,12 +101,12 @@ const createVsBotGame = async (
     };
   }
 
-  // processEvent appends with `gameState.currentRoundNumber` (0 during
-  // pre-round setup), not `currentRoundState.roundNumber` (1).
+  // processEvent files events under the round they are applied in, which is
+  // round 0 during setup.
   const streamResult =
     await store.enginePorts.eventStreamStorage.newEventStream(
       gameId,
-      game.gameState.currentRoundNumber,
+      game.gameState.currentRoundState.roundNumber,
     );
   if (!streamResult.result) {
     return {

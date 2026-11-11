@@ -14,13 +14,9 @@ const ok = <T>(data: T): PortResponse<T> => {
 /**
  * Successful void port response.
  *
- * `PortResponse<void>` does not accept a literal `undefined` in the type, so
- * this file is the STYLE-listed production assertion for that shape.
- *
  * @returns A void success response for ports that only acknowledge.
  */
-const okVoid = (): PortResponse<void> =>
-  ({ data: undefined, result: true }) as PortResponse<void>;
+const okVoid = (): PortResponse<void> => ({ data: undefined, result: true });
 
 /**
  * Wrap a failure reason in a rules port response.

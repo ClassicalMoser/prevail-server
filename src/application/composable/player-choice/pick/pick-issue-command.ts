@@ -1,6 +1,6 @@
 import {
   PLAYER_CHOICE_EVENT_TYPE,
-  getLegalLineEndsForIssueCommand,
+  getLegalLines,
   getLegalUnitsForIssueCommand,
 } from '@classicalmoser/prevail-rules/domain';
 import type {
@@ -9,16 +9,10 @@ import type {
   LegalPlayerChoiceOptions,
   PlayerChoiceEvent,
   PlayerSide,
-  UnitInstance,
 } from '@classicalmoser/prevail-rules/domain';
 import type { RandomSource } from '../random-source';
 import { pickOne } from '../pick-one';
 import { shuffleCopy } from '../shuffle-copy';
-
-const same = (a: UnitInstance, b: UnitInstance): boolean =>
-  a.playerSide === b.playerSide &&
-  a.unitType.id === b.unitType.id &&
-  a.instanceNumber === b.instanceNumber;
 
 const doneIssuingCommandsEvent = (
   actingPlayer: PlayerSide,
@@ -35,8 +29,7 @@ const doneIssuingCommandsEvent = (
  * Build one issue-command event, or undefined when the command cannot be filled.
  *
  * A units command takes a random subset of the legal units. A lines command
- * picks a random start and legal end, then keeps the segment between them in
- * start-to-end order because validators treat units[0] as the inspired start.
+ * takes one of the lines the rules list, named by its two ends.
  */
 const tryBuildIssueCommand = (input: {
   command: Command;
@@ -59,48 +52,23 @@ const tryBuildIssueCommand = (input: {
       command,
       eventType: PLAYER_CHOICE_EVENT_TYPE,
       player: actingPlayer,
-      units,
+      selection: { selectionType: 'units', units },
     };
     return choice;
   }
 
-  // size === 'lines' — random start, random legal end, then segment between.
-  const starts = getLegalUnitsForIssueCommand(command, actingPlayer, state);
-  const start = pickOne(starts, random);
-  if (start === undefined) {
+  // size === 'lines' — one of the lines the rules list, named by its ends.
+  const line = pickOne(getLegalLines(command, actingPlayer, state), random);
+  if (line === undefined) {
     return undefined;
   }
-  const ends = getLegalLineEndsForIssueCommand(
-    command,
-    actingPlayer,
-    state,
-    start,
-  );
-  const end = pickOne(ends, random);
-  if (end === undefined) {
-    return undefined;
-  }
-  // The ends come back in rank order and always include the start, so the
-  // line is the stretch of them between the two ends.
-  const startIndex = ends.findIndex((uwp) => same(uwp.unit, start.unit));
-  const endIndex = ends.findIndex((uwp) => same(uwp.unit, end.unit));
-  if (startIndex === -1 || endIndex === -1) {
-    return undefined;
-  }
-  // Validators treat units[0] as the inspired start — keep start→end order.
-  const units: UnitInstance[] =
-    startIndex <= endIndex
-      ? ends.slice(startIndex, endIndex + 1).map((uwp) => uwp.unit)
-      : ends
-          .slice(endIndex, startIndex + 1)
-          .toReversed()
-          .map((uwp) => uwp.unit);
+  const [one, other] = line.ends;
   const choice: PlayerChoiceEvent = {
     choiceType: 'issueCommand',
     command,
     eventType: PLAYER_CHOICE_EVENT_TYPE,
     player: actingPlayer,
-    units,
+    selection: { ends: [one.unit, other.unit], selectionType: 'line' },
   };
   return choice;
 };

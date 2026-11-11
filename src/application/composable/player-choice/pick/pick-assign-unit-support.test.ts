@@ -67,7 +67,7 @@ describe('pickAssignUnitSupport function', () => {
         assignments: [
           {
             unitSupport: { count: 1, supportType: 'generic' },
-            units: [unit],
+            unit,
           },
         ],
         choiceType: 'assignUnitSupport',

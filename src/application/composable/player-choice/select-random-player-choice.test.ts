@@ -301,7 +301,7 @@ describe('selectRandomPlayerChoice function', () => {
       expect(choice).toMatchObject({
         choiceType: 'issueCommand',
         player: 'black',
-        units: [unit.unit],
+        selection: { selectionType: 'units', units: [unit.unit] },
       });
       expect(validatePlayerChoice(choice, state)).toStrictEqual({
         result: true,
@@ -393,14 +393,12 @@ describe('selectRandomPlayerChoice function', () => {
             choiceType: 'commitToMovement',
             committedCard: moveCard,
             eventType: 'playerChoice',
-            modifierTypes: ['speed'],
             player: 'white',
           },
           {
             choiceType: 'commitToMovement',
             committedCard: null,
             eventType: 'playerChoice',
-            modifierTypes: [],
             player: 'white',
           },
         ],
@@ -437,7 +435,6 @@ describe('selectRandomPlayerChoice function', () => {
               choiceType: 'commitToMovement',
               committedCard: null,
               eventType: 'playerChoice',
-              modifierTypes: [],
               player: 'white',
             },
           ],
@@ -451,7 +448,6 @@ describe('selectRandomPlayerChoice function', () => {
         choiceType: 'commitToMovement',
         committedCard: null,
         eventType: 'playerChoice',
-        modifierTypes: [],
         player: 'white',
       });
     },
@@ -533,16 +529,14 @@ describe('selectRandomPlayerChoice function', () => {
       assert.ok(choice !== undefined);
       assert.ok(choice.choiceType === 'assignUnitSupport');
       // Identical generic grants sum into one category with count 2.
-      expect(choice.assignments).toHaveLength(1);
+      expect(choice.assignments).toHaveLength(2);
       expect(choice.assignments[0]?.unitSupport).toStrictEqual({
         count: 2,
         supportType: 'generic',
       });
-      const coveredKeys = choice.assignments.flatMap((assignment) =>
-        assignment.units.map(
-          (unit) =>
-            `${unit.playerSide}:${unit.unitType.id}:${unit.instanceNumber}`,
-        ),
+      const coveredKeys = choice.assignments.map(
+        ({ unit }) =>
+          `${unit.playerSide}:${unit.unitType.id}:${unit.instanceNumber}`,
       );
       expect(coveredKeys).toHaveLength(2);
       expect(new Set(coveredKeys).size).toBe(2);
@@ -553,7 +547,7 @@ describe('selectRandomPlayerChoice function', () => {
   );
 
   it(
-    'builds a valid line issueCommand with start first when end is left of start',
+    'builds a valid line issueCommand from the legal lines',
     { timeout: 5000 },
     () => {
       expect.hasAssertions();
@@ -597,8 +591,7 @@ describe('selectRandomPlayerChoice function', () => {
 
       assert.ok(choice !== undefined);
       assert.ok(choice.choiceType === 'issueCommand');
-      expect(choice.units[0]).toMatchObject({ instanceNumber: 1 });
-      expect(choice.units.at(-1)).toMatchObject({ instanceNumber: 2 });
+      expect(choice.selection.selectionType).toBe('line');
       expect(validatePlayerChoice(choice, state)).toStrictEqual({
         result: true,
       });
