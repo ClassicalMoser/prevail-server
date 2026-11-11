@@ -8,18 +8,15 @@ import type { RandomSource } from '../random-source';
 import { pickOne } from '../pick-one';
 
 /**
- * Name which ordered unit fires next (`chooseFiringUnit`).
+ * Name which ordered unit shoots next (`chooseShooter`).
  *
  * @param options - Legal options listing the units that may fire.
  * @param actingPlayer - Side choosing.
  * @param random - Source of the uniform draw.
- * @returns A choose-firing-unit event, or undefined when the seat is not ours or no unit may fire.
+ * @returns A choose-shooter event, or undefined when the seat is not ours or no unit may fire.
  */
-const pickChooseFiringUnit = (
-  options: Extract<
-    LegalPlayerChoiceOptions,
-    { choiceType: 'chooseFiringUnit' }
-  >,
+const pickChooseShooter = (
+  options: Extract<LegalPlayerChoiceOptions, { choiceType: 'chooseShooter' }>,
   actingPlayer: PlayerSide,
   random: RandomSource,
 ): PlayerChoiceEvent | undefined => {
@@ -32,8 +29,7 @@ const pickChooseFiringUnit = (
     return undefined;
   }
   const choice: PlayerChoiceEvent = {
-    choiceType: 'chooseFiringUnit',
-    eventNumber: options.expectedEventNumber,
+    choiceType: 'chooseShooter',
     eventType: PLAYER_CHOICE_EVENT_TYPE,
     player: actingPlayer,
     unit,
@@ -67,7 +63,6 @@ const pickRangedAttack = (
   }
   const choice: PlayerChoiceEvent = {
     choiceType: 'performRangedAttack',
-    eventNumber: options.expectedEventNumber,
     eventType: PLAYER_CHOICE_EVENT_TYPE,
     player: actingPlayer,
     supportingUnits: [],
@@ -76,4 +71,4 @@ const pickRangedAttack = (
   return choice;
 };
 
-export { pickChooseFiringUnit, pickRangedAttack };
+export { pickChooseShooter, pickRangedAttack };

@@ -13,7 +13,6 @@ describe('submitPlayerChoice function', () => {
         gameId: 'missing',
         playerChoice: {
           choiceType: 'doneIssuingCommands',
-          eventNumber: 0,
           eventType: 'playerChoice',
           player: 'white',
         },
@@ -47,7 +46,6 @@ describe('submitPlayerChoice function', () => {
         gameId: 'game-1',
         playerChoice: {
           choiceType: 'doneIssuingCommands',
-          eventNumber: 0,
           eventType: 'playerChoice',
           player: 'white',
         },

@@ -1,4 +1,4 @@
-import type { GameForVisibility } from '@classicalmoser/prevail-rules/domain';
+import type { Game } from '@classicalmoser/prevail-rules/domain';
 import type { DataErrorSignature } from '@ports';
 import { enqueue } from '@application/composable/game-session/session/enqueue';
 import { loadAuthoritativeGame } from '@application/composable/game-session/session/load-authoritative-game';
@@ -20,7 +20,7 @@ const getBotVsBotGame = async (
   store: GameSessionStore,
   subject: string,
   gameId: string,
-): Promise<DataErrorSignature<GameForVisibility<'authoritative'>>> => {
+): Promise<DataErrorSignature<Game>> => {
   const access = requireBotVsBotSession(store, subject, gameId);
   if (!access.success) {
     return access;
@@ -35,7 +35,7 @@ const getBotVsBotGame = async (
     return loaded;
   });
   if (game === undefined) {
-    const missing: DataErrorSignature<GameForVisibility<'authoritative'>> = {
+    const missing: DataErrorSignature<Game> = {
       message: 'Game not found',
       status: 404,
       success: false,

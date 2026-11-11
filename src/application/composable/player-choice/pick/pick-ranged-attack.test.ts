@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import type { LegalPlayerChoiceOptions } from '@classicalmoser/prevail-rules/domain';
 import { createUnitInstance } from '@classicalmoser/prevail-rules/domain';
-import { pickChooseFiringUnit, pickRangedAttack } from './pick-ranged-attack';
+import { pickChooseShooter, pickRangedAttack } from './pick-ranged-attack';
 import { tempUnits } from '@testing';
 
 const firstAlways = {
@@ -22,9 +22,8 @@ const enemy = {
 
 const chooseOptions = (
   attackers: (typeof placed)[] = [placed],
-): Extract<LegalPlayerChoiceOptions, { choiceType: 'chooseFiringUnit' }> => ({
-  choiceType: 'chooseFiringUnit',
-  expectedEventNumber: 9,
+): Extract<LegalPlayerChoiceOptions, { choiceType: 'chooseShooter' }> => ({
+  choiceType: 'chooseShooter',
   playerSource: 'white',
   rangedAttackers: { attackers, player: 'white' },
 });
@@ -36,13 +35,12 @@ const aimOptions = (
   { choiceType: 'performRangedAttack' }
 > => ({
   choiceType: 'performRangedAttack',
-  expectedEventNumber: 10,
-  firingUnit: placed,
+  shooter: placed,
   playerSource: 'white',
   targets,
 });
 
-describe('pickChooseFiringUnit function', () => {
+describe('pickChooseShooter function', () => {
   it(
     'returns undefined when attackers belong to the other player',
     { timeout: 5000 },
@@ -50,7 +48,7 @@ describe('pickChooseFiringUnit function', () => {
       expect.hasAssertions();
 
       expect(
-        pickChooseFiringUnit(chooseOptions(), 'black', firstAlways),
+        pickChooseShooter(chooseOptions(), 'black', firstAlways),
       ).toBeUndefined();
     },
   );
@@ -59,7 +57,7 @@ describe('pickChooseFiringUnit function', () => {
     expect.hasAssertions();
 
     expect(
-      pickChooseFiringUnit(chooseOptions([]), 'white', firstAlways),
+      pickChooseShooter(chooseOptions([]), 'white', firstAlways),
     ).toBeUndefined();
   });
 
@@ -67,10 +65,9 @@ describe('pickChooseFiringUnit function', () => {
     expect.hasAssertions();
 
     expect(
-      pickChooseFiringUnit(chooseOptions(), 'white', firstAlways),
+      pickChooseShooter(chooseOptions(), 'white', firstAlways),
     ).toStrictEqual({
-      choiceType: 'chooseFiringUnit',
-      eventNumber: 9,
+      choiceType: 'chooseShooter',
       eventType: 'playerChoice',
       player: 'white',
       unit: placed,
@@ -104,7 +101,6 @@ describe('pickRangedAttack function', () => {
 
     expect(pickRangedAttack(aimOptions(), 'white', firstAlways)).toStrictEqual({
       choiceType: 'performRangedAttack',
-      eventNumber: 10,
       eventType: 'playerChoice',
       player: 'white',
       supportingUnits: [],

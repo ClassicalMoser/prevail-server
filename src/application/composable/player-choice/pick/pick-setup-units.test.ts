@@ -19,7 +19,6 @@ const options = (
   > = {},
 ): Extract<LegalPlayerChoiceOptions, { choiceType: 'setupUnits' }> => ({
   choiceType: 'setupUnits',
-  expectedEventNumber: 1,
   playerSource: 'white',
   setupUnits: {
     coordinates: ['E-5', 'E-6', 'E-7'],

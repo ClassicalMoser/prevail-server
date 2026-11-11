@@ -1,14 +1,11 @@
-import type {
-  GameForVisibility,
-  GameModeName,
-} from '@classicalmoser/prevail-rules/domain';
+import { gameSchema } from '@classicalmoser/prevail-rules/domain';
+import type { Game, GameModeName } from '@classicalmoser/prevail-rules/domain';
 import type { GameSessionStore } from './game-session-store';
 
 /**
  * Load the authoritative game for a session.
  *
- * The engine port returns a visibility union. This process only stores
- * authoritative games, so the result is narrowed to that visibility.
+ * The engine port delivers unknown data, so it is read as a game before use.
  *
  * @param store - Live-game memory.
  * @param gameId - Game to load.
@@ -19,7 +16,7 @@ const loadAuthoritativeGame = async (
   store: GameSessionStore,
   gameId: string,
   gameMode: GameModeName,
-): Promise<GameForVisibility<'authoritative'> | undefined> => {
+): Promise<Game | undefined> => {
   const gameResult = await store.enginePorts.gameStorage.getGame(
     gameId,
     gameMode,
@@ -27,7 +24,11 @@ const loadAuthoritativeGame = async (
   if (gameResult === undefined || !gameResult.result) {
     return undefined;
   }
-  return gameResult.data as GameForVisibility<'authoritative'>;
+  const parsed = gameSchema.safeParse(gameResult.data);
+  if (!parsed.success) {
+    return undefined;
+  }
+  return parsed.data;
 };
 
 export { loadAuthoritativeGame };

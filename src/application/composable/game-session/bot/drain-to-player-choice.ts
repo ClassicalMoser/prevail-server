@@ -1,7 +1,4 @@
-import type {
-  GameForVisibility,
-  GameModeName,
-} from '@classicalmoser/prevail-rules/domain';
+import type { Game, GameModeName } from '@classicalmoser/prevail-rules/domain';
 import {
   getExpectedEvent,
   getLegalPlayerChoiceOptions,
@@ -12,9 +9,9 @@ import { loadAuthoritativeGame } from '../session/load-authoritative-game';
 /** Where a bot-vs-bot step stands after pending effects have been drained. */
 type DrainToPlayerChoiceResult =
   | { status: 'missing' }
-  | { status: 'ready'; game: GameForVisibility<'authoritative'> }
-  | { status: 'gameOver'; game: GameForVisibility<'authoritative'> }
-  | { status: 'stuck'; game: GameForVisibility<'authoritative'> };
+  | { status: 'ready'; game: Game }
+  | { status: 'gameOver'; game: Game }
+  | { status: 'stuck'; game: Game };
 
 /**
  * Advance pending game effects until a player choice or the end of the game.

@@ -6,13 +6,13 @@ Driving adapter for live in-game seats. Routes are **not** invented here — the
 
 Event-stream + round reconcile (server authoritative):
 
-| When            | Server sends                                 | Client does                                    |
-| --------------- | -------------------------------------------- | ---------------------------------------------- |
-| Mid-round       | Seat-projected `playerChoice` / `gameEffect` | `applyEvent` fold locally                      |
-| Connect / round | Seat-projected `gameSnapshot`                | Replace local state                            |
-| Client resync   | `requestGameSnapshot` → `gameSnapshot`       | Replace local state                            |
-| Bad submit      | `choiceRejected` (submitter only)            | Keep prior state                               |
-| Always          | Serial `eventNumber` validated server-side   | Propose next number; server accepts or rejects |
+| When            | Server sends                                 | Client does                                |
+| --------------- | -------------------------------------------- | ------------------------------------------ |
+| Mid-round       | Seat-projected `playerChoice` / `gameEffect` | `applyEvent` fold locally                  |
+| Connect / round | Seat-projected `gameSnapshot`                | Replace local state                        |
+| Client resync   | `requestGameSnapshot` → `gameSnapshot`       | Replace local state                        |
+| Bad submit      | `choiceRejected` (submitter only)            | Keep prior state                           |
+| Always          | Event order is the order in the round        | Send the choice; server accepts or rejects |
 
 Inbound / outbound use tagged envelopes:
 

@@ -38,7 +38,6 @@ describe('fanoutEvent function', () => {
       const choice: ChooseCardEvent = {
         card: tempCommandCards[0],
         choiceType: 'chooseCard',
-        eventNumber: 0,
         eventType: 'playerChoice',
         player: 'white',
       };

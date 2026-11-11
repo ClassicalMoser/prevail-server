@@ -1,5 +1,6 @@
 import { whiteInGameWsContract } from '@classicalmoser/prevail-contracts';
 import {
+  gameSchema,
   getLegalPlayerChoiceOptions,
   PLAYER_CHOICE_EVENT_TYPE,
 } from '@classicalmoser/prevail-rules/domain';
@@ -104,19 +105,13 @@ describe('registerSeatConnection function', () => {
           structuredClone(messages[0]?.payload),
         );
       expect(parsed).toMatchObject({
-        blackPlayer: '00000000-0000-4000-8000-0000000000b0',
-        gameState: {
-          cardState: { visibility: 'whiteSeen' },
-        },
-        id: created.data,
-        whitePlayer: expect.stringMatching(
-          /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/iu,
-        ),
+        cardState: { visibility: 'whiteSeen' },
+        visibility: 'whiteSeen',
       });
       expect([
-        parsed.gameState.reservedUnits.length,
-        parsed.gameState.cardState.white.inHand.length,
-        parsed.gameState.cardState.black.inHand.length,
+        parsed.reservedUnits.length,
+        parsed.cardState.white.inHand.length,
+        parsed.cardState.black.inHand.length,
       ]).toStrictEqual([8, 8, 8]);
     },
   );
@@ -159,7 +154,9 @@ describe('registerSeatConnection function', () => {
       const game = await enginePorts.gameStorage.getGame(created.data, 'mini');
       assert.ok(game !== undefined);
       assert.ok(game.result);
-      const options = getLegalPlayerChoiceOptions(game.data.gameState);
+      const options = getLegalPlayerChoiceOptions(
+        gameSchema.parse(game.data).gameState,
+      );
       assert.ok(options !== null);
       assert.ok(options.choiceType === 'setupUnits');
 
@@ -185,7 +182,6 @@ describe('registerSeatConnection function', () => {
         playerChoice: {
           choiceType: 'setupUnits',
           commanderCoordinate: firstPlacement.placement.coordinate,
-          eventNumber: options.expectedEventNumber,
           eventType: PLAYER_CHOICE_EVENT_TYPE,
           player: 'white',
           unitPlacements,

@@ -118,20 +118,17 @@ describe('selectRandomPlayerChoice function', () => {
         events: [
           {
             choiceType: 'chooseWhetherToRetreat',
-            eventNumber: 3,
             eventType: 'playerChoice',
             player: 'black',
             choosesToRetreat: false,
           },
           {
             choiceType: 'chooseWhetherToRetreat',
-            eventNumber: 3,
             eventType: 'playerChoice',
             player: 'black',
             choosesToRetreat: true,
           },
         ],
-        expectedEventNumber: 3,
         playerSource: 'black',
       };
 
@@ -145,7 +142,6 @@ describe('selectRandomPlayerChoice function', () => {
       expect(choice).toMatchObject({
         choiceType: 'chooseWhetherToRetreat',
         choosesToRetreat: false,
-        eventNumber: 3,
         player: 'black',
       });
     },
@@ -166,19 +162,16 @@ describe('selectRandomPlayerChoice function', () => {
           {
             card: whiteCard,
             choiceType: 'chooseCard',
-            eventNumber: 0,
             eventType: 'playerChoice',
             player: 'white',
           },
           {
             card: blackCard,
             choiceType: 'chooseCard',
-            eventNumber: 0,
             eventType: 'playerChoice',
             player: 'black',
           },
         ],
-        expectedEventNumber: 0,
         playerSource: 'bothPlayers',
       };
 
@@ -207,13 +200,11 @@ describe('selectRandomPlayerChoice function', () => {
         events: [
           {
             choiceType: 'chooseWhetherToRetreat',
-            eventNumber: 1,
             eventType: 'playerChoice',
             player: 'white',
             choosesToRetreat: true,
           },
         ],
-        expectedEventNumber: 1,
         playerSource: 'white',
       };
 
@@ -231,12 +222,13 @@ describe('selectRandomPlayerChoice function', () => {
   it('builds a rout-discard choice from card atoms', { timeout: 5000 }, () => {
     expect.hasAssertions();
 
+    const hand = [commandCardAt(0), commandCardAt(1), commandCardAt(2)];
+    const handIds = hand.map((card) => card.id);
     const options: LegalPlayerChoiceOptions = {
       choiceType: 'chooseRoutDiscard',
-      expectedEventNumber: 4,
       playerSource: 'black',
       routDiscard: {
-        cardIds: ['a', 'b', 'c'],
+        cardIds: handIds,
         numberToDiscard: 2,
         player: 'black',
       },
@@ -246,21 +238,26 @@ describe('selectRandomPlayerChoice function', () => {
       actingPlayer: 'black',
       options,
       random: firstAlways,
-      state: createEmptyGameState('mini'),
+      state: updatePlayerCardState(createEmptyGameState('mini'), 'black', {
+        awaitingPlay: null,
+        burnt: [],
+        discarded: [],
+        inHand: hand,
+        inPlay: null,
+        played: [],
+      }),
     });
 
     expect(choice).toMatchObject({
-      cardIds: expect.any(Array),
+      cards: expect.any(Array),
       choiceType: 'chooseRoutDiscard',
       player: 'black',
     });
     assert.ok(choice !== undefined);
     assert.ok(choice.choiceType === 'chooseRoutDiscard');
-    expect(choice.cardIds).toHaveLength(2);
-    expect(new Set(choice.cardIds).size).toBe(2);
-    expect(choice.cardIds.every((id) => ['a', 'b', 'c'].includes(id))).toBe(
-      true,
-    );
+    expect(choice.cards).toHaveLength(2);
+    expect(new Set(choice.cards.map((card) => card.id)).size).toBe(2);
+    expect(choice.cards.every((card) => handIds.includes(card.id))).toBe(true);
   });
 
   it(
@@ -337,7 +334,6 @@ describe('selectRandomPlayerChoice function', () => {
         options: {
           canDoneIssuing: true,
           choiceType: 'issueCommand',
-          expectedEventNumber: 7,
           issueCommands: { commands: [command], player: 'black' },
           playerSource: 'black',
         },
@@ -347,7 +343,6 @@ describe('selectRandomPlayerChoice function', () => {
 
       expect(choice).toStrictEqual({
         choiceType: 'doneIssuingCommands',
-        eventNumber: 7,
         eventType: 'playerChoice',
         player: 'black',
       });
@@ -367,12 +362,10 @@ describe('selectRandomPlayerChoice function', () => {
           events: [
             {
               choiceType: 'doneIssuingCommands',
-              eventNumber: 2,
               eventType: 'playerChoice',
               player: 'black',
             },
           ],
-          expectedEventNumber: 2,
           playerSource: 'black',
         },
         random: firstAlways,
@@ -399,7 +392,6 @@ describe('selectRandomPlayerChoice function', () => {
           {
             choiceType: 'commitToMovement',
             committedCard: moveCard,
-            eventNumber: 2,
             eventType: 'playerChoice',
             modifierTypes: ['speed'],
             player: 'white',
@@ -407,13 +399,11 @@ describe('selectRandomPlayerChoice function', () => {
           {
             choiceType: 'commitToMovement',
             committedCard: null,
-            eventNumber: 2,
             eventType: 'playerChoice',
             modifierTypes: [],
             player: 'white',
           },
         ],
-        expectedEventNumber: 2,
         playerSource: 'white',
       };
 
@@ -446,13 +436,11 @@ describe('selectRandomPlayerChoice function', () => {
             {
               choiceType: 'commitToMovement',
               committedCard: null,
-              eventNumber: 2,
               eventType: 'playerChoice',
               modifierTypes: [],
               player: 'white',
             },
           ],
-          expectedEventNumber: 2,
           playerSource: 'white',
         },
         random: firstAlways,
@@ -462,7 +450,6 @@ describe('selectRandomPlayerChoice function', () => {
       expect(choice).toStrictEqual({
         choiceType: 'commitToMovement',
         committedCard: null,
-        eventNumber: 2,
         eventType: 'playerChoice',
         modifierTypes: [],
         player: 'white',

@@ -3,7 +3,6 @@ import { createInMemoryEventStreamStorage } from './in-memory-event-stream-stora
 
 const choiceEvent = {
   choiceType: 'doneIssuingCommands',
-  eventNumber: 0,
   eventType: 'playerChoice',
   player: 'white',
 } as Event; // narrow fixture; Event is a large domain union

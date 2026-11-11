@@ -1,7 +1,4 @@
-import type {
-  Event,
-  GameForVisibility,
-} from '@classicalmoser/prevail-rules/domain';
+import type { Event, Game } from '@classicalmoser/prevail-rules/domain';
 import { createEmptyGameState } from '@classicalmoser/prevail-rules/domain';
 import { createInMemoryEnginePorts } from './in-memory-engine-ports';
 
@@ -12,7 +9,7 @@ const placeholderArmy = {
   units: [],
 };
 
-const sampleGame = (): GameForVisibility<'authoritative'> => ({
+const sampleGame = (): Game => ({
   blackArmy: placeholderArmy,
   blackPlayer: 'black',
   gameMode: 'mini',
@@ -53,7 +50,6 @@ describe('in-memory engine ports', () => {
       const event: Event = {
         choiceType: 'chooseWhetherToRetreat',
         choosesToRetreat: false,
-        eventNumber: 0,
         eventType: 'playerChoice',
         player: 'white',
       };

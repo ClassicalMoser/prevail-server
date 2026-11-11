@@ -1,10 +1,30 @@
 import assert from 'node:assert/strict';
-import type { LegalPlayerChoiceOptions } from '@classicalmoser/prevail-rules/domain';
+import type {
+  CommandCard,
+  LegalPlayerChoiceOptions,
+} from '@classicalmoser/prevail-rules/domain';
+import {
+  createEmptyGameState,
+  updatePlayerCardState,
+} from '@classicalmoser/prevail-rules/domain';
+import { tempCommandCards } from '@testing';
 import { pickRoutDiscard } from './pick-rout-discard';
 
 const firstAlways = {
   nextFloat: (): number => 0,
 };
+
+const hand: CommandCard[] = tempCommandCards.slice(0, 3);
+
+/** Black holds the sample hand; the other side holds nothing. */
+const state = updatePlayerCardState(createEmptyGameState('mini'), 'black', {
+  awaitingPlay: null,
+  burnt: [],
+  discarded: [],
+  inHand: hand,
+  inPlay: null,
+  played: [],
+});
 
 const options = (
   overrides: Partial<
@@ -15,10 +35,9 @@ const options = (
   > = {},
 ): Extract<LegalPlayerChoiceOptions, { choiceType: 'chooseRoutDiscard' }> => ({
   choiceType: 'chooseRoutDiscard',
-  expectedEventNumber: 5,
   playerSource: 'black',
   routDiscard: {
-    cardIds: ['a', 'b', 'c'],
+    cardIds: hand.map((card) => card.id),
     numberToDiscard: 2,
     player: 'black',
     ...overrides,
@@ -35,6 +54,7 @@ describe('pickRoutDiscard function', () => {
       const choice = pickRoutDiscard(
         options({ player: 'white' }),
         'black',
+        state,
         firstAlways,
       );
 
@@ -49,8 +69,12 @@ describe('pickRoutDiscard function', () => {
       expect.hasAssertions();
 
       const choice = pickRoutDiscard(
-        options({ cardIds: ['a'], numberToDiscard: 2 }),
+        options({
+          cardIds: hand.slice(0, 1).map((card) => card.id),
+          numberToDiscard: 2,
+        }),
         'black',
+        state,
         firstAlways,
       );
 
@@ -64,11 +88,11 @@ describe('pickRoutDiscard function', () => {
     () => {
       expect.hasAssertions();
 
-      const choice = pickRoutDiscard(options(), 'black', firstAlways);
+      const choice = pickRoutDiscard(options(), 'black', state, firstAlways);
 
       assert.ok(choice !== undefined);
       assert.ok(choice.choiceType === 'chooseRoutDiscard');
-      expect(choice.cardIds).toHaveLength(2);
+      expect(choice.cards).toHaveLength(2);
     },
   );
 });

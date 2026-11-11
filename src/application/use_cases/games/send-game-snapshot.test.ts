@@ -51,8 +51,8 @@ describe('sendGameSnapshot function', () => {
       expect(
         whiteInGameWsContract.validators.outbound.gameSnapshot.parse(
           structuredClone(messages[0]?.payload),
-        ).id,
-      ).toBe(created.data);
+        ).visibility,
+      ).toBe('whiteSeen');
     },
   );
 });

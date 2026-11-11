@@ -1,5 +1,6 @@
 import type { CreateVsBotGameBody } from '@classicalmoser/prevail-contracts';
 import {
+  gameSchema,
   getLegalPlayerChoiceOptions,
   PLAYER_CHOICE_EVENT_TYPE,
 } from '@classicalmoser/prevail-rules/domain';
@@ -104,7 +105,9 @@ describe('createVsBotGame function', () => {
       assert.ok(game !== undefined);
       assert.ok(game.result);
 
-      const options = getLegalPlayerChoiceOptions(game.data.gameState);
+      const options = getLegalPlayerChoiceOptions(
+        gameSchema.parse(game.data).gameState,
+      );
       expect(options).toMatchObject({ choiceType: 'setupUnits' });
       assert.ok(options !== null);
       assert.ok(options.choiceType === 'setupUnits');
@@ -129,7 +132,6 @@ describe('createVsBotGame function', () => {
         playerChoice: {
           choiceType: 'setupUnits',
           commanderCoordinate: firstPlacement.placement.coordinate,
-          eventNumber: options.expectedEventNumber,
           eventType: PLAYER_CHOICE_EVENT_TYPE,
           player: 'white',
           unitPlacements,

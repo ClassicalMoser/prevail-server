@@ -1,6 +1,6 @@
 import type { CreateVsBotGameBody } from '@classicalmoser/prevail-contracts';
 import { createInitialGameState } from '@classicalmoser/prevail-rules/domain';
-import type { GameForVisibility } from '@classicalmoser/prevail-rules/domain';
+import type { Game } from '@classicalmoser/prevail-rules/domain';
 import type { DataErrorSignature } from '@ports';
 import { randomUUID } from 'node:crypto';
 import { BOT_PLAYER_ID } from '@application/composable/game-session/bot/bot-player-id';
@@ -80,11 +80,11 @@ const createVsBotGame = async (
     gameMode: body.gameMode,
     whiteArmy,
   });
-  const game: GameForVisibility<'authoritative'> = {
+  const game: Game = {
     blackArmy,
     blackPlayer: blackPlayerId,
     gameMode: body.gameMode,
-    gameState: gameState as GameForVisibility<'authoritative'>['gameState'],
+    gameState,
     id: gameId,
     whiteArmy,
     whitePlayer: whitePlayerId,

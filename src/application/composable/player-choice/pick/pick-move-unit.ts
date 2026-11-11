@@ -33,7 +33,6 @@ const pickChooseMovingUnit = (
   }
   const choice: PlayerChoiceEvent = {
     choiceType: 'chooseMovingUnit',
-    eventNumber: options.expectedEventNumber,
     eventType: PLAYER_CHOICE_EVENT_TYPE,
     player: actingPlayer,
     unit,
@@ -64,7 +63,6 @@ const pickMoveUnit = (
   }
   const choice: PlayerChoiceEvent = {
     choiceType: 'moveUnit',
-    eventNumber: options.expectedEventNumber,
     eventType: PLAYER_CHOICE_EVENT_TYPE,
     moveCommander: false,
     path: [...move.path],

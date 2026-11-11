@@ -1,4 +1,4 @@
-import { projectGameForVisibility } from '@classicalmoser/prevail-rules/domain';
+import { projectGameStateForVisibility } from '@classicalmoser/prevail-rules/domain';
 import type { GameState } from '@classicalmoser/prevail-rules/domain';
 import type { GameSessionStore } from '../session/game-session-store';
 import { loadAuthoritativeGame } from '../session/load-authoritative-game';
@@ -38,7 +38,10 @@ const fanoutRoundSnapshot = async (input: {
     sendToSeat({
       gameId,
       message: {
-        payload: projectGameForVisibility(authoritative, visibility),
+        payload: projectGameStateForVisibility(
+          authoritative.gameState,
+          visibility,
+        ),
         type: 'gameSnapshot',
       },
       side,

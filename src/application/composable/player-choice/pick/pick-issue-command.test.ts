@@ -31,7 +31,6 @@ const options = (
 ): Extract<LegalPlayerChoiceOptions, { choiceType: 'issueCommand' }> => ({
   canDoneIssuing: false,
   choiceType: 'issueCommand',
-  expectedEventNumber: 7,
   issueCommands: { commands: [command], player: 'black' },
   playerSource: 'black',
   ...overrides,
@@ -87,7 +86,6 @@ describe('pickIssueCommand function', () => {
 
       expect(choice).toStrictEqual({
         choiceType: 'doneIssuingCommands',
-        eventNumber: 7,
         eventType: 'playerChoice',
         player: 'black',
       });

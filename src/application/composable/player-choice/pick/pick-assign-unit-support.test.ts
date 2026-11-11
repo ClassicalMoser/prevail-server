@@ -25,7 +25,6 @@ const options = (
   > = {},
 ): Extract<LegalPlayerChoiceOptions, { choiceType: 'assignUnitSupport' }> => ({
   choiceType: 'assignUnitSupport',
-  expectedEventNumber: 6,
   playerSource: 'white',
   assignUnitSupport: {
     categories: [
@@ -72,7 +71,6 @@ describe('pickAssignUnitSupport function', () => {
           },
         ],
         choiceType: 'assignUnitSupport',
-        eventNumber: 6,
         player: 'white',
       });
     },

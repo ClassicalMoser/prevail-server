@@ -1,6 +1,6 @@
 import type { CreateBotVsBotGameBody } from '@classicalmoser/prevail-contracts';
 import { createInitialGameState } from '@classicalmoser/prevail-rules/domain';
-import type { GameForVisibility } from '@classicalmoser/prevail-rules/domain';
+import type { Game } from '@classicalmoser/prevail-rules/domain';
 import type { DataErrorSignature } from '@ports';
 import { randomUUID } from 'node:crypto';
 import { armiesCompositionFailure } from '@application/composable/game-session/session/armies-composition-failure';
@@ -18,16 +18,16 @@ import type { GameSessionStore } from '@application/composable/game-session/sess
 const ownedArmyFailure = (
   status: number,
   sideLabel: 'White' | 'Black',
-): DataErrorSignature<GameForVisibility<'authoritative'>> => {
+): DataErrorSignature<Game> => {
   if (status === 404) {
-    const missing: DataErrorSignature<GameForVisibility<'authoritative'>> = {
+    const missing: DataErrorSignature<Game> = {
       message: `${sideLabel} army must be an army owned by the creating player`,
       status: 400,
       success: false,
     };
     return missing;
   }
-  const failure: DataErrorSignature<GameForVisibility<'authoritative'>> = {
+  const failure: DataErrorSignature<Game> = {
     message: 'Army could not be loaded',
     status,
     success: false,
@@ -51,7 +51,7 @@ const createBotVsBotGame = async (
   store: GameSessionStore,
   subject: string,
   body: CreateBotVsBotGameBody,
-): Promise<DataErrorSignature<GameForVisibility<'authoritative'>>> => {
+): Promise<DataErrorSignature<Game>> => {
   const whiteOwned = await store.ownedArmyStorage.getOwnedArmyById(
     subject,
     body.whiteArmyId,
@@ -88,7 +88,7 @@ const createBotVsBotGame = async (
     gameMode: body.gameMode,
     whiteArmy,
   });
-  const game: GameForVisibility<'authoritative'> = {
+  const game: Game = {
     blackArmy,
     blackPlayer: blackPlayerId,
     gameMode: body.gameMode,

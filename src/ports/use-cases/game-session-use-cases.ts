@@ -5,7 +5,7 @@ import type {
 } from '@classicalmoser/prevail-contracts';
 import type {
   FailValidationResult,
-  GameForVisibility,
+  Game,
   PlayerChoiceEvent,
   PlayerSide,
 } from '@classicalmoser/prevail-rules/domain';
@@ -36,12 +36,12 @@ interface GameSessionUseCasesPort {
   createBotVsBotGame: (
     subject: string,
     body: CreateBotVsBotGameBody,
-  ) => Promise<DataErrorSignature<GameForVisibility<'authoritative'>>>;
+  ) => Promise<DataErrorSignature<Game>>;
   /** Returns the current authoritative bot-vs-bot game without playing. */
   getBotVsBotGame: (
     subject: string,
     gameId: string,
-  ) => Promise<DataErrorSignature<GameForVisibility<'authoritative'>>>;
+  ) => Promise<DataErrorSignature<Game>>;
   /** Plays one bot choice for whichever side the prompt belongs to. */
   stepBotVsBotGame: (
     subject: string,

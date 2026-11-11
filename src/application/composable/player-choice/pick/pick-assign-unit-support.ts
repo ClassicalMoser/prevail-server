@@ -65,7 +65,6 @@ const pickAssignUnitSupport = (
   const choice: PlayerChoiceEvent = {
     assignments,
     choiceType: 'assignUnitSupport',
-    eventNumber: options.expectedEventNumber,
     eventType: PLAYER_CHOICE_EVENT_TYPE,
     player: actingPlayer,
   };

@@ -1,5 +1,5 @@
-import { projectGameForVisibility } from '@classicalmoser/prevail-rules/domain';
-import type { GameForVisibility } from '@classicalmoser/prevail-rules/domain';
+import { projectGameStateForVisibility } from '@classicalmoser/prevail-rules/domain';
+import type { Game } from '@classicalmoser/prevail-rules/domain';
 import type { GameSeatConnection } from '@ports';
 
 /**
@@ -13,11 +13,11 @@ import type { GameSeatConnection } from '@ports';
  */
 const sendGameSnapshotToConnection = (
   connection: GameSeatConnection,
-  authoritative: GameForVisibility<'authoritative'>,
+  authoritative: Game,
 ): void => {
   const visibility = connection.side === 'white' ? 'whiteSeen' : 'blackSeen';
   connection.send({
-    payload: projectGameForVisibility(authoritative, visibility),
+    payload: projectGameStateForVisibility(authoritative.gameState, visibility),
     type: 'gameSnapshot',
   });
 };

@@ -1,4 +1,4 @@
-import type { GameForVisibility } from '@classicalmoser/prevail-rules/domain';
+import type { Game } from '@classicalmoser/prevail-rules/domain';
 import { createEmptyGameState } from '@classicalmoser/prevail-rules/domain';
 import type { GameSeatConnection, GameSessionOutbound } from '@ports';
 import { sendGameSnapshotToConnection } from './send-game-snapshot-to-connection';
@@ -10,7 +10,7 @@ const placeholderArmy = {
   units: [],
 };
 
-const sampleGame = (): GameForVisibility<'authoritative'> => ({
+const sampleGame = (): Game => ({
   blackArmy: placeholderArmy,
   blackPlayer: 'black',
   gameMode: 'mini',
@@ -39,7 +39,7 @@ describe('sendGameSnapshotToConnection function', () => {
 
     expect(messages).toStrictEqual([
       expect.objectContaining({
-        payload: expect.objectContaining({ id: authoritative.id }),
+        payload: expect.objectContaining({ visibility: 'whiteSeen' }),
         type: 'gameSnapshot',
       }),
     ]);
@@ -63,7 +63,7 @@ describe('sendGameSnapshotToConnection function', () => {
 
     expect(messages).toHaveLength(1);
     expect(messages[0]).toMatchObject({
-      payload: { id: authoritative.id },
+      payload: { visibility: 'blackSeen' },
       type: 'gameSnapshot',
     });
   });

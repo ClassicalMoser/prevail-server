@@ -58,7 +58,6 @@ const pickSetupUnits = (
   const choice: PlayerChoiceEvent = {
     choiceType: 'setupUnits',
     commanderCoordinate,
-    eventNumber: options.expectedEventNumber,
     eventType: PLAYER_CHOICE_EVENT_TYPE,
     player: actingPlayer,
     unitPlacements,

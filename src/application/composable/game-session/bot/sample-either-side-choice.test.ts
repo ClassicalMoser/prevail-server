@@ -28,19 +28,16 @@ describe('sampleEitherSideChoice function', () => {
           {
             card: whiteCard,
             choiceType: 'chooseCard',
-            eventNumber: 0,
             eventType: 'playerChoice',
             player: 'white',
           },
           {
             card: blackCard,
             choiceType: 'chooseCard',
-            eventNumber: 0,
             eventType: 'playerChoice',
             player: 'black',
           },
         ],
-        expectedEventNumber: 0,
         playerSource: 'bothPlayers',
       };
 

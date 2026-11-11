@@ -12,7 +12,6 @@ const options = (
 ): Extract<LegalPlayerChoiceOptions, { choiceType: 'moveCommander' }> => ({
   choiceType: 'moveCommander',
   destinations: ['E-4', 'E-3'],
-  expectedEventNumber: 4,
   playerSource: 'white',
   startingCoordinate: 'E-5',
   ...overrides,
@@ -42,7 +41,6 @@ describe('pickMoveCommander function', () => {
 
     expect(choice).toStrictEqual({
       choiceType: 'moveCommander',
-      eventNumber: 4,
       eventType: 'playerChoice',
       from: 'E-5',
       player: 'white',

@@ -22,11 +22,9 @@ const same = (a: UnitInstance, b: UnitInstance): boolean =>
 
 const doneIssuingCommandsEvent = (
   actingPlayer: PlayerSide,
-  expectedEventNumber: number,
 ): PlayerChoiceEvent => {
   const choice: PlayerChoiceEvent = {
     choiceType: 'doneIssuingCommands',
-    eventNumber: expectedEventNumber,
     eventType: PLAYER_CHOICE_EVENT_TYPE,
     player: actingPlayer,
   };
@@ -43,11 +41,10 @@ const doneIssuingCommandsEvent = (
 const tryBuildIssueCommand = (input: {
   command: Command;
   actingPlayer: PlayerSide;
-  expectedEventNumber: number;
   state: GameState;
   random: RandomSource;
 }): PlayerChoiceEvent | undefined => {
-  const { command, actingPlayer, expectedEventNumber, state, random } = input;
+  const { command, actingPlayer, state, random } = input;
 
   if (command.size === 'units') {
     const eligible = getLegalUnitsForIssueCommand(command, actingPlayer, state);
@@ -60,7 +57,6 @@ const tryBuildIssueCommand = (input: {
     const choice: PlayerChoiceEvent = {
       choiceType: 'issueCommand',
       command,
-      eventNumber: expectedEventNumber,
       eventType: PLAYER_CHOICE_EVENT_TYPE,
       player: actingPlayer,
       units,
@@ -102,7 +98,6 @@ const tryBuildIssueCommand = (input: {
   const choice: PlayerChoiceEvent = {
     choiceType: 'issueCommand',
     command,
-    eventNumber: expectedEventNumber,
     eventType: PLAYER_CHOICE_EVENT_TYPE,
     player: actingPlayer,
     units,
@@ -130,7 +125,6 @@ const pickIssueCommand = (input: {
     const built = tryBuildIssueCommand({
       actingPlayer,
       command,
-      expectedEventNumber: options.expectedEventNumber,
       random,
       state,
     });
@@ -140,10 +134,7 @@ const pickIssueCommand = (input: {
   }
 
   if (options.canDoneIssuing) {
-    const done = doneIssuingCommandsEvent(
-      actingPlayer,
-      options.expectedEventNumber,
-    );
+    const done = doneIssuingCommandsEvent(actingPlayer);
     return done;
   }
   return undefined;

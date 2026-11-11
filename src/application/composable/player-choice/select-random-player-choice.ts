@@ -9,10 +9,7 @@ import { pickEventForPlayer } from './pick/pick-event-for-player';
 import { pickIssueCommand } from './pick/pick-issue-command';
 import { pickMoveCommander } from './pick/pick-move-commander';
 import { pickChooseMovingUnit, pickMoveUnit } from './pick/pick-move-unit';
-import {
-  pickChooseFiringUnit,
-  pickRangedAttack,
-} from './pick/pick-ranged-attack';
+import { pickChooseShooter, pickRangedAttack } from './pick/pick-ranged-attack';
 import { pickRoutDiscard } from './pick/pick-rout-discard';
 import { pickSetupUnits } from './pick/pick-setup-units';
 import { defaultRandom } from './random-source';
@@ -86,7 +83,7 @@ const selectRandomPlayerChoice = (
       return choice;
     }
     case 'chooseRoutDiscard': {
-      const choice = pickRoutDiscard(options, actingPlayer, random);
+      const choice = pickRoutDiscard(options, actingPlayer, state, random);
       return choice;
     }
     case 'moveCommander': {
@@ -101,8 +98,8 @@ const selectRandomPlayerChoice = (
       const choice = pickMoveUnit(options, actingPlayer, random);
       return choice;
     }
-    case 'chooseFiringUnit': {
-      const choice = pickChooseFiringUnit(options, actingPlayer, random);
+    case 'chooseShooter': {
+      const choice = pickChooseShooter(options, actingPlayer, random);
       return choice;
     }
     case 'issueCommand': {

@@ -1,5 +1,9 @@
-import { PLAYER_CHOICE_EVENT_TYPE } from '@classicalmoser/prevail-rules/domain';
+import {
+  PLAYER_CHOICE_EVENT_TYPE,
+  findOwnedPlayerCardState,
+} from '@classicalmoser/prevail-rules/domain';
 import type {
+  GameState,
   LegalPlayerChoiceOptions,
   PlayerChoiceEvent,
   PlayerSide,
@@ -14,6 +18,7 @@ import { shuffleCopy } from '../shuffle-copy';
  * enough card ids to meet `numberToDiscard`.
  *
  * @param options - Legal rout-discard options from the rules kernel.
+ * @param state - Current state, read for the cards in the discarding hand.
  * @param actingPlayer - Side making the discard.
  * @param random - Source of the shuffle.
  * @returns A choose-rout-discard event, or undefined when unpickable.
@@ -24,6 +29,7 @@ const pickRoutDiscard = (
     { choiceType: 'chooseRoutDiscard' }
   >,
   actingPlayer: PlayerSide,
+  state: GameState,
   random: RandomSource,
 ): PlayerChoiceEvent | undefined => {
   const { routDiscard } = options;
@@ -33,12 +39,21 @@ const pickRoutDiscard = (
   if (routDiscard.cardIds.length < routDiscard.numberToDiscard) {
     return undefined;
   }
-  const shuffledIds = shuffleCopy(routDiscard.cardIds, random);
-  const cardIds = shuffledIds.slice(0, routDiscard.numberToDiscard);
+  const hand = findOwnedPlayerCardState(state.cardState, actingPlayer)?.inHand;
+  if (hand === undefined) {
+    return undefined;
+  }
+  const legal = hand.filter((card) => routDiscard.cardIds.includes(card.id));
+  if (legal.length < routDiscard.numberToDiscard) {
+    return undefined;
+  }
+  const cards = shuffleCopy(legal, random).slice(
+    0,
+    routDiscard.numberToDiscard,
+  );
   const choice: PlayerChoiceEvent = {
-    cardIds,
+    cards,
     choiceType: 'chooseRoutDiscard',
-    eventNumber: options.expectedEventNumber,
     eventType: PLAYER_CHOICE_EVENT_TYPE,
     player: actingPlayer,
   };

@@ -1,16 +1,12 @@
 import type { GameStorage } from '@classicalmoser/prevail-rules/application';
-import type {
-  Game,
-  GameForVisibility,
-} from '@classicalmoser/prevail-rules/domain';
+import type { Game } from '@classicalmoser/prevail-rules/domain';
 import { fail, ok, okVoid } from './port-response';
 
 /**
  * In-process {@link GameStorage} keyed by game id.
  *
  * Used by the live game engine until durable game rows exist. Authoritative
- * state is stored as `Game`; visibility unions are narrowed at the STYLE-listed
- * edges when loading back for rules.
+ * state is stored as `Game`; a state that is not authoritative is refused.
  *
  * @returns A GameStorage implementation backed by a Map.
  */
@@ -45,11 +41,11 @@ const createInMemoryGameStorage = (): GameStorage => {
         const response = fail('Game not found');
         return response;
       }
-      const next = {
-        ...existing,
-        gameState,
-      } as GameForVisibility<'authoritative'>;
-      games.set(gameId, next);
+      if (gameState.visibility !== 'authoritative') {
+        const response = fail('Only authoritative game state is stored');
+        return response;
+      }
+      games.set(gameId, { ...existing, gameState });
       const response = okVoid();
       return response;
     },

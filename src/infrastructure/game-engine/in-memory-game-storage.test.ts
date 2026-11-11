@@ -1,4 +1,4 @@
-import type { GameForVisibility } from '@classicalmoser/prevail-rules/domain';
+import type { Game } from '@classicalmoser/prevail-rules/domain';
 import { createEmptyGameState } from '@classicalmoser/prevail-rules/domain';
 import { createInMemoryGameStorage } from './in-memory-game-storage';
 
@@ -9,7 +9,7 @@ const placeholderArmy = {
   units: [],
 };
 
-const sampleGame = (): GameForVisibility<'authoritative'> => ({
+const sampleGame = (): Game => ({
   blackArmy: placeholderArmy,
   blackPlayer: 'black',
   gameMode: 'mini',

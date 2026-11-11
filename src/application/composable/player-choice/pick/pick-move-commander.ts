@@ -33,7 +33,6 @@ const pickMoveCommander = (
   }
   const choice: PlayerChoiceEvent = {
     choiceType: 'moveCommander',
-    eventNumber: options.expectedEventNumber,
     eventType: PLAYER_CHOICE_EVENT_TYPE,
     from: startingCoordinate,
     player: actingPlayer,

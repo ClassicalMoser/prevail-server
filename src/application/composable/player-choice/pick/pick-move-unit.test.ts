@@ -20,7 +20,6 @@ const chooseOptions = (
   units: (typeof placed)[] = [placed],
 ): Extract<LegalPlayerChoiceOptions, { choiceType: 'chooseMovingUnit' }> => ({
   choiceType: 'chooseMovingUnit',
-  expectedEventNumber: 8,
   moveUnits: { player: 'white', units },
   playerSource: 'white',
 });
@@ -39,7 +38,6 @@ const moveOptions = (
   ],
 ): Extract<LegalPlayerChoiceOptions, { choiceType: 'moveUnit' }> => ({
   choiceType: 'moveUnit',
-  expectedEventNumber: 9,
   movingUnit: placed,
   moves,
   playerSource: 'white',
@@ -73,7 +71,6 @@ describe('pickChooseMovingUnit function', () => {
       pickChooseMovingUnit(chooseOptions(), 'white', firstAlways),
     ).toStrictEqual({
       choiceType: 'chooseMovingUnit',
-      eventNumber: 8,
       eventType: 'playerChoice',
       player: 'white',
       unit: placed,
@@ -103,7 +100,6 @@ describe('pickMoveUnit function', () => {
 
     expect(pickMoveUnit(moveOptions(), 'white', firstAlways)).toStrictEqual({
       choiceType: 'moveUnit',
-      eventNumber: 9,
       eventType: 'playerChoice',
       moveCommander: false,
       path: [],
