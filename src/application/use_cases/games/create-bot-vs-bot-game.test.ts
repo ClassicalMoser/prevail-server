@@ -1,13 +1,12 @@
 import assert from 'node:assert/strict';
-import { createInMemoryEnginePorts } from '@infrastructure';
 import {
   army,
   blackArmyId,
-  ownedArmyStorage,
+  liveGameStore,
   standardArmy,
   whiteArmyId,
 } from '@testing';
-import { createGameSessionUseCases } from './game-session-use-cases';
+import { createBotVsBotGame } from './create-bot-vs-bot-game';
 
 describe('createBotVsBotGame function', () => {
   it(
@@ -16,17 +15,12 @@ describe('createBotVsBotGame function', () => {
     async () => {
       expect.hasAssertions();
 
-      const enginePorts = createInMemoryEnginePorts();
-      const runtime = createGameSessionUseCases({
-        botTurnGapMs: 0,
-        enginePorts,
-        ownedArmyStorage: ownedArmyStorage({
-          [blackArmyId]: standardArmy(blackArmyId),
-          [whiteArmyId]: standardArmy(whiteArmyId),
-        }),
+      const { store, enginePorts } = liveGameStore({
+        [blackArmyId]: standardArmy(blackArmyId),
+        [whiteArmyId]: standardArmy(whiteArmyId),
       });
 
-      const created = await runtime.createBotVsBotGame('auth0|human', {
+      const created = await createBotVsBotGame(store, 'auth0|human', {
         blackArmyId,
         gameMode: 'standard',
         whiteArmyId,
@@ -51,16 +45,12 @@ describe('createBotVsBotGame function', () => {
     async () => {
       expect.hasAssertions();
 
-      const runtime = createGameSessionUseCases({
-        botTurnGapMs: 0,
-        enginePorts: createInMemoryEnginePorts(),
-        ownedArmyStorage: ownedArmyStorage({
-          [blackArmyId]: army(blackArmyId),
-          [whiteArmyId]: army(whiteArmyId),
-        }),
+      const { store } = liveGameStore({
+        [blackArmyId]: army(blackArmyId),
+        [whiteArmyId]: army(whiteArmyId),
       });
 
-      const created = await runtime.createBotVsBotGame('auth0|human', {
+      const created = await createBotVsBotGame(store, 'auth0|human', {
         blackArmyId,
         gameMode: 'mini',
         whiteArmyId,

@@ -1,4 +1,5 @@
 import { botVsBotCreator, hostedBotVsBotGame, watcher } from '@testing';
+import { registerWatchConnection } from './register-watch-connection';
 
 describe('registerWatchConnection function', () => {
   it(
@@ -7,10 +8,10 @@ describe('registerWatchConnection function', () => {
     async () => {
       expect.hasAssertions();
 
-      const { runtime, gameId } = await hostedBotVsBotGame();
+      const { store, gameId } = await hostedBotVsBotGame();
       const { connection, sent } = watcher(gameId);
 
-      const registered = await runtime.registerWatchConnection(connection);
+      const registered = await registerWatchConnection(store, connection);
 
       expect(registered).toStrictEqual({ data: undefined, success: true });
       expect(sent).toMatchObject([
@@ -28,10 +29,10 @@ describe('registerWatchConnection function', () => {
     async () => {
       expect.hasAssertions();
 
-      const { runtime, gameId } = await hostedBotVsBotGame();
+      const { store, gameId } = await hostedBotVsBotGame();
       const { connection, sent } = watcher(gameId, `${botVsBotCreator}-other`);
 
-      const registered = await runtime.registerWatchConnection(connection);
+      const registered = await registerWatchConnection(store, connection);
 
       expect(registered).toMatchObject({ status: 403, success: false });
       expect(sent).toStrictEqual([]);

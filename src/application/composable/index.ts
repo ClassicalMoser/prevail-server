@@ -37,3 +37,5 @@ export type {
 } from './cards/certify-card-versions';
 export { toContractCardListItem } from './cards/to-contract-card-list-item';
 export type { GameSessionStore } from './game-session/session/game-session-store';
+export { fanoutEvent } from './game-session/fanout/fanout-event';
+export { fanoutRoundSnapshot } from './game-session/fanout/fanout-round-snapshot';

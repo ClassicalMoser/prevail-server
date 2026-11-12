@@ -5,16 +5,17 @@ import {
   PLAYER_CHOICE_EVENT_TYPE,
 } from '@classicalmoser/prevail-rules/domain';
 import assert from 'node:assert/strict';
-import { createInMemoryEnginePorts } from '@infrastructure';
 import {
   army,
   blackArmyId,
   miniArmy,
-  ownedArmyStorage,
+  liveGameStore,
   standardArmy,
   whiteArmyId,
 } from '@testing';
-import { createGameSessionUseCases } from './game-session-use-cases';
+import { createVsBotGame } from './create-vs-bot-game';
+import { getSeatSubject } from './get-seat-subject';
+import { submitPlayerChoice } from './submit-player-choice';
 
 describe('createVsBotGame function', () => {
   it(
@@ -23,27 +24,10 @@ describe('createVsBotGame function', () => {
     async () => {
       expect.hasAssertions();
 
-      const runtimeRef: {
-        current?: ReturnType<typeof createGameSessionUseCases>;
-      } = {};
-      const enginePorts = createInMemoryEnginePorts({
-        onEventAppended: (gameId, _round, event) => {
-          runtimeRef.current?.fanoutEvent(gameId, event);
-        },
-        onRoundSnapshotSaved: (gameId, round, state) => {
-          runtimeRef.current?.fanoutRoundSnapshot(gameId, round, state);
-        },
+      const { store } = liveGameStore({
+        [blackArmyId]: miniArmy(blackArmyId),
+        [whiteArmyId]: miniArmy(whiteArmyId),
       });
-
-      const runtime = createGameSessionUseCases({
-        botTurnGapMs: 0,
-        enginePorts,
-        ownedArmyStorage: ownedArmyStorage({
-          [blackArmyId]: miniArmy(blackArmyId),
-          [whiteArmyId]: miniArmy(whiteArmyId),
-        }),
-      });
-      runtimeRef.current = runtime;
 
       const body: CreateVsBotGameBody = {
         blackArmyId,
@@ -52,11 +36,11 @@ describe('createVsBotGame function', () => {
         whiteArmyId,
       };
 
-      const result = await runtime.createVsBotGame('human-sub', body);
+      const result = await createVsBotGame(store, 'human-sub', body);
       expect(result).toMatchObject({ success: true, data: expect.any(String) });
       assert.ok(result.success);
-      expect(runtime.getSeatSubject(result.data, 'white')).toBe('human-sub');
-      expect(runtime.getSeatSubject(result.data, 'black')).toBe('bot:prevail');
+      expect(getSeatSubject(store, result.data, 'white')).toBe('human-sub');
+      expect(getSeatSubject(store, result.data, 'black')).toBe('bot:prevail');
     },
   );
 
@@ -66,17 +50,12 @@ describe('createVsBotGame function', () => {
     async () => {
       expect.hasAssertions();
 
-      const enginePorts = createInMemoryEnginePorts();
-      const runtime = createGameSessionUseCases({
-        botTurnGapMs: 0,
-        enginePorts,
-        ownedArmyStorage: ownedArmyStorage({
-          [blackArmyId]: miniArmy(blackArmyId),
-          [whiteArmyId]: miniArmy(whiteArmyId),
-        }),
+      const { store, enginePorts } = liveGameStore({
+        [blackArmyId]: miniArmy(blackArmyId),
+        [whiteArmyId]: miniArmy(whiteArmyId),
       });
 
-      const created = await runtime.createVsBotGame('auth0|human-sub', {
+      const created = await createVsBotGame(store, 'auth0|human-sub', {
         blackArmyId,
         gameMode: 'mini',
         humanSide: 'white',
@@ -127,7 +106,7 @@ describe('createVsBotGame function', () => {
       });
       const firstPlacement = unitPlacements[0];
       assert.ok(firstPlacement !== undefined);
-      const submitted = await runtime.submitPlayerChoice({
+      const submitted = await submitPlayerChoice(store, {
         gameId: created.data,
         playerChoice: {
           choiceType: 'setupUnits',
@@ -150,16 +129,12 @@ describe('createVsBotGame function', () => {
     async () => {
       expect.hasAssertions();
 
-      const runtime = createGameSessionUseCases({
-        botTurnGapMs: 0,
-        enginePorts: createInMemoryEnginePorts(),
-        ownedArmyStorage: ownedArmyStorage({
-          [blackArmyId]: army(blackArmyId),
-          [whiteArmyId]: army(whiteArmyId),
-        }),
+      const { store } = liveGameStore({
+        [blackArmyId]: army(blackArmyId),
+        [whiteArmyId]: army(whiteArmyId),
       });
 
-      const result = await runtime.createVsBotGame('human-sub', {
+      const result = await createVsBotGame(store, 'human-sub', {
         blackArmyId,
         gameMode: 'mini',
         humanSide: 'white',
@@ -176,17 +151,12 @@ describe('createVsBotGame function', () => {
     async () => {
       expect.hasAssertions();
 
-      const enginePorts = createInMemoryEnginePorts();
-      const runtime = createGameSessionUseCases({
-        botTurnGapMs: 0,
-        enginePorts,
-        ownedArmyStorage: ownedArmyStorage({
-          [blackArmyId]: standardArmy(blackArmyId),
-          [whiteArmyId]: standardArmy(whiteArmyId),
-        }),
+      const { store, enginePorts } = liveGameStore({
+        [blackArmyId]: standardArmy(blackArmyId),
+        [whiteArmyId]: standardArmy(whiteArmyId),
       });
 
-      const created = await runtime.createVsBotGame('auth0|human-sub', {
+      const created = await createVsBotGame(store, 'auth0|human-sub', {
         blackArmyId,
         gameMode: 'standard',
         humanSide: 'white',

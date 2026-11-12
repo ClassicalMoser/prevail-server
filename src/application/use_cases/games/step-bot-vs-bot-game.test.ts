@@ -1,5 +1,7 @@
 import { authoritativeGameStateSchema } from '@classicalmoser/prevail-rules/domain';
 import { hostedBotVsBotGame, watcher } from '@testing';
+import { registerWatchConnection } from './register-watch-connection';
+import { stepBotVsBotGame } from './step-bot-vs-bot-game';
 
 describe('stepBotVsBotGame function', () => {
   it(
@@ -8,10 +10,10 @@ describe('stepBotVsBotGame function', () => {
     async () => {
       expect.hasAssertions();
 
-      const { runtime } = await hostedBotVsBotGame();
+      const { store } = await hostedBotVsBotGame();
       const { connection } = watcher('missing');
 
-      const stepped = await runtime.stepBotVsBotGame(connection);
+      const stepped = await stepBotVsBotGame(store, connection);
 
       expect(stepped).toStrictEqual({
         message: 'Game not found',
@@ -27,10 +29,10 @@ describe('stepBotVsBotGame function', () => {
     async () => {
       expect.hasAssertions();
 
-      const { runtime, gameId } = await hostedBotVsBotGame();
+      const { store, gameId } = await hostedBotVsBotGame();
       const { connection } = watcher(gameId);
 
-      const stepped = await runtime.stepBotVsBotGame(connection);
+      const stepped = await stepBotVsBotGame(store, connection);
 
       expect(stepped).toMatchObject({ status: 400, success: false });
     },
@@ -42,12 +44,12 @@ describe('stepBotVsBotGame function', () => {
     async () => {
       expect.hasAssertions();
 
-      const { runtime, gameId } = await hostedBotVsBotGame();
+      const { store, gameId } = await hostedBotVsBotGame();
       const { connection, sent } = watcher(gameId);
-      await runtime.registerWatchConnection(connection);
+      await registerWatchConnection(store, connection);
 
-      await runtime.stepBotVsBotGame(connection);
-      await runtime.stepBotVsBotGame(connection);
+      await stepBotVsBotGame(store, connection);
+      await stepBotVsBotGame(store, connection);
 
       const choices = sent.filter((message) => message.type === 'playerChoice');
 
@@ -61,9 +63,9 @@ describe('stepBotVsBotGame function', () => {
   it('refuses a step once the game is over', { timeout: 5000 }, async () => {
     expect.hasAssertions();
 
-    const { runtime, enginePorts, gameId } = await hostedBotVsBotGame();
+    const { store, enginePorts, gameId } = await hostedBotVsBotGame();
     const { connection, sent } = watcher(gameId);
-    await runtime.registerWatchConnection(connection);
+    await registerWatchConnection(store, connection);
     // The opening snapshot is the stored state; end the game from it.
     const opening = authoritativeGameStateSchema.parse(sent[0]?.payload);
     await enginePorts.gameStorage.updateGameState(gameId, {
@@ -71,7 +73,7 @@ describe('stepBotVsBotGame function', () => {
       winner: 'white',
     });
 
-    const stepped = await runtime.stepBotVsBotGame(connection);
+    const stepped = await stepBotVsBotGame(store, connection);
 
     expect(stepped).toStrictEqual({
       message: 'The game is over',

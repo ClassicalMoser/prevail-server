@@ -1,48 +1,30 @@
 import assert from 'node:assert/strict';
 import type { EnginePorts } from '@classicalmoser/prevail-rules/application';
-import { createGameSessionUseCases } from '@application';
-import type { GameSessionRuntime } from '@application';
-import { createInMemoryEnginePorts } from '@infrastructure';
+import { createBotVsBotGame } from '@application';
+import type { GameSessionStore } from '@application';
 import type { GameWatchConnection, GameWatchOutbound } from '@ports';
-import {
-  blackArmyId,
-  miniArmy,
-  ownedArmyStorage,
-  whiteArmyId,
-} from './game-session-armies';
+import { blackArmyId, miniArmy, whiteArmyId } from './game-session-armies';
+import { liveGameStore } from './live-game-store';
 
 /** Subject that creates every hosted bot-vs-bot game. */
 const botVsBotCreator = 'auth0|human';
 
 /**
- * A runtime whose engine fans appended events out, as composition wires it,
- * with a mini bot-vs-bot game already created by `botVsBotCreator`.
+ * A live-game store with a mini bot-vs-bot game already created by
+ * `botVsBotCreator`. Appended events fan out to watchers, as composition wires it.
  *
- * @returns The runtime, its engine ports, and the new game id.
+ * @returns The store, its engine ports, and the new game id.
  */
 const hostedBotVsBotGame = async (): Promise<{
-  runtime: GameSessionRuntime;
+  store: GameSessionStore;
   enginePorts: EnginePorts;
   gameId: string;
 }> => {
-  // The engine hook needs the runtime that does not exist until the ports do, as
-  // in composition, so it reads it through a slot filled just after.
-  const ref: { current?: GameSessionRuntime } = {};
-  const enginePorts = createInMemoryEnginePorts({
-    onEventAppended: (gameId, _round, event) => {
-      ref.current?.fanoutEvent(gameId, event);
-    },
+  const { store, enginePorts } = liveGameStore({
+    [blackArmyId]: miniArmy(blackArmyId),
+    [whiteArmyId]: miniArmy(whiteArmyId),
   });
-  const runtime = createGameSessionUseCases({
-    botTurnGapMs: 0,
-    enginePorts,
-    ownedArmyStorage: ownedArmyStorage({
-      [blackArmyId]: miniArmy(blackArmyId),
-      [whiteArmyId]: miniArmy(whiteArmyId),
-    }),
-  });
-  ref.current = runtime;
-  const created = await runtime.createBotVsBotGame(botVsBotCreator, {
+  const created = await createBotVsBotGame(store, botVsBotCreator, {
     blackArmyId,
     gameMode: 'mini',
     whiteArmyId,
@@ -50,7 +32,7 @@ const hostedBotVsBotGame = async (): Promise<{
   // A game that failed to create would make every later step meaningless, so the
   // fixture fails at once.
   assert.ok(created.success);
-  const hosted = { enginePorts, gameId: created.data, runtime };
+  const hosted = { enginePorts, gameId: created.data, store };
   return hosted;
 };
 

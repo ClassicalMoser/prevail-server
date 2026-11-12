@@ -1,4 +1,5 @@
 import { gameSessionStore, hostedBotVsBotGame, watcher } from '@testing';
+import { registerWatchConnection } from '@application/use_cases/games/register-watch-connection';
 import { fanoutRoundSnapshot } from './fanout-round-snapshot';
 
 describe('fanoutRoundSnapshot function', () => {
@@ -40,13 +41,16 @@ describe('fanoutRoundSnapshot function', () => {
     async () => {
       expect.hasAssertions();
 
-      const { runtime, gameId } = await hostedBotVsBotGame();
+      const { store, gameId } = await hostedBotVsBotGame();
       const watching = watcher(gameId);
-      await runtime.registerWatchConnection(watching.connection);
+      await registerWatchConnection(store, watching.connection);
 
-      await runtime.fanoutRoundSnapshot(gameId, 1, {
-        winner: 'white',
-      } as never); // the hook's state is ignored; the stored game is sent
+      await fanoutRoundSnapshot({
+        gameId,
+        gameState: { winner: 'white' } as never, // the hook's state is ignored; the stored game is sent
+        roundNumber: 1,
+        store,
+      });
 
       expect(watching.sent).toMatchObject([
         { type: 'gameSnapshot' },

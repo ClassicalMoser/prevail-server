@@ -6,9 +6,10 @@ import {
 } from '@classicalmoser/prevail-rules/domain';
 import type { GameSessionOutbound } from '@ports';
 import assert from 'node:assert/strict';
-import { createInMemoryEnginePorts } from '@infrastructure';
-import { blackArmyId, miniArmy, ownedArmyStorage, whiteArmyId } from '@testing';
-import { createGameSessionUseCases } from './game-session-use-cases';
+import { blackArmyId, miniArmy, liveGameStore, whiteArmyId } from '@testing';
+import { createVsBotGame } from './create-vs-bot-game';
+import { submitPlayerChoice } from './submit-player-choice';
+import { registerSeatConnection } from './register-seat-connection';
 
 describe('registerSeatConnection function', () => {
   it(
@@ -17,17 +18,12 @@ describe('registerSeatConnection function', () => {
     async () => {
       expect.hasAssertions();
 
-      const enginePorts = createInMemoryEnginePorts();
-      const runtime = createGameSessionUseCases({
-        botTurnGapMs: 0,
-        enginePorts,
-        ownedArmyStorage: ownedArmyStorage({
-          [blackArmyId]: miniArmy(blackArmyId),
-          [whiteArmyId]: miniArmy(whiteArmyId),
-        }),
+      const { store } = liveGameStore({
+        [blackArmyId]: miniArmy(blackArmyId),
+        [whiteArmyId]: miniArmy(whiteArmyId),
       });
 
-      const created = await runtime.createVsBotGame('human-sub', {
+      const created = await createVsBotGame(store, 'human-sub', {
         blackArmyId,
         gameMode: 'mini',
         humanSide: 'white',
@@ -39,7 +35,7 @@ describe('registerSeatConnection function', () => {
       });
       assert.ok(created.success);
 
-      const registered = await runtime.registerSeatConnection({
+      const registered = await registerSeatConnection(store, {
         gameId: created.data,
         send: () => {
           /* Unused */
@@ -62,17 +58,12 @@ describe('registerSeatConnection function', () => {
     async () => {
       expect.hasAssertions();
 
-      const enginePorts = createInMemoryEnginePorts();
-      const runtime = createGameSessionUseCases({
-        botTurnGapMs: 0,
-        enginePorts,
-        ownedArmyStorage: ownedArmyStorage({
-          [blackArmyId]: miniArmy(blackArmyId),
-          [whiteArmyId]: miniArmy(whiteArmyId),
-        }),
+      const { store } = liveGameStore({
+        [blackArmyId]: miniArmy(blackArmyId),
+        [whiteArmyId]: miniArmy(whiteArmyId),
       });
 
-      const created = await runtime.createVsBotGame('auth0|human-sub', {
+      const created = await createVsBotGame(store, 'auth0|human-sub', {
         blackArmyId,
         gameMode: 'mini',
         humanSide: 'white',
@@ -85,7 +76,7 @@ describe('registerSeatConnection function', () => {
       assert.ok(created.success);
 
       const messages: GameSessionOutbound[] = [];
-      const registered = await runtime.registerSeatConnection({
+      const registered = await registerSeatConnection(store, {
         gameId: created.data,
         send: (message) => {
           messages.push(message);
@@ -122,28 +113,15 @@ describe('registerSeatConnection function', () => {
     async () => {
       expect.hasAssertions();
 
-      const runtimeRef: {
-        current?: ReturnType<typeof createGameSessionUseCases>;
-      } = {};
-      const enginePorts = createInMemoryEnginePorts({
-        onEventAppended: (gameId, _round, event) => {
-          runtimeRef.current?.fanoutEvent(gameId, event);
-        },
-        onRoundSnapshotSaved: (gameId, round, state) => {
-          runtimeRef.current?.fanoutRoundSnapshot(gameId, round, state);
-        },
-      });
-      const runtime = createGameSessionUseCases({
-        botTurnGapMs: 25,
-        enginePorts,
-        ownedArmyStorage: ownedArmyStorage({
+      const { store, enginePorts } = liveGameStore(
+        {
           [blackArmyId]: miniArmy(blackArmyId),
           [whiteArmyId]: miniArmy(whiteArmyId),
-        }),
-      });
-      runtimeRef.current = runtime;
+        },
+        { botTurnGapMs: 25 },
+      );
 
-      const created = await runtime.createVsBotGame('auth0|human-sub', {
+      const created = await createVsBotGame(store, 'auth0|human-sub', {
         blackArmyId,
         gameMode: 'mini',
         humanSide: 'white',
@@ -177,7 +155,7 @@ describe('registerSeatConnection function', () => {
       assert.ok(firstPlacement !== undefined);
 
       const messages: GameSessionOutbound[] = [];
-      const submitPromise = runtime.submitPlayerChoice({
+      const submitPromise = submitPlayerChoice(store, {
         gameId: created.data,
         playerChoice: {
           choiceType: 'setupUnits',
@@ -190,7 +168,7 @@ describe('registerSeatConnection function', () => {
         subject: 'auth0|human-sub',
       });
 
-      const registerPromise = runtime.registerSeatConnection({
+      const registerPromise = registerSeatConnection(store, {
         gameId: created.data,
         send: (message) => {
           messages.push(message);

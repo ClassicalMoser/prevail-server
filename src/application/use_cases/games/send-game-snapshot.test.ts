@@ -1,9 +1,10 @@
 import { whiteInGameWsContract } from '@classicalmoser/prevail-contracts';
 import type { GameSessionOutbound } from '@ports';
 import assert from 'node:assert/strict';
-import { createInMemoryEnginePorts } from '@infrastructure';
-import { blackArmyId, miniArmy, ownedArmyStorage, whiteArmyId } from '@testing';
-import { createGameSessionUseCases } from './game-session-use-cases';
+import { blackArmyId, miniArmy, liveGameStore, whiteArmyId } from '@testing';
+import { createVsBotGame } from './create-vs-bot-game';
+import { registerSeatConnection } from './register-seat-connection';
+import { sendGameSnapshot } from './send-game-snapshot';
 
 describe('sendGameSnapshot function', () => {
   it(
@@ -12,17 +13,12 @@ describe('sendGameSnapshot function', () => {
     async () => {
       expect.hasAssertions();
 
-      const enginePorts = createInMemoryEnginePorts();
-      const runtime = createGameSessionUseCases({
-        botTurnGapMs: 0,
-        enginePorts,
-        ownedArmyStorage: ownedArmyStorage({
-          [blackArmyId]: miniArmy(blackArmyId),
-          [whiteArmyId]: miniArmy(whiteArmyId),
-        }),
+      const { store } = liveGameStore({
+        [blackArmyId]: miniArmy(blackArmyId),
+        [whiteArmyId]: miniArmy(whiteArmyId),
       });
 
-      const created = await runtime.createVsBotGame('auth0|human-sub', {
+      const created = await createVsBotGame(store, 'auth0|human-sub', {
         blackArmyId,
         gameMode: 'mini',
         humanSide: 'white',
@@ -39,11 +35,11 @@ describe('sendGameSnapshot function', () => {
         side: 'white' as const,
         subject: 'auth0|human-sub',
       };
-      const registered = await runtime.registerSeatConnection(connection);
+      const registered = await registerSeatConnection(store, connection);
       expect(registered.success).toBe(true);
       messages.length = 0;
 
-      const sent = await runtime.sendGameSnapshot(connection);
+      const sent = await sendGameSnapshot(store, connection);
       expect(sent).toStrictEqual({ data: undefined, success: true });
       expect(messages).toStrictEqual([
         expect.objectContaining({ type: 'gameSnapshot' }),

@@ -1,4 +1,7 @@
 import { hostedBotVsBotGame, watcher } from '@testing';
+import { registerWatchConnection } from './register-watch-connection';
+import { stepBotVsBotGame } from './step-bot-vs-bot-game';
+import { unregisterWatchConnection } from './unregister-watch-connection';
 
 describe('unregisterWatchConnection function', () => {
   it(
@@ -7,12 +10,12 @@ describe('unregisterWatchConnection function', () => {
     async () => {
       expect.hasAssertions();
 
-      const { runtime, gameId } = await hostedBotVsBotGame();
+      const { store, gameId } = await hostedBotVsBotGame();
       const { connection, sent } = watcher(gameId);
-      await runtime.registerWatchConnection(connection);
+      await registerWatchConnection(store, connection);
 
-      runtime.unregisterWatchConnection(connection);
-      const stepped = await runtime.stepBotVsBotGame(connection);
+      unregisterWatchConnection(store, connection);
+      const stepped = await stepBotVsBotGame(store, connection);
 
       // Once closed, it is no longer a registered watcher at all.
       expect(stepped).toMatchObject({ status: 400, success: false });

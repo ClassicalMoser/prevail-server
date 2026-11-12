@@ -1,4 +1,6 @@
 import { hostedBotVsBotGame, watcher } from '@testing';
+import { registerWatchConnection } from './register-watch-connection';
+import { sendWatchSnapshot } from './send-watch-snapshot';
 
 describe('sendWatchSnapshot function', () => {
   it(
@@ -7,11 +9,11 @@ describe('sendWatchSnapshot function', () => {
     async () => {
       expect.hasAssertions();
 
-      const { runtime, gameId } = await hostedBotVsBotGame();
+      const { store, gameId } = await hostedBotVsBotGame();
       const { connection, sent } = watcher(gameId);
-      await runtime.registerWatchConnection(connection);
+      await registerWatchConnection(store, connection);
 
-      const resent = await runtime.sendWatchSnapshot(connection);
+      const resent = await sendWatchSnapshot(store, connection);
 
       expect(resent).toStrictEqual({ data: undefined, success: true });
       expect(sent.map((message) => message.type)).toStrictEqual([
@@ -27,10 +29,10 @@ describe('sendWatchSnapshot function', () => {
     async () => {
       expect.hasAssertions();
 
-      const { runtime, gameId } = await hostedBotVsBotGame();
+      const { store, gameId } = await hostedBotVsBotGame();
       const { connection, sent } = watcher(gameId);
 
-      const resent = await runtime.sendWatchSnapshot(connection);
+      const resent = await sendWatchSnapshot(store, connection);
 
       expect(resent).toMatchObject({ status: 400, success: false });
       expect(sent).toStrictEqual([]);
