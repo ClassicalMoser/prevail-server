@@ -9,6 +9,7 @@ interface UnitCardCertificationStatus {
   certified: boolean;
 }
 
+/** Persistence for unit-card versions; ids are stable across versions. */
 interface UnitCardStorage {
   getCurrentUnitCards: () => Promise<DataErrorSignature<UnitType[]>>;
   getAllUnitCards: () => Promise<DataErrorSignature<CatalogCardListItem[]>>;

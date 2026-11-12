@@ -55,6 +55,8 @@ const implementMediaPostRoute = <
   invoke: async (
     wire,
   ): Promise<DataErrorSignature<MediaPayload<TSuccessContentType>>> => {
+    // The handler only ever sees params, query and body the contract's schemas
+    // accept; a bad request is answered 400 here and never reaches a use case.
     const parsed = tryParseBodyRouteRequest(wire, contract.validators);
     if (!parsed.ok) {
       const rejected = parsed.error;
@@ -62,9 +64,13 @@ const implementMediaPostRoute = <
     }
 
     try {
+      // Auth is set on the wire request only for routes whose contract requires it,
+      // after the token was verified; a client cannot supply it.
       const handled = await handler(parsed.value, wire.auth);
       return handled;
     } catch (error) {
+      // A throw is a bug, not a refusal: it is logged, and the caller gets only a
+      // generic 500 whose message never carries the thrown text.
       const failure = handleError({
         error,
         logger,

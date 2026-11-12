@@ -20,6 +20,8 @@ import type {
 const toSeatMessageResult = (
   result: DataErrorSignature<void>,
 ): SeatMessageResult => {
+  // A refused choice goes back to that seat as choiceRejected with the use
+  // case's message, leaving its state unchanged.
   if (!result.success) {
     const rejected: SeatMessageResult = {
       ok: false,
@@ -66,6 +68,8 @@ const createSeatHandlers = (
       side,
       subject: context.auth.subject,
     };
+    // The session checks that this subject owns the seat; a refusal closes the
+    // socket with its message as the reason.
     const registered =
       await gameSessionUseCases.registerSeatConnection(connection);
     if (!registered.success) {
@@ -95,6 +99,7 @@ const createSeatHandlers = (
     _context: WsSeatConnectionContext<GameWsParams>,
     handle: GameSeatConnection,
   ): Promise<SeatMessageResult> => {
+    // A resync: the seat is sent the game projected for its own side.
     const result = await gameSessionUseCases.sendGameSnapshot(handle);
     const answered = toSeatMessageResult(result);
     return answered;
@@ -103,6 +108,7 @@ const createSeatHandlers = (
     _context: WsSeatConnectionContext<GameWsParams>,
     handle: GameSeatConnection,
   ): void => {
+    // A closed seat stops receiving events.
     gameSessionUseCases.unregisterSeatConnection(handle);
   },
 });

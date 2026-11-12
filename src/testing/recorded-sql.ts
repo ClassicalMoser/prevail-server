@@ -37,10 +37,14 @@ const recordedSql = (
     strings: TemplateStringsArray,
     ...values: readonly unknown[]
   ): Promise<postgres.Row[]> => {
+    // Whitespace is collapsed so a test can match statement text without caring
+    // how the SQL is indented.
     const text = strings.join('?').replaceAll(/\s+/gu, ' ').trim();
     const call: RecordedSqlCall = { text, values };
     calls.push(call);
     const answered = typeof rows === 'function' ? rows(text) : rows;
+    // Rows are copied so a query that mutates its result cannot change the
+    // test's fixture.
     const produced = answered.map((row) => ({ ...row }));
     const resolved = Promise.resolve(produced);
     return resolved;

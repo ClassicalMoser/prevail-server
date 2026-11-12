@@ -15,6 +15,8 @@ const recordedTransactionSql = (
   rows: readonly postgres.Row[] = [],
 ): RecordedSql => {
   const recorded = recordedSql(rows);
+  // A transaction runs its callback on the recording tag, so its statements land
+  // in the same calls list.
   const begin = async (
     run: (tx: postgres.Sql) => Promise<unknown>,
   ): Promise<unknown> => {

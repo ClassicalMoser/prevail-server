@@ -8,12 +8,15 @@ const runDetached = (task: () => Promise<unknown>): void => {
   const holder: { current: Promise<unknown> | undefined } = {
     current: undefined,
   };
+  // The task starts now but nothing awaits it: used where a synchronous caller (an
+  // engine hook, a socket message handler) must not wait or throw.
   holder.current = (async (): Promise<void> => {
     try {
       await task();
     } catch {
       // Detached work must not surface to sync callers.
     } finally {
+      // Forget the task once it settles so the set holds only unfinished work.
       if (holder.current !== undefined) {
         detachedTasks.delete(holder.current);
       }

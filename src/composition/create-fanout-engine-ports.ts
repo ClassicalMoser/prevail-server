@@ -47,6 +47,8 @@ const createFanoutEnginePorts = (): {
     },
   });
 
+  // Composition calls this once, after the session exists and before the server
+  // accepts a request.
   const bindSession = (session: SessionFanout): void => {
     slot.session = session;
   };

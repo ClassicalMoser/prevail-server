@@ -9,6 +9,7 @@ interface CommandCardCertificationStatus {
   certified: boolean;
 }
 
+/** Persistence for command-card versions; ids are stable across versions. */
 interface CommandCardStorage {
   getCurrentCommandCards: () => Promise<DataErrorSignature<CommandCard[]>>;
   getAllCommandCards: () => Promise<DataErrorSignature<CatalogCardListItem[]>>;

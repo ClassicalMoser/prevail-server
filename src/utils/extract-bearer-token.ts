@@ -16,6 +16,8 @@ const extractBearerToken = (
     return undefined;
   }
 
+  // Anything but `Bearer <token>` counts as no token, so the caller answers 401
+  // instead of parsing an unknown scheme.
   const [scheme, token] = authorization.split(' ');
   if (
     scheme?.toLowerCase() !== 'bearer' ||

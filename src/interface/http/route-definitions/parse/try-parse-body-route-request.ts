@@ -28,6 +28,8 @@ const tryParseBodyRouteRequest = <
     | PatchRouteValidators<TParams, TQuery, TBody, TReturn>
     | MediaPostRouteValidators<TParams, TQuery, TBody>,
 ): ParseResult<RouteRequest<TParams, TQuery, TBody>> => {
+  // Params, then query, then body: the 400 names the first part at fault. A
+  // missing params or query is parsed as {} so an all-optional schema accepts a bare request.
   const paramsResult = validators.params.safeParse(wire.params ?? {});
   if (!paramsResult.success) {
     return { ok: false, error: invalidParams };
@@ -38,6 +40,8 @@ const tryParseBodyRouteRequest = <
     return { ok: false, error: invalidQuery };
   }
 
+  // The body is parsed as received: an absent body reaches the schema as
+  // undefined, and is refused unless the contract allows it.
   const bodyResult = validators.body.safeParse(wire.body);
   if (!bodyResult.success) {
     return { ok: false, error: invalidBody };

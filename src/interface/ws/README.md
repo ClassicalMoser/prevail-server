@@ -30,12 +30,17 @@ Inbound / outbound use tagged envelopes:
 
 Opponent `chooseCard` (and commit\*) card fields are redacted to `'hidden'` via `projectEventForVisibility` in `prevail-rules`.
 
-## Pattern: `implementInGameSeatWs`
+## Pattern: one route core, two message tables
 
-1. Copies `contract.path`, `contract.side`, `contract.auth`
-2. On connect: `safeParse` params; requires `auth` from composition
-3. On message: `JSON.parse` → envelope `type` → `validators.inbound.*.safeParse` → handler
-4. Unexpected errors → logger + `choiceRejected` / close
+`implementInGameSeatWs` (seats) and `implementInGameBotVsBotWs` (the watcher) are thin. Each builds its context, its message table, and the rejection its client expects, then hands them to `implementWsRoute`, which does the rest:
+
+1. `findAdmittedConnection`: `safeParse` the path params and require `auth` from composition, or close with 1008
+2. `openWsConnection`: run the open handler; a throw closes with 1011
+3. `routeWsMessage`, per frame: `readInboundEnvelope` → the route's handler for that `type` → the contract schema check → run off the message loop (`runWsMessage`)
+4. A refused or throwing message answers its client with `choiceRejected` (seat) or `stepRejected` (watcher); `sendRejection` writes both
+5. On close, the route tells the game so the socket leaves the fan-out set
+
+A seat's table is `playerChoice` and `requestGameSnapshot`; a watcher's is `step` and `requestGameSnapshot`. Adding a message type means adding one `createInboundHandler` entry to a table.
 
 ## Entry point: create vs-bot game
 

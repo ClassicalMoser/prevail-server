@@ -22,6 +22,8 @@ const tryParseParamsQuery = <
   wire: WireRouteRequest,
   validators: ParamsQueryValidators<TParams, TQuery>,
 ): ParseResult<{ params: TParams; query: TQuery }> => {
+  // Params, then query, then body: the 400 names the first part at fault. A
+  // missing params or query is parsed as {} so an all-optional schema accepts a bare request.
   const paramsResult = validators.params.safeParse(wire.params ?? {});
   if (!paramsResult.success) {
     return { ok: false, error: invalidParams };

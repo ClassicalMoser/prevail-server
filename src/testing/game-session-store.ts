@@ -6,6 +6,10 @@ import { defaultRandom } from '@classicalmoser/prevail-rules/domain';
 import type { GameSessionStore } from '@application';
 import type { OwnedArmyStorage } from '@ports';
 
+/**
+ * Stands for armies storage in a test that never reads it; every call is an
+ * unprogrammed mock.
+ */
 const idleArmyStorage = (): OwnedArmyStorage => ({
   archiveOwnedArmy: vi.fn(),
   createOwnedArmy: vi.fn(),
@@ -14,6 +18,7 @@ const idleArmyStorage = (): OwnedArmyStorage => ({
   updateOwnedArmy: vi.fn(),
 });
 
+/** Stands for the rules runner in a test that never advances a game. */
 const idleRunner = (): GameRunner => ({
   advanceUntilPlayerChoice: vi.fn(),
   handlePlayerChoiceSubmission: vi.fn(),
@@ -21,6 +26,10 @@ const idleRunner = (): GameRunner => ({
   startNewGame: vi.fn(),
 });
 
+/**
+ * Stands for the engine's storage in a test that never writes through it. Random
+ * is the real default, so nothing seeded is faked.
+ */
 const idleEnginePorts = (): EnginePorts => ({
   random: defaultRandom,
   eventStreamStorage: {
@@ -46,6 +55,7 @@ const idleEnginePorts = (): EnginePorts => ({
 const gameSessionStore = (
   patch: Partial<GameSessionStore> = {},
 ): GameSessionStore => ({
+  // No pause between bot turns, so tests do not wait on a timer.
   botTurnGapMs: 0,
   connections: new Map(),
   enginePorts: idleEnginePorts(),

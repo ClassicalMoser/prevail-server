@@ -25,6 +25,8 @@ const hostedBotVsBotGame = async (): Promise<{
   enginePorts: EnginePorts;
   gameId: string;
 }> => {
+  // The engine hook needs the runtime that does not exist until the ports do, as
+  // in composition, so it reads it through a slot filled just after.
   const ref: { current?: GameSessionRuntime } = {};
   const enginePorts = createInMemoryEnginePorts({
     onEventAppended: (gameId, _round, event) => {
@@ -45,6 +47,8 @@ const hostedBotVsBotGame = async (): Promise<{
     gameMode: 'mini',
     whiteArmyId,
   });
+  // A game that failed to create would make every later step meaningless, so the
+  // fixture fails at once.
   assert.ok(created.success);
   const hosted = { enginePorts, gameId: created.data, runtime };
   return hosted;

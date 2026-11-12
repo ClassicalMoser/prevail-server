@@ -51,6 +51,7 @@ interface RegisteredWsRoute {
   ) => Promise<void>;
 }
 
+/** Collection of socket routes passed to registerWs. */
 type WsRouteRegistry = readonly RegisteredWsRoute[];
 
 /** What a handler answers when a socket opens: a handle to keep, or a close. */
@@ -63,6 +64,10 @@ type SeatMessageResult =
   | { ok: true }
   | { ok: false; choiceRejected: FailValidationResult };
 
+/**
+ * What a seat route's handlers do for one connected seat; THandle is the
+ * connection the open handler returns and the others receive back.
+ */
 interface InGameSeatWsHandler<
   TParams extends Record<string, unknown>,
   TInboundPlayerChoice,
@@ -93,6 +98,7 @@ type WatchMessageResult =
   | { ok: true }
   | { ok: false; stepRejected: FailValidationResult };
 
+/** What the bot-vs-bot watcher route's handlers do for the creator's socket. */
 interface InGameBotVsBotWsHandler<
   TParams extends Record<string, unknown>,
   THandle = unknown,

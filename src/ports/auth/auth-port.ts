@@ -6,6 +6,11 @@ interface AuthSuccess {
   subject: string;
 }
 
+/**
+ * Verifies an access token for a route's required permissions.
+ * An error envelope (401 expired or invalid, 403 missing permission) is the refusal;
+ * otherwise the token's subject identifies the caller.
+ */
 interface AuthPort {
   checkToken: (
     token: string,

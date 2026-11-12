@@ -18,6 +18,7 @@ const army = (id: string): Army => ({
   units: [],
 });
 
+/** One legal unit type. Overrides let a test change only the stat it cares about. */
 const unitType = (overrides: Partial<UnitType> = {}): UnitType => ({
   cost: 10,
   id: '11111111-1111-4111-8111-111111111111',
@@ -39,6 +40,7 @@ const unitType = (overrides: Partial<UnitType> = {}): UnitType => ({
   ...overrides,
 });
 
+/** One legal command card of a given initiative. The index only makes ids unique. */
 const commandCard = (
   initiative: 1 | 2 | 3 | 4,
   index: number,
@@ -69,6 +71,7 @@ const commandCard = (
   version: '1.0.0',
 });
 
+/** The same number of cards at each of the four initiatives, as army rules count them. */
 const commandSet = (perInitiative: number): CommandCard[] =>
   ([1, 2, 3, 4] as const).flatMap((initiative) =>
     Array.from({ length: perInitiative }, (_, copy) =>
@@ -121,6 +124,7 @@ const ownedArmyStorage = (armies: Record<string, Army>): OwnedArmyStorage => ({
     id: string,
   ): Promise<DataErrorSignature<Army>> => {
     const found = armies[id];
+    // An id this test never registered answers 404, as storage does for a missing army.
     if (found === undefined) {
       return { message: 'Not found', status: 404, success: false };
     }

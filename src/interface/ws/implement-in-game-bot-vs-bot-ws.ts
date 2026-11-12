@@ -29,6 +29,7 @@ import type { WsOutcome } from './ws-types';
 const toOutcome = (
   result: { ok: true } | { ok: false; stepRejected: FailValidationResult },
 ): WsOutcome => {
+  // Handlers speak stepRejected; the shared route code speaks rejection.
   if (result.ok) {
     return { ok: true };
   }
@@ -110,6 +111,8 @@ const implementInGameBotVsBotWs = <
     schema: contract.validators.inbound.requestGameSnapshot,
   });
 
+  // A watcher takes only these two message types; any other, or one whose
+  // payload fails its schema, is answered with stepRejected to that watcher alone.
   const route = implementWsRoute({
     auth: contract.auth,
     buildContext,

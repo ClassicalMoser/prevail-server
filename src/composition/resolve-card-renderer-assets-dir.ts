@@ -11,10 +11,13 @@ const resolveCardRendererAssetsDir = (
   configured: string | undefined,
   cwd: string,
 ): string => {
+  // An explicit setting wins; it is made absolute so the renderer finds it from
+  // any working directory.
   if (configured !== undefined && configured.length > 0) {
     const absolute = path.resolve(configured);
     return absolute;
   }
+  // Unset: look for card-renderer beside where the server was started.
   const fallback = path.join(cwd, 'card-renderer');
   return fallback;
 };

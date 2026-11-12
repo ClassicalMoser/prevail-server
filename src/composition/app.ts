@@ -24,6 +24,8 @@ import { resolveCardRendererAssetsDir } from './resolve-card-renderer-assets-dir
 /** Process-wide Fastify instance; configured by {@link configureApp}. */
 const app = FastifyInstance({ logger: true });
 
+// Inner layers log through this port, so every layer shares Fastify's one
+// log stream and format.
 const logger: LoggerPort = {
   info: (message: string): void => app.log.info(message),
   warn: (message: string): void => app.log.warn(message),
@@ -53,8 +55,12 @@ const assetStorage = createAssetStorage({
   client: r2Client,
 });
 
+// Built once; live games read the creator's owned armies from this same
+// storage when a game is created.
 const dbRoot: StoragePort = createDbRoot(logger, connectionString);
 
+// One verifier for both transports: HTTP and the WebSocket upgrade refuse the
+// same tokens for the same reasons.
 const auth = createAuthInfrastructure(logger, {
   domain: auth0Domain,
   audience: auth0Audience,
@@ -84,6 +90,8 @@ const useCases: UseCasesPort = createUseCasesRoot({
   gameSessionUseCases,
 });
 
+// The interface layer binds contracts to use cases; nothing is mounted on
+// Fastify until configureApp.
 const routes = createRoutes(useCases, logger);
 const wsRoutes = createWsRoutes(gameSessionUseCases, logger);
 
@@ -94,9 +102,12 @@ const wsRoutes = createWsRoutes(gameSessionUseCases, logger);
  * socket opens. Both share the Auth0 adapter created at startup.
  */
 const configureApp = async (): Promise<void> => {
+  // Registered before the routes so browser preflight is answered for them.
   await app.register(cors, createCorsOptions(clientOrigins));
 
+  // Each HTTP route checks the token its own contract requires.
   registerHttp(app, auth, routes);
+  // Socket routes check the token during the upgrade, before any game code runs.
   await registerWs(app, auth, wsRoutes);
 };
 

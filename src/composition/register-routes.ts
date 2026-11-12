@@ -22,6 +22,8 @@ const registerRoutes = (
       method: route.method,
       url: route.path,
       handler: async (fastifyRequest, fastifyReply) => {
+        // Left unparsed on purpose: the contract's own schemas validate params, query
+        // and body inside invoke, so Fastify's JSON-schema validation is not used.
         let wireRequest: WireRouteRequest = {
           params: fastifyRequest.params,
           body: fastifyRequest.body,
@@ -40,9 +42,13 @@ const registerRoutes = (
             const sentRefusal = sendRouteResult(fastifyReply, caller, route);
             return sentRefusal;
           }
+          // Handlers learn who is calling only from here, after verification; no
+          // header or body field can stand in for it.
           wireRequest = { ...wireRequest, auth: caller };
         }
 
+        // invoke parses with the contract, runs the handler, and always answers an
+        // envelope; a thrown handler is already a logged 500 by now.
         const result = await route.invoke(wireRequest);
         const sent = sendRouteResult(fastifyReply, result, route);
         return sent;

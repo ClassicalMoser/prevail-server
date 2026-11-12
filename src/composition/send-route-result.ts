@@ -39,6 +39,8 @@ const sendRouteResult = (
   }
 
   if (isDataSignature(envelope)) {
+    // Only JSON is stringified; a media body (an SVG card preview) is already the
+    // document and goes out unchanged.
     const payload =
       route.successContentType === jsonContentType
         ? JSON.stringify(envelope.data)
@@ -51,6 +53,8 @@ const sendRouteResult = (
     return sent;
   }
 
+  // TODO(composition): a success with neither data nor 204 sends nothing; I could not
+  // state what such a route should answer.
   return reply;
 };
 

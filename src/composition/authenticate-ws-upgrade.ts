@@ -24,17 +24,27 @@ const authenticateWsUpgrade = async (input: {
   route: WsRouteRegistry[number];
   close: (code: number, reason: string) => void;
 }): Promise<WsUpgradeAuth | 'closed' | 'anonymous'> => {
+  // A route whose contract needs no auth admits anyone, and its handlers get no
+  // caller.
   if (!input.route.auth.authRequired) {
     return 'anonymous';
   }
+  // A browser cannot set Authorization on a socket, so extractAccessToken also
+  // reads the access_token query value.
   const token = extractAccessToken(input.headers, input.query);
   if (token === undefined) {
+    // No token: refuse before any game is touched. 1008 (policy violation) is the
+    // socket counterpart of HTTP 401.
     input.close(1008, 'Unauthorized');
     return 'closed';
   }
+  // The same AuthPort as HTTP, so an expired token and a token missing a
+  // permission are refused the same way on both transports.
   const authResult = await input.authPort.checkToken(token, input.route.auth);
   // An error envelope has `success`; a verified caller has only a subject.
   if ('success' in authResult) {
+    // The port's own message is the close reason, so the client can tell an
+    // expired token from a missing permission.
     input.close(1008, authResult.message);
     return 'closed';
   }

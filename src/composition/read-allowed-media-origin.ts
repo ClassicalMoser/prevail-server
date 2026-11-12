@@ -13,6 +13,7 @@ const readAllowedMediaOrigin = (
   env: Readonly<Record<string, string | undefined>>,
 ): string => {
   const origin = requireEnv(env, 'ALLOWED_MEDIA_ORIGIN');
+  // Fail at startup on a typo, not later when a unit-card preview is refused.
   if (!URL.canParse(origin)) {
     throw new Error('ALLOWED_MEDIA_ORIGIN must be a valid URL origin');
   }

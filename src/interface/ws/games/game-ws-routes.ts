@@ -25,6 +25,8 @@ const createGameWsRoutes = (
   gameSessionUseCases: GameSessionUseCasesPort,
   logger: LoggerPort,
 ): WsRouteRegistry => [
+  // Each seat is its own path, so the side is fixed by the URL and a socket
+  // cannot play the other side by mistake.
   implementInGameSeatWs(
     whiteInGameWsContract,
     logger,
@@ -35,6 +37,7 @@ const createGameWsRoutes = (
     logger,
     createSeatHandlers('black', gameSessionUseCases),
   ),
+  // The creator's watcher, who steps a bot-vs-bot game.
   implementInGameBotVsBotWs(
     botVsBotInGameWsContract,
     logger,

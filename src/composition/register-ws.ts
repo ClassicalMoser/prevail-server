@@ -19,6 +19,7 @@ const registerWs = async (
   authPort: AuthPort,
   routes: WsRouteRegistry,
 ): Promise<void> => {
+  // Must come before any route declares { websocket: true }.
   await app.register(websocket);
 
   for (const route of routes) {

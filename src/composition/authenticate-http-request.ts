@@ -26,6 +26,8 @@ const authenticateHttpRequest = async (
   headers: Readonly<Record<string, string | undefined>>,
 ): Promise<{ subject: string } | ErrorSignature> => {
   const token = extractBearerToken(headers);
+  // No bearer token: 401 without asking Auth0, so an anonymous caller costs no
+  // verification.
   if (token === undefined) {
     return unauthorized;
   }

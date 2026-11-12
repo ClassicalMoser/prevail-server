@@ -23,11 +23,14 @@ const createGameRoutes = (
   gameSessionUseCases: GameSessionUseCasesPort,
   logger: LoggerPort,
 ): RouteRegistry => [
+  // The subject becomes the human seat's owner: only that subject may open
+  // that seat's socket.
   implementPostRoute(createVsBotGameContract, logger, {
     handler: withSubject(async (subject, request) =>
       gameSessionUseCases.createVsBotGame(subject, request.body),
     ),
   }),
+  // The subject is the creator, the only one who may watch and step the game.
   implementPostRoute(createBotVsBotGameContract, logger, {
     handler: withSubject(async (subject, request) =>
       gameSessionUseCases.createBotVsBotGame(subject, request.body),

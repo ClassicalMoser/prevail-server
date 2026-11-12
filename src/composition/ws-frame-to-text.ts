@@ -9,14 +9,17 @@
  * @returns The frame's text.
  */
 const wsFrameToText = (raw: Buffer | ArrayBuffer | Buffer[]): string => {
+  // An unfragmented frame arrives as one Buffer.
   if (Buffer.isBuffer(raw)) {
     const single = raw.toString('utf8');
     return single;
   }
+  // A fragmented frame arrives as its pieces, in order.
   if (Array.isArray(raw)) {
     const joined = Buffer.concat(raw).toString('utf8');
     return joined;
   }
+  // Otherwise it is an ArrayBuffer.
   const fromArrayBuffer = Buffer.from(raw).toString('utf8');
   return fromArrayBuffer;
 };

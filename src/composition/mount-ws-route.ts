@@ -22,6 +22,7 @@ const mountWsRoute = (
   route: RegisteredWsRoute,
 ): void => {
   app.get(route.path, { websocket: true }, async (socket, request) => {
+    // One string per header, so the token and any other header read as a single value.
     const headers = normalizeRequestHeaders(request.headers);
 
     const authOutcome = await authenticateWsUpgrade({
@@ -33,11 +34,16 @@ const mountWsRoute = (
       query: readWsQuery(request.query),
       route,
     });
+    // The socket is already closed with 1008; no game code runs for a refused client.
     if (authOutcome === 'closed') {
       return;
     }
+    // A route with no auth requirement has no caller; a route with one always has a
+    // verified subject by this point.
     const auth = authOutcome === 'anonymous' ? undefined : authOutcome;
 
+    // Params go on unparsed; the route checks them against the contract schema
+    // before admitting the client.
     await route.onConnection(
       { auth, headers, params: request.params },
       adaptWsSocket(socket),

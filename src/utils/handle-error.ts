@@ -25,6 +25,8 @@ const handleError = (handler: ErrorHandler): ErrorSignature => {
     const stringError = String(error);
     logger.error(`Unknown error while ${context}: ${stringError}`);
   }
+  // The message is fixed by the caller and the thrown text stays in the log, so a
+  // client never reads an internal error.
   return {
     success: false,
     message,

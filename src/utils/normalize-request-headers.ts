@@ -13,6 +13,7 @@ const normalizeRequestHeaders = (
   const result: Record<string, string | undefined> = {};
   for (const [key, value] of Object.entries(headers)) {
     if (value !== undefined) {
+      // A repeated header keeps its first value.
       result[key] = Array.isArray(value) ? value[0] : value;
     }
   }

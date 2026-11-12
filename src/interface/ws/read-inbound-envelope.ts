@@ -17,6 +17,8 @@ const isRecord = (value: unknown): value is Record<string, unknown> =>
  */
 const readInboundEnvelope = (raw: string): InboundEnvelope => {
   let value: unknown;
+  // A client can send any text; unparseable JSON is a refusal to that client,
+  // not a throw in the message loop.
   try {
     value = JSON.parse(raw);
   } catch {
@@ -26,6 +28,8 @@ const readInboundEnvelope = (raw: string): InboundEnvelope => {
     };
     return invalidJson;
   }
+  // Every message must carry a string type, so the route can pick its handler;
+  // the payload is checked later, against that type's schema.
   if (!isRecord(value) || typeof value.type !== 'string') {
     const invalid: InboundEnvelope = {
       errorReason: 'Invalid inbound message',

@@ -43,6 +43,10 @@ interface GameWatchConnection {
   send: (message: GameWatchOutbound) => void;
 }
 
+/**
+ * Live-game operations the routes call: create a game, register a socket as a
+ * seat or watcher, play a choice or step, and resync a snapshot.
+ */
 interface GameSessionUseCasesPort {
   /** Creates a human-vs-bot game; returns the new game id. */
   createVsBotGame: (

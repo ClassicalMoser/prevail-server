@@ -18,6 +18,8 @@ const tryParseGetRequest = <
   wire: WireRouteRequest,
   validators: GetRouteValidators<TParams, TQuery, TReturn>,
 ): ParseResult<GetRouteRequest<TParams, TQuery>> => {
+  // A GET has no body to parse; params and query are checked, and the headers
+  // are carried through beside them for the handler.
   const parsed = tryParseParamsQuery(wire, validators);
   if (!parsed.ok) {
     return parsed;

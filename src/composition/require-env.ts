@@ -13,6 +13,8 @@ const requireEnv = (
   name: string,
 ): string => {
   const value = env[name];
+  // An empty value counts as unset: a blank line in an env file is a mistake,
+  // not a choice.
   if (value === undefined || value === '') {
     throw new Error(`${name} is not set`);
   }

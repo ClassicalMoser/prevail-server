@@ -14,6 +14,8 @@ const missingAuth: ErrorSignature = {
  * @returns The subject string, or undefined when auth is missing.
  */
 const requireSubject = (auth: RequestAuth | undefined): string | undefined => {
+  // Absent only when the contract did not require auth or a route was mounted
+  // without it; withSubject treats that as 401 rather than trusting the caller.
   if (auth === undefined) {
     return undefined;
   }

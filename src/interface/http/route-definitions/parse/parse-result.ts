@@ -1,5 +1,6 @@
 import type { ErrorSignature } from '@ports';
 
+/** Either the typed request for a handler, or the 400 envelope to send in its place. */
 type ParseResult<T> =
   | { ok: true; value: T }
   | { ok: false; error: ErrorSignature };

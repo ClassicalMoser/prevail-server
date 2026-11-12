@@ -6,6 +6,7 @@ interface User {
   authSub: string;
 }
 
+/** Maps an Auth0 subject to a local user, so owned data hangs off a stable local id. */
 interface UserStorage {
   getByUserId: (userId: string) => Promise<DataErrorSignature<User>>;
   getByAuthSub: (authSub: string) => Promise<DataErrorSignature<User>>;

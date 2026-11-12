@@ -28,6 +28,7 @@ import type { WsOutcome } from './ws-types';
 const toOutcome = (
   result: { ok: true } | { ok: false; choiceRejected: FailValidationResult },
 ): WsOutcome => {
+  // Handlers speak choiceRejected; the shared route code speaks rejection.
   if (result.ok) {
     return { ok: true };
   }
@@ -117,6 +118,8 @@ const implementInGameSeatWs = <
     schema: contract.validators.inbound.requestGameSnapshot,
   });
 
+  // A seat takes only these two message types; any other, or one whose payload
+  // fails its schema, is answered with choiceRejected to that seat alone.
   const route = implementWsRoute({
     auth: contract.auth,
     buildContext,

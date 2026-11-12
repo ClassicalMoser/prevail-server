@@ -18,7 +18,13 @@ const commandCardNamingUnits: CommandCard = (() => {
   return found;
 })();
 
-/** A second valid command card, distinct from {@link commandCardNamingUnits}. */
+/**
+ * A second valid command card, distinct from {@link commandCardNamingUnits}.
+ *
+ * Sample cards at indices 4 and 5 have `unitSupport.count >= 1`, which the
+ * domain schema requires; most of the others do not, so index 5 is chosen to
+ * pass certification's schema check.
+ */
 const otherValidCommandCard: CommandCard = tempCommandCards[5];
 
 /**

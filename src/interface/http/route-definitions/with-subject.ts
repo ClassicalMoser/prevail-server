@@ -20,6 +20,8 @@ const withSubject =
     auth: RequestAuth | undefined,
   ): Promise<TResult | ErrorSignature> => {
     const subject = requireSubject(auth);
+    // Nobody verified: answer 401 and never call the use case, so an anonymous
+    // caller reads and writes nothing that belongs to a player.
     if (subject === undefined) {
       return missingAuth;
     }

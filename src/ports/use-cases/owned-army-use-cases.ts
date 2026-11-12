@@ -9,6 +9,10 @@ import type {
   NoContentSignature,
 } from '@ports/data-error-signature-port';
 
+/**
+ * What a signed-in player may do with their own armies; every call is scoped
+ * to the caller's auth subject.
+ */
 interface OwnedArmyUseCasesPort {
   getOwnedArmies: (ownerAuthSub: string) => Promise<DataErrorSignature<Army[]>>;
   getOwnedArmyById: (

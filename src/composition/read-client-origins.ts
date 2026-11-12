@@ -12,6 +12,8 @@ const DEFAULT_CLIENT_ORIGINS =
  * @returns One trimmed origin per entry, blanks dropped. Defaults when unset.
  */
 const readClientOrigins = (raw: string | undefined): string[] => {
+  // Entries are trimmed and blanks dropped, so a stray comma never becomes an
+  // empty origin.
   const origins = (raw ?? DEFAULT_CLIENT_ORIGINS)
     .split(',')
     .map((origin) => origin.trim())

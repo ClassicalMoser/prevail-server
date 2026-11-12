@@ -30,12 +30,15 @@ const adaptWsSocket = (
   const messageHandlers: ((raw: string) => void)[] = [];
   const closeHandlers: (() => void)[] = [];
 
+  // Frames become text once, here, so every route parses a string.
   socket.on('message', (raw) => {
     const text = wsFrameToText(raw);
     for (const handler of messageHandlers) {
       handler(text);
     }
   });
+  // A route learns of a disconnect through onClose, so the game can stop
+  // sending to this socket.
   socket.on('close', () => {
     for (const handler of closeHandlers) {
       handler();

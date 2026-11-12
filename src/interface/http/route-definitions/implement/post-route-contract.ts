@@ -10,6 +10,10 @@ import type {
   PostRoute,
 } from '@classicalmoser/prevail-contracts';
 
+/**
+ * A POST contract, plain or create-style.
+ * implementPostRoute handles both the same way; the success status comes from the contract.
+ */
 type PostRouteContract<
   TParams extends Record<string, unknown>,
   TQuery extends Record<string, unknown>,
