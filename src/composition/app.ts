@@ -2,7 +2,6 @@ import FastifyInstance from 'fastify';
 import cors from '@fastify/cors';
 import { createRoutes, createWsRoutes } from '@interface';
 import type { LoggerPort, StoragePort, UseCasesPort } from '@ports';
-import path from 'node:path';
 import process from 'node:process';
 import {
   createR2Client,
@@ -10,15 +9,17 @@ import {
   createCommandCardRendererAdapter,
   createAuthInfrastructure,
   createDbRoot,
-  createInMemoryEnginePorts,
   createUnitCardRendererAdapter,
 } from '@infrastructure';
 import { createGameSessionUseCases, createUseCasesRoot } from '@application';
-import type { GameSessionRuntime } from '@application';
-import { runDetached } from '@utils';
 import { registerHttp } from './register-http';
 import { registerWs } from './register-ws';
 import { createCorsOptions } from './cors-options';
+import { createFanoutEnginePorts } from './create-fanout-engine-ports';
+import { readAllowedMediaOrigin } from './read-allowed-media-origin';
+import { readClientOrigins } from './read-client-origins';
+import { requireEnv } from './require-env';
+import { resolveCardRendererAssetsDir } from './resolve-card-renderer-assets-dir';
 
 /** Process-wide Fastify instance; configured by {@link configureApp}. */
 const app = FastifyInstance({ logger: true });
@@ -29,68 +30,26 @@ const logger: LoggerPort = {
   error: (message: string): void => app.log.error(message),
 };
 
-const connectionString = process.env.DB_CONNECTION_STRING;
-if (!connectionString) {
-  throw new Error('DB_CONNECTION_STRING is not set');
-}
+// Startup fails here, naming the variable, if anything the server needs is unset.
+const connectionString = requireEnv(process.env, 'DB_CONNECTION_STRING');
+const auth0Domain = requireEnv(process.env, 'AUTH0_DOMAIN');
+const auth0Audience = requireEnv(process.env, 'AUTH0_AUDIENCE');
+const clientOrigins = readClientOrigins(process.env.CLIENT_ORIGINS);
+const allowedMediaOrigin = readAllowedMediaOrigin(process.env);
+const cardRendererAssetsDir = resolveCardRendererAssetsDir(
+  process.env.CARD_RENDERER_ASSETS_DIR,
+  process.cwd(),
+);
 
-const auth0Domain = process.env.AUTH0_DOMAIN;
-if (!auth0Domain) {
-  throw new Error('AUTH0_DOMAIN is not set');
-}
-
-const auth0Audience = process.env.AUTH0_AUDIENCE;
-if (!auth0Audience) {
-  throw new Error('AUTH0_AUDIENCE is not set');
-}
-
-const clientOrigins = (
-  process.env.CLIENT_ORIGINS ??
-  'http://localhost:1420,http://127.0.0.1:1420,https://app.prevailgame.com'
-)
-  .split(',')
-  .map((origin) => origin.trim())
-  .filter((origin) => origin.length > 0);
-
-if (!process.env.R2_S3_ENDPOINT) {
-  throw new Error('R2_S3_ENDPOINT is not set');
-}
-
-if (!process.env.R2_ACCESS_KEY_ID) {
-  throw new Error('R2_ACCESS_KEY_ID is not set');
-}
-
-if (!process.env.R2_SECRET_ACCESS_KEY) {
-  throw new Error('R2_SECRET_ACCESS_KEY is not set');
-}
-
-if (!process.env.R2_BUCKET) {
-  throw new Error('R2_BUCKET is not set');
-}
-
-const allowedMediaOrigin = process.env.ALLOWED_MEDIA_ORIGIN;
-if (!allowedMediaOrigin) {
-  throw new Error('ALLOWED_MEDIA_ORIGIN is not set');
-}
-
-if (!URL.canParse(allowedMediaOrigin)) {
-  throw new Error('ALLOWED_MEDIA_ORIGIN must be a valid URL origin');
-}
-
-const cardRendererAssetsDir =
-  process.env.CARD_RENDERER_ASSETS_DIR !== undefined &&
-  process.env.CARD_RENDERER_ASSETS_DIR.length > 0
-    ? path.resolve(process.env.CARD_RENDERER_ASSETS_DIR)
-    : path.join(process.cwd(), 'card-renderer');
-
+// Card images and print files live in Cloudflare R2, which speaks the S3 API.
 const r2Client = createR2Client({
-  endpoint: process.env.R2_S3_ENDPOINT,
-  accessKeyId: process.env.R2_ACCESS_KEY_ID,
-  secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
+  endpoint: requireEnv(process.env, 'R2_S3_ENDPOINT'),
+  accessKeyId: requireEnv(process.env, 'R2_ACCESS_KEY_ID'),
+  secretAccessKey: requireEnv(process.env, 'R2_SECRET_ACCESS_KEY'),
 });
 
 const assetStorage = createAssetStorage({
-  bucket: process.env.R2_BUCKET,
+  bucket: requireEnv(process.env, 'R2_BUCKET'),
   client: r2Client,
 });
 
@@ -101,28 +60,16 @@ const auth = createAuthInfrastructure(logger, {
   audience: auth0Audience,
 });
 
-const gameSessionRef: { current?: GameSessionRuntime } = {};
-
-const enginePorts = createInMemoryEnginePorts({
-  onEventAppended: (gameId, _round, event) => {
-    gameSessionRef.current?.fanoutEvent(gameId, event);
-  },
-  onRoundSnapshotSaved: (gameId, round, state) => {
-    const runtime = gameSessionRef.current;
-    if (runtime === undefined) {
-      return;
-    }
-    runDetached(async () => {
-      await runtime.fanoutRoundSnapshot(gameId, round, state);
-    });
-  },
-});
+// Live games write through engine ports that fan each write out to sockets.
+// The session does not exist until its use cases are built, so the session is
+// bound to the ports after.
+const { enginePorts, bindSession } = createFanoutEnginePorts();
 
 const gameSessionUseCases = createGameSessionUseCases({
   enginePorts,
   ownedArmyStorage: dbRoot.ownedArmyStorage,
 });
-gameSessionRef.current = gameSessionUseCases;
+bindSession(gameSessionUseCases);
 
 const useCases: UseCasesPort = createUseCasesRoot({
   storagePort: dbRoot,
