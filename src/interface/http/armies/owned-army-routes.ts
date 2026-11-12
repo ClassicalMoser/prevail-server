@@ -11,8 +11,7 @@ import {
   implementGetRoute,
   implementPostRoute,
   implementPutRoute,
-  missingAuth,
-  requireSubject,
+  withSubject,
 } from '../route-definitions';
 
 /**
@@ -32,53 +31,33 @@ const createOwnedArmyRoutes = (
   logger: LoggerPort,
 ): RouteRegistry => [
   implementGetRoute(getOwnedArmiesContract, logger, {
-    handler: async (_request, auth) => {
-      const subject = requireSubject(auth);
-      if (subject === undefined) {
-        return missingAuth;
-      }
-      return ownedArmyUseCases.getOwnedArmies(subject);
-    },
+    handler: withSubject(async (subject, _request) =>
+      ownedArmyUseCases.getOwnedArmies(subject),
+    ),
   }),
   implementGetRoute(getOwnedArmyByIdContract, logger, {
-    handler: async (request, auth) => {
-      const subject = requireSubject(auth);
-      if (subject === undefined) {
-        return missingAuth;
-      }
-      return ownedArmyUseCases.getOwnedArmyById(subject, request.params.id);
-    },
+    handler: withSubject(async (subject, request) =>
+      ownedArmyUseCases.getOwnedArmyById(subject, request.params.id),
+    ),
   }),
   implementPostRoute(createOwnedArmyContract, logger, {
-    handler: async (_request, auth) => {
-      const subject = requireSubject(auth);
-      if (subject === undefined) {
-        return missingAuth;
-      }
-      return ownedArmyUseCases.createOwnedArmy(subject);
-    },
+    handler: withSubject(async (subject, _request) =>
+      ownedArmyUseCases.createOwnedArmy(subject),
+    ),
   }),
   implementPutRoute(updateOwnedArmyContract, logger, {
-    handler: async (request, auth) => {
-      const subject = requireSubject(auth);
-      if (subject === undefined) {
-        return missingAuth;
-      }
-      return ownedArmyUseCases.updateOwnedArmy(
+    handler: withSubject(async (subject, request) =>
+      ownedArmyUseCases.updateOwnedArmy(
         subject,
         request.params.id,
         request.body,
-      );
-    },
+      ),
+    ),
   }),
   implementDeleteRoute(archiveOwnedArmyContract, logger, {
-    handler: async (request, auth) => {
-      const subject = requireSubject(auth);
-      if (subject === undefined) {
-        return missingAuth;
-      }
-      return ownedArmyUseCases.archiveOwnedArmy(subject, request.params.id);
-    },
+    handler: withSubject(async (subject, request) =>
+      ownedArmyUseCases.archiveOwnedArmy(subject, request.params.id),
+    ),
   }),
 ];
 

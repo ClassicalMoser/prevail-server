@@ -5,3 +5,4 @@ export { implementPatchRoute } from './implement/implement-patch-route';
 export { implementPostRoute } from './implement/implement-post-route';
 export { implementPutRoute } from './implement/implement-put-route';
 export { missingAuth, requireSubject } from './require-auth';
+export { withSubject } from './with-subject';

@@ -42,7 +42,8 @@ const recordedSql = (
     calls.push(call);
     const answered = typeof rows === 'function' ? rows(text) : rows;
     const produced = answered.map((row) => ({ ...row }));
-    return Promise.resolve(produced);
+    const resolved = Promise.resolve(produced);
+    return resolved;
   };
   const sql = tag as postgres.Sql; // template-tag double; Sql also owns the pool
   const recorded: RecordedSql = { calls, sql };

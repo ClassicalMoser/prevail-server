@@ -10,12 +10,15 @@
  */
 const wsFrameToText = (raw: Buffer | ArrayBuffer | Buffer[]): string => {
   if (Buffer.isBuffer(raw)) {
-    return raw.toString('utf8');
+    const single = raw.toString('utf8');
+    return single;
   }
   if (Array.isArray(raw)) {
-    return Buffer.concat(raw).toString('utf8');
+    const joined = Buffer.concat(raw).toString('utf8');
+    return joined;
   }
-  return Buffer.from(raw).toString('utf8');
+  const fromArrayBuffer = Buffer.from(raw).toString('utf8');
+  return fromArrayBuffer;
 };
 
 export { wsFrameToText };

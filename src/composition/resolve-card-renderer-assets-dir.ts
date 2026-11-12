@@ -12,9 +12,11 @@ const resolveCardRendererAssetsDir = (
   cwd: string,
 ): string => {
   if (configured !== undefined && configured.length > 0) {
-    return path.resolve(configured);
+    const absolute = path.resolve(configured);
+    return absolute;
   }
-  return path.join(cwd, 'card-renderer');
+  const fallback = path.join(cwd, 'card-renderer');
+  return fallback;
 };
 
 export { resolveCardRendererAssetsDir };

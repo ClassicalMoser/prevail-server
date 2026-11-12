@@ -87,7 +87,8 @@ const implementInGameBotVsBotWs = <
     emptyPayloadAllowed: true,
     run: async (_data, context, connectionHandle) => {
       const result = await handlers.onStep(context, connectionHandle);
-      return toOutcome(result);
+      const outcome = toOutcome(result);
+      return outcome;
     },
     schema: contract.validators.inbound.step,
   });
@@ -103,7 +104,8 @@ const implementInGameBotVsBotWs = <
         context,
         connectionHandle,
       );
-      return toOutcome(result);
+      const outcome = toOutcome(result);
+      return outcome;
     },
     schema: contract.validators.inbound.requestGameSnapshot,
   });

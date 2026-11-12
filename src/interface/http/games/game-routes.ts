@@ -7,11 +7,7 @@ import type {
   LoggerPort,
   RouteRegistry,
 } from '@ports';
-import {
-  implementPostRoute,
-  missingAuth,
-  requireSubject,
-} from '../route-definitions';
+import { implementPostRoute, withSubject } from '../route-definitions';
 
 /**
  * HTTP routes for live game sessions.
@@ -28,22 +24,14 @@ const createGameRoutes = (
   logger: LoggerPort,
 ): RouteRegistry => [
   implementPostRoute(createVsBotGameContract, logger, {
-    handler: async (request, auth) => {
-      const subject = requireSubject(auth);
-      if (subject === undefined) {
-        return missingAuth;
-      }
-      return gameSessionUseCases.createVsBotGame(subject, request.body);
-    },
+    handler: withSubject(async (subject, request) =>
+      gameSessionUseCases.createVsBotGame(subject, request.body),
+    ),
   }),
   implementPostRoute(createBotVsBotGameContract, logger, {
-    handler: async (request, auth) => {
-      const subject = requireSubject(auth);
-      if (subject === undefined) {
-        return missingAuth;
-      }
-      return gameSessionUseCases.createBotVsBotGame(subject, request.body);
-    },
+    handler: withSubject(async (subject, request) =>
+      gameSessionUseCases.createBotVsBotGame(subject, request.body),
+    ),
   }),
 ];
 

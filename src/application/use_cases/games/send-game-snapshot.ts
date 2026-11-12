@@ -29,7 +29,8 @@ const sendGameSnapshot = async (
     access.data.gameMode,
   );
   if (authoritative === undefined) {
-    return gameNotFound();
+    const missing = gameNotFound();
+    return missing;
   }
 
   // The snapshot is projected to the seat's view, so the opponent's hand

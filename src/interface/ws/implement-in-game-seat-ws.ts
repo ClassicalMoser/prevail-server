@@ -94,7 +94,8 @@ const implementInGameSeatWs = <
         choice,
         connectionHandle,
       );
-      return toOutcome(result);
+      const outcome = toOutcome(result);
+      return outcome;
     },
     schema: contract.validators.inbound.playerChoice,
   });
@@ -110,7 +111,8 @@ const implementInGameSeatWs = <
         context,
         connectionHandle,
       );
-      return toOutcome(result);
+      const outcome = toOutcome(result);
+      return outcome;
     },
     schema: contract.validators.inbound.requestGameSnapshot,
   });

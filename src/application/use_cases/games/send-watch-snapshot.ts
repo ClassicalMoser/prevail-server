@@ -33,7 +33,8 @@ const sendWatchSnapshot = async (
         access.data.gameMode,
       );
       if (game === undefined) {
-        return gameNotFound();
+        const missing = gameNotFound();
+        return missing;
       }
       connection.send({ payload: game.gameState, type: 'gameSnapshot' });
       return { data: undefined, success: true };

@@ -45,7 +45,8 @@ const registerSeatConnection = async (
         meta.gameMode,
       );
       if (afterBots === undefined) {
-        return gameNotFound();
+        const missing = gameNotFound();
+        return missing;
       }
       // Join the fan-out set before sending, inside the queue, so no event
       // lands between the snapshot and the first streamed message.
