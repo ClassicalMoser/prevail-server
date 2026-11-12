@@ -39,8 +39,22 @@ These are the cleanup's own backlog, in the order [`AUDIT_PROCESS.md`](./AUDIT_P
 8. Done: suites that defined a no-op `LoggerPort` stub now use `recordingLogger` from `@testing`. `handle-error.test.ts` keeps its own, because it asserts on the calls.
 9. **Commentary density** is under 20% in `composition`, `ports` and `testing`.
 
+## Open: marks in the code, for the author's walk
+
+Each is a `TODO(...)` where it stands; this only indexes them.
+
+- `composition/create-fanout-engine-ports.ts` `TODO(wrong)`: a failed round-snapshot send is swallowed with no log line.
+- `composition/send-route-result.ts` `TODO(composition)`: a success with neither data nor a 204 status sends nothing.
+- `application/use_cases/games/create-vs-bot-game.ts` `TODO(misleading)`: the human's and the bot's missing army are worded differently, and differ from bot-vs-bot.
+- `application/use_cases/games/get-seat-subject.ts` `TODO(misleading)`: `get` answers `undefined`, which DESIGN calls `find`; the name is the port's.
+- `application/use_cases/armies/owned-army-use-cases.ts` `TODO(composition)`: do archived armies stay referenced by past games?
+- `infrastructure/database/adapters/certify-with-latest-rules.ts` `TODO(wrong)`: no rules version is a silent 500.
+- `infrastructure/database/adapters/owned-army/get-owned-armies.ts` `TODO(composition)`: one row query and four hydrate queries per army.
+- `infrastructure/database/adapters/owned-army/hydrate-army.ts` `TODO(misleading)`: the JSDoc says "latest certified" cards; the by-ids queries filter on no certification.
+- `infrastructure/database/queries/command-card/read/get-latest-rules-version-id-query.ts` `TODO(composition)`: rules versions are not command-card data.
+
 ## Deferred
 
-- A `pnpm check:commentary` script like rules has.
+- A `pnpm check:commentary` script like rules has. A rough in-body count of `//` lines over code lines, run by hand, gives 0–4% by directory (`ports` and `testing` lowest); the pass above added about 580 comment lines but the layers are still thin by that measure.
 - A self-proof check that no spec reaches its own subject.
 - Spec titles and setup, once structure holds still.
