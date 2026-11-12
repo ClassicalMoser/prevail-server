@@ -21,10 +21,20 @@ Lint is Oxlint. The config is [`oxlint.config.ts`](./oxlint.config.ts), built fr
 
 Rebuild sibling packages (`pnpm build` in `prevail-rules` and `prevail-contracts`) after those change, then typecheck this repo.
 
+## Changing behaviour
+
+A change to what the server does starts with a spec that fails, in its own commit, and then the fix in the next. A change to a route's shape, a socket message, or a status a client reads is a contracts change first; describe it and ask before writing either.
+
+Before deleting a function nothing calls, find who should be calling it: a caller-less function is usually the twin of a hand-rolled copy elsewhere.
+
+## Commits
+
+One kind of change per commit. Subjects follow [Conventional Commits](https://www.conventionalcommits.org): a type, an optional scope in parentheses, an optional `!` for a breaking change, then a colon, a space and a description. The types are `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `revert`. A subject has at most one scope.
+
 ## Standards
 
 - [`STYLE.md`](./STYLE.md) — functions, files, commentary, tests
-- [`DESIGN.md`](./DESIGN.md) — rules kernel, envelopes, layers
-- [`src/README.md`](./src/README.md) — what each layer is for
+- [`DESIGN.md`](./DESIGN.md) — rules kernel, envelopes, live games
+- [`LAYERS.md`](./LAYERS.md) — what each layer is for
 - [`boundaries.ts`](./boundaries.ts) — which package may import which
-- [`docs/adr/README.md`](./docs/adr/README.md) — live-game decisions
+- [`AUDIT_PROCESS.md`](./AUDIT_PROCESS.md) — bringing a scope back in line

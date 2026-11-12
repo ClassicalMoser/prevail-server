@@ -8,9 +8,7 @@ A Node.js / Fastify backend for **Prevail: Ancient Battles**. It exposes HTTP AP
 
 - **Serves contract-defined HTTP routes** from `@classicalmoser/prevail-contracts`
 - **Hosts live games** via contract-defined WebSockets (`@fastify/websocket`) with an event-stream + round-reconcile protocol
-- **Creates human-vs-bot games** at `POST /games/vs-bot` (in-memory engine ports for now)
-
-Architecture decisions and known debt for the live-game slice: [`docs/adr/`](./docs/adr/README.md).
+- **Creates human-vs-bot and bot-vs-bot games** (`POST /games/vs-bot`, `POST /games/bot-vs-bot`), hosted in memory, with the bot from `prevail-rules/bot`
 
 - **Persists** command cards, unit cards, and player-owned armies in Postgres
 - **Authenticates** Auth0 bearer tokens and maps `sub` → local `users`
@@ -35,7 +33,7 @@ src/
 └── testing/         # Shared test helpers (alias reserved; grow as needed)
 ```
 
-Layer import rules are enforced by `boundaries.ts` + oxlint. See [`src/README.md`](./src/README.md) for architecture detail.
+Layer import rules are enforced by `boundaries.ts` + oxlint. See [`LAYERS.md`](./LAYERS.md) for what each layer is for and [`DESIGN.md`](./DESIGN.md) for how they fit.
 
 ## Development
 
@@ -93,10 +91,12 @@ Use a `.env` file with `node --env-file=.env` (see `pnpm start` / `pnpm dev`).
 ## Documentation
 
 - [`STYLE.md`](./STYLE.md) — functions, files, commentary, tests
-- [`DESIGN.md`](./DESIGN.md) — rules kernel, envelopes, layers
+- [`DESIGN.md`](./DESIGN.md) — rules kernel, envelopes, live games
 - [`CONTRIBUTING.md`](./CONTRIBUTING.md) — scripts and checks
 - [`AGENTS.md`](./AGENTS.md) — pointer for agents
-- [`src/README.md`](./src/README.md) — Hexagonal architecture and request flow
+- [`LAYERS.md`](./LAYERS.md) — What each layer is for
+- [`AUDIT_PROCESS.md`](./AUDIT_PROCESS.md) — Bringing a scope back in line
+- [`ASSESSMENT-2026-11-11.md`](./ASSESSMENT-2026-11-11.md) — What is known to be open
 - [`src/domain/README.md`](./src/domain/README.md) — Server domain + prevail-rules
 - [`src/ports/README.md`](./src/ports/README.md) — Port conventions and result envelopes
 - [`src/interface/http/README.md`](./src/interface/http/README.md) — Contract-driven HTTP pattern

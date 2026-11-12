@@ -53,8 +53,8 @@ domain/
 ## Related Documentation
 
 - [`../../STYLE.md`](../../STYLE.md) — functions, files, commentary, tests
-- [`../../DESIGN.md`](../../DESIGN.md) — rules kernel, envelopes, layers
-- [`../README.md`](../README.md) — Hexagonal overview
+- [`../../DESIGN.md`](../../DESIGN.md) — rules kernel, envelopes, live games
+- [`../../LAYERS.md`](../../LAYERS.md) — Hexagonal overview
 - [`../application/README.md`](../application/README.md) — Application wraps domain
 - [prevail-rules `src/domain/README.md`](../../../prevail-rules/src/domain/README.md) — Shared game domain
 - [Root `README.md`](../../README.md) — Setup

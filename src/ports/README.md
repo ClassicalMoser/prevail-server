@@ -73,7 +73,7 @@ interface RequestAuth {
 ## Related Documentation
 
 - [`../../STYLE.md`](../../STYLE.md) — functions, files, commentary, tests
-- [`../../DESIGN.md`](../../DESIGN.md) — rules kernel, envelopes, layers
-- [`../README.md`](../README.md) — Architecture overview
+- [`../../DESIGN.md`](../../DESIGN.md) — rules kernel, envelopes, live games
+- [`../../LAYERS.md`](../../LAYERS.md) — Architecture overview
 - [`../application/README.md`](../application/README.md) — Implementing use-case ports
 - [`../infrastructure/README.md`](../infrastructure/README.md) — Implementing outbound ports

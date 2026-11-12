@@ -5,7 +5,7 @@ import type { GetSeatChoiceInput } from './get-seat-choice';
 /**
  * The rules bot's choice for a seat, or undefined when the bot throws.
  *
- * Callers ask only for a seat that owes, so a throw is a bug (ADR 0003). It is
+ * Callers ask only for a seat that owes, so a throw is a bug (DESIGN.md, "The bot"). It is
  * logged here, and the caller stops the bot instead of failing the human's
  * request or the step that asked.
  *

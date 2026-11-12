@@ -91,7 +91,7 @@ How to write a test, and where the file lives, is [`../../STYLE.md`](../../STYLE
 ## Related Documentation
 
 - [`../../STYLE.md`](../../STYLE.md) — functions, files, commentary, tests
-- [`../../DESIGN.md`](../../DESIGN.md) — rules kernel, envelopes, layers
-- [`../README.md`](../README.md) — Architecture
+- [`../../DESIGN.md`](../../DESIGN.md) — rules kernel, envelopes, live games
+- [`../../LAYERS.md`](../../LAYERS.md) — Architecture
 - [`../ports/README.md`](../ports/README.md) — Port and envelope shapes
 - [`../infrastructure/README.md`](../infrastructure/README.md) — Adapters use cases call

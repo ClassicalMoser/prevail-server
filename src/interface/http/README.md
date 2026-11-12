@@ -89,7 +89,7 @@ Identity for updates is the path `:id` only. Empty create bodies must be JSON `{
 ## Related Documentation
 
 - [`../../../STYLE.md`](../../../STYLE.md) — functions, files, commentary, tests
-- [`../../../DESIGN.md`](../../../DESIGN.md) — rules kernel, envelopes, layers
-- [`../README.md`](../README.md) — Architecture and request flow
+- [`../../../DESIGN.md`](../../../DESIGN.md) — rules kernel, envelopes, live games
+- [`../../../LAYERS.md`](../../../LAYERS.md) — Architecture and request flow
 - [`../ports/README.md`](../ports/README.md) — `WireRouteRequest`, handlers, envelopes
 - Contract sources: `prevail-contracts/src/contracts/http/`

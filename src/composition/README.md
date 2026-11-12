@@ -41,8 +41,8 @@ Fastify is a **driving adapter host**, not a plugin architecture for domain logi
 ## Related Documentation
 
 - [`../../STYLE.md`](../../STYLE.md) — functions, files, commentary, tests
-- [`../../DESIGN.md`](../../DESIGN.md) — rules kernel, envelopes, layers
-- [`../README.md`](../README.md) — Full request flow
+- [`../../DESIGN.md`](../../DESIGN.md) — rules kernel, envelopes, live games
+- [`../../LAYERS.md`](../../LAYERS.md) — Full request flow
 - [`../interface/http/README.md`](../interface/http/README.md) — HTTP route implementation
 - [`../interface/ws/README.md`](../interface/ws/README.md) — Live game WS protocol
 - [Root `README.md`](../../README.md) — Environment variables

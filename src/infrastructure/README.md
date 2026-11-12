@@ -66,8 +66,8 @@ infrastructure/
 ## Related Documentation
 
 - [`../../STYLE.md`](../../STYLE.md) — functions, files, commentary, tests
-- [`../../DESIGN.md`](../../DESIGN.md) — rules kernel, envelopes, layers
-- [`../README.md`](../README.md) — Architecture and soft-coupling notes
+- [`../../DESIGN.md`](../../DESIGN.md) — rules kernel, envelopes, live games
+- [`../../LAYERS.md`](../../LAYERS.md) — Architecture and soft-coupling notes
 - [`../ports/README.md`](../ports/README.md) — Interfaces to implement
 - [Root `README.md`](../../README.md) — Env vars for DB / Auth0 / R2 / Typst
 - [`../../db/README.md`](../../db/README.md) — SQL migrations

@@ -68,7 +68,7 @@ Example: `wss://host/ws/games/id/:gameId/white?access_token=<jwt>`
 ## Related
 
 - [`../../../STYLE.md`](../../../STYLE.md) — functions, files, commentary, tests
-- [`../../../DESIGN.md`](../../../DESIGN.md) — rules kernel, envelopes, layers
+- [`../../../DESIGN.md`](../../../DESIGN.md) — rules kernel, envelopes, live games
 - [`../http/README.md`](../http/README.md) — HTTP twin pattern
-- [`../../../docs/adr/README.md`](../../../docs/adr/README.md) — Protocol / hosting / vs-bot ADRs
+- [`../../../DESIGN.md`](../../../DESIGN.md) — The stream, seats, watchers and the queue
 - Contract sources: `prevail-contracts/src/contracts/ws/` and `.../http/games/create-vs-bot-game.ts`
