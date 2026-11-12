@@ -11,11 +11,14 @@ pnpm typecheck
 pnpm lint
 pnpm fmt
 pnpm validate
+pnpm check:commentary
 ```
 
 Lint is Oxlint. The config is [`oxlint.config.ts`](./oxlint.config.ts), built from `classicalmoser-oxlint-config`, with import boundaries from [`boundaries.ts`](./boundaries.ts) and kebab-case filenames. Format is Oxfmt. In an editor that type-checks as you type and applies fixes on save, a lot of this happens before you notice it. Agents and other setups do not share those defaults. Run `pnpm validate` yourself.
 
-`pnpm validate` is lint, format, and typecheck. Run it often, and before a commit.
+`pnpm validate` is lint, format, and typecheck (the source and `scripts/`). Run it often, and before a commit.
+
+`pnpm check:commentary` reports in-body commentary density per layer, source and tests apart. It cannot fail, and it is not a target to hit: padding a body raises the number and makes the file worse. Run it to see where a layer stands before and after working on it.
 
 `pnpm lint` does not rewrite files. `pnpm fmt` does. A circular import, or an import that names a module which does not exist, has to be fixed by hand.
 

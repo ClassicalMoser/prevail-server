@@ -43,6 +43,7 @@
   "exclude": [
     "node_modules",
     "dist",
+    "scripts/**",
     "oxlint/**",
     "oxlint.config.ts",
     "oxfmt.config.ts"

@@ -26,7 +26,7 @@ These are the cleanup's own backlog, in the order [`AUDIT_PROCESS.md`](./AUDIT_P
 1. **Twins.**
    - Done: the seat and bot-vs-bot socket implementations now share `implementWsRoute` and its helpers (`findAdmittedConnection`, `openWsConnection`, `routeWsMessage`, `runWsMessage`, `sendRejection`). Each keeps only its own message table.
    - Done: the two create use cases share `loadOwnedArmy`, `buildNewGame` and `persistNewGame` (`composable/game-session/create/`). They still word a missing army differently; vs-bot carries a `TODO(misleading)` for the author to settle.
-   - Their suites (`create-*-game.test.ts`) boot `createGameSessionUseCases` to reach the use case, which STYLE says not to. Rewrite them to call the function with `gameSessionStore`.
+   - Done: those suites, and the seat and watcher suites, now call the use case directly with `liveGameStore` / `hostedBotVsBotGame`. Only `game-session-use-cases.test.ts` builds the factory, as it should.
    - The seat and watcher versions of register, unregister, and send-snapshot repeat one pattern.
 2. **Factory closures that hold the implementations.** Done for `createOwnedArmyStorage`: each operation is its own file under `adapters/owned-army/`, wrapped in `storageOp` once. Its old suite covered only the update rollback; reads, create and archive had no test until the split. Likewise the command-card and unit-card adapters (`adapters/command-card/`, `adapters/unit-card/`), with `certifyWithLatestRules` shared and `mapUnitCardVersions` added beside its command-card twin.
    - `getLatestRulesVersionIdQuery` sits under the command-card queries but unit cards use it too (`TODO(composition)`). A missing rules version is a silent 500 (`TODO(wrong)` in `certifyWithLatestRules`).
@@ -55,6 +55,6 @@ Each is a `TODO(...)` where it stands; this only indexes them.
 
 ## Deferred
 
-- A `pnpm check:commentary` script like rules has. A rough in-body count of `//` lines over code lines, run by hand, gives 0–4% by directory (`ports` and `testing` lowest); the pass above added about 580 comment lines but the layers are still thin by that measure.
-- A self-proof check that no spec reaches its own subject.
+- Commentary is still thin by `pnpm check:commentary` (the rules script, ported): source 9% overall (application 11%, infrastructure 5%, interface 9%, composition 18%), specs about 0%. `testing` is not a boundary, so it is not measured. Rules' own target is 25%.
+- A self-proof check that no spec reaches its own subject (rules has `check:selfProof`; not ported).
 - Spec titles and setup, once structure holds still.

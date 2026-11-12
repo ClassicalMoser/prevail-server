@@ -1,0 +1,11 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "lib": ["ESNext"],
+    "rootDir": "..",
+    "types": ["node", "vitest/globals"]
+  },
+  "include": ["./**/*.ts", "../boundaries.ts"],
+  "exclude": []
+}
