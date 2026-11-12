@@ -1,6 +1,5 @@
-import type { LoggerPort } from '@ports';
+import type { LoggerPort, WsOpenResult } from '@ports';
 import { handleError } from '@utils';
-import type { WsOpenResult } from './ws-types';
 
 /**
  * Run a route's open handler, turning a throw into an internal-error close.

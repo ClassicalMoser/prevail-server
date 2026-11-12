@@ -3,6 +3,7 @@ import type {
   RegisteredWsRoute,
   RequestAuth,
   WireWsConnection,
+  WsOpenResult,
 } from '@ports';
 import type { RouteAuth } from '@classicalmoser/prevail-contracts';
 import type { InboundHandler } from './create-inbound-handler';
@@ -10,12 +11,7 @@ import type { ParamsSchema } from './find-admitted-connection';
 import { findAdmittedConnection } from './find-admitted-connection';
 import { openWsConnection } from './open-ws-connection';
 import { routeWsMessage } from './route-ws-message';
-import type {
-  RejectionType,
-  SendJson,
-  WsOpenResult,
-  WsSocket,
-} from './ws-types';
+import type { RejectionType, SendJson, WsSocket } from './ws-types';
 
 /**
  * Build one mountable WebSocket route.

@@ -10,11 +10,6 @@ type WsSocket = Parameters<RegisteredWsRoute['onConnection']>[1];
 /** What a handler answers after a client message: done, or why it was refused. */
 type WsOutcome = { ok: true } | { ok: false; rejection: FailValidationResult };
 
-/** What a handler answers when a socket opens: a handle to keep, or a close. */
-type WsOpenResult<THandle> =
-  | { ok: true; connectionHandle: THandle }
-  | { ok: false; closeCode?: number; reason: string };
-
 /** The message type that tells a client its message did nothing. */
 type RejectionType = 'choiceRejected' | 'stepRejected';
 
@@ -28,7 +23,6 @@ export type {
   AdmittedConnection,
   RejectionType,
   SendJson,
-  WsOpenResult,
   WsOutcome,
   WsSocket,
 };

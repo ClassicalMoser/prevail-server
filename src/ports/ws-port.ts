@@ -53,6 +53,16 @@ interface RegisteredWsRoute {
 
 type WsRouteRegistry = readonly RegisteredWsRoute[];
 
+/** What a handler answers when a socket opens: a handle to keep, or a close. */
+type WsOpenResult<THandle> =
+  | { ok: true; connectionHandle: THandle }
+  | { ok: false; closeCode?: number; reason: string };
+
+/** Result of a seat message: done, or the `choiceRejected` payload to send. */
+type SeatMessageResult =
+  | { ok: true }
+  | { ok: false; choiceRejected: FailValidationResult };
+
 interface InGameSeatWsHandler<
   TParams extends Record<string, unknown>,
   TInboundPlayerChoice,
@@ -61,24 +71,17 @@ interface InGameSeatWsHandler<
   onOpen: (
     context: WsSeatConnectionContext<TParams>,
     send: (message: unknown) => void,
-  ) => Promise<
-    | { ok: true; connectionHandle: THandle }
-    | { ok: false; closeCode?: number; reason: string }
-  >;
+  ) => Promise<WsOpenResult<THandle>>;
   onPlayerChoice: (
     context: WsSeatConnectionContext<TParams>,
     choice: TInboundPlayerChoice,
     connectionHandle: THandle,
-  ) => Promise<
-    { ok: true } | { ok: false; choiceRejected: FailValidationResult }
-  >;
+  ) => Promise<SeatMessageResult>;
   /** Client asked for the current seat-visible game (resync). */
   onRequestGameSnapshot: (
     context: WsSeatConnectionContext<TParams>,
     connectionHandle: THandle,
-  ) => Promise<
-    { ok: true } | { ok: false; choiceRejected: FailValidationResult }
-  >;
+  ) => Promise<SeatMessageResult>;
   onClose: (
     context: WsSeatConnectionContext<TParams>,
     connectionHandle: THandle,
@@ -97,10 +100,7 @@ interface InGameBotVsBotWsHandler<
   onOpen: (
     context: WsWatchConnectionContext<TParams>,
     send: (message: unknown) => void,
-  ) => Promise<
-    | { ok: true; connectionHandle: THandle }
-    | { ok: false; closeCode?: number; reason: string }
-  >;
+  ) => Promise<WsOpenResult<THandle>>;
   /** Watcher asked to play one bot choice. */
   onStep: (
     context: WsWatchConnectionContext<TParams>,
@@ -132,7 +132,10 @@ export type {
   InGameBotVsBotWsHandler,
   InGameSeatWsHandler,
   RegisteredWsRoute,
+  SeatMessageResult,
+  WatchMessageResult,
   WireWsConnection,
+  WsOpenResult,
   WsRouteRegistry,
   WsSeatConnectionContext,
   WsWatchConnectionContext,

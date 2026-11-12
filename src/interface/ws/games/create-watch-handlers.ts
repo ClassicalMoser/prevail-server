@@ -5,20 +5,10 @@ import type {
   GameWatchConnection,
   GameWatchOutbound,
   InGameBotVsBotWsHandler,
+  WatchMessageResult,
+  WsOpenResult,
   WsWatchConnectionContext,
 } from '@ports';
-
-type WatchOpenResult = Awaited<
-  ReturnType<
-    InGameBotVsBotWsHandler<GameWsParams, GameWatchConnection>['onOpen']
-  >
->;
-
-type WatchMessageResult = Awaited<
-  ReturnType<
-    InGameBotVsBotWsHandler<GameWsParams, GameWatchConnection>['onStep']
-  >
->;
 
 /**
  * A use-case envelope as a watcher message result.
@@ -59,7 +49,7 @@ const createWatchHandlers = (
   onOpen: async (
     context: WsWatchConnectionContext<GameWsParams>,
     send: (message: unknown) => void,
-  ): Promise<WatchOpenResult> => {
+  ): Promise<WsOpenResult<GameWatchConnection>> => {
     const connection: GameWatchConnection = {
       gameId: context.params.gameId,
       send: (message: GameWatchOutbound) => {
