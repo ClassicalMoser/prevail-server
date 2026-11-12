@@ -20,10 +20,13 @@ const requireBotVsBotSession = (
   gameId: string,
 ): DataErrorSignature<BotVsBotSessionMeta> => {
   const meta = store.metaByGameId.get(gameId);
+  // A vs-bot id is answered as not found, so a seat game cannot be stepped or
+  // read as a watcher game.
   if (meta === undefined || meta.kind !== 'botVsBot') {
     const missing: DataErrorSignature<BotVsBotSessionMeta> = gameNotFound();
     return missing;
   }
+  // Policy: only the creator may watch and step a bot-vs-bot game.
   if (meta.creatorSubject !== subject) {
     const forbidden: DataErrorSignature<BotVsBotSessionMeta> = {
       message: 'Game not assigned to this player',

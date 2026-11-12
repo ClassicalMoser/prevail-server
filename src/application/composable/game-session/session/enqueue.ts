@@ -16,6 +16,8 @@ const enqueue = async <T>(
   gameId: string,
   work: () => Promise<T>,
 ): Promise<T> => {
+  // One chain per game: this job starts only when the one before it has finished,
+  // so no two choices validate against the same stale state.
   const previous = store.submitQueues.get(gameId) ?? Promise.resolve();
   const run = (async (): Promise<T> => {
     try {
@@ -26,6 +28,7 @@ const enqueue = async <T>(
     const result = await work();
     return result;
   })();
+  // The next job for this game waits on this one.
   store.submitQueues.set(gameId, run);
   return run;
 };

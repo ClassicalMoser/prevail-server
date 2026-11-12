@@ -15,6 +15,7 @@ const getConnections = (
   store: GameSessionStore,
   gameId: string,
 ): Set<GameSeatConnection> => {
+  // Lazy creation lets the engine hook fan out for a game no seat has opened yet.
   let set = store.connections.get(gameId);
   if (set === undefined) {
     set = new Set();

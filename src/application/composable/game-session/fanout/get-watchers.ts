@@ -15,6 +15,7 @@ const getWatchers = (
   store: GameSessionStore,
   gameId: string,
 ): Set<GameWatchConnection> => {
+  // Lazy creation lets the engine hook fan out for a game no watcher has opened yet.
   let set = store.watchers.get(gameId);
   if (set === undefined) {
     set = new Set();

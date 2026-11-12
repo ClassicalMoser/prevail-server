@@ -18,6 +18,7 @@ const sendWatchSnapshot = async (
   store: GameSessionStore,
   connection: GameWatchConnection,
 ): Promise<DataErrorSignature<void>> => {
+  // A watcher asks for a resync when its client suspects drift.
   const access = requireRegisteredWatcher(store, connection);
   if (!access.success) {
     return access;

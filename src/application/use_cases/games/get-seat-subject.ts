@@ -18,6 +18,7 @@ const getSeatSubject = (
   gameId: string,
   side: PlayerSide,
 ): string | undefined => {
+  // Only a vs-bot game has seats; a bot-vs-bot game has none to name.
   const meta = store.metaByGameId.get(gameId);
   if (meta === undefined || meta.kind !== 'vsBot') {
     return undefined;

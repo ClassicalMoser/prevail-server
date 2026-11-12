@@ -30,11 +30,13 @@ const stepBotVsBotGame = async (
   store: GameSessionStore,
   connection: GameWatchConnection,
 ): Promise<DataErrorSignature<void>> => {
+  // Only the creator, on a socket that passed registration, may step the game.
   const access = requireRegisteredWatcher(store, connection);
   if (!access.success) {
     return access;
   }
 
+  // Queued so a step never overlaps a snapshot or another step.
   const outcome = await enqueue(store, connection.gameId, async () => {
     const played = await playBotVsBotChoice(store, connection.gameId);
     return played;
@@ -42,6 +44,8 @@ const stepBotVsBotGame = async (
   if (outcome === 'played') {
     return { data: undefined, success: true };
   }
+  // A step that played nothing is refused with the reason (over, stuck, gone) so
+  // the watcher is told and its client keeps its state.
   const refusal = refusals[outcome];
   const refused: DataErrorSignature<void> = { ...refusal, success: false };
   return refused;

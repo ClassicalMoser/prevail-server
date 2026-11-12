@@ -18,6 +18,7 @@ import { submitPlayerChoice } from './submit-player-choice';
 import { unregisterSeatConnection } from './unregister-seat-connection';
 import { unregisterWatchConnection } from './unregister-watch-connection';
 
+/** What the session API is built from: the engine's storage and the army lists. */
 interface GameSessionUseCasesDeps {
   enginePorts: EnginePorts;
   ownedArmyStorage: OwnedArmyStorage;
@@ -48,6 +49,8 @@ interface GameSessionRuntime extends GameSessionUseCasesPort {
 const createGameSessionUseCases = (
   deps: GameSessionUseCasesDeps,
 ): GameSessionRuntime => {
+  // The one mutable store for this process: games are not persisted, and a
+  // restart drops them.
   const store: GameSessionStore = {
     botTurnGapMs: deps.botTurnGapMs ?? DEFAULT_BOT_TURN_GAP_MS,
     connections: new Map(),

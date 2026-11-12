@@ -18,10 +18,13 @@ const requireRegisteredSeat = (
   store: GameSessionStore,
   connection: GameSeatConnection,
 ): DataErrorSignature<VsBotSessionMeta> => {
+  // Same ownership check as at open: the human may speak only for their own seat.
   const access = requireVsBotSeat(store, connection);
   if (!access.success) {
     return access;
   }
+  // A socket that never passed registration is not in the set; refuse it so a
+  // message cannot skip the open-time check.
   if (!getConnections(store, connection.gameId).has(connection)) {
     const unregistered: DataErrorSignature<VsBotSessionMeta> = {
       message: 'Seat connection is not registered',

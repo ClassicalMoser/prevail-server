@@ -27,6 +27,7 @@ const createBotVsBotGame = async (
   body: CreateBotVsBotGameBody,
 ): Promise<DataErrorSignature<string>> => {
   // Both armies must already belong to the creating subject.
+  // The creator supplies both armies until rules builds a bot army.
   const white = await loadOwnedArmy(store, subject, body.whiteArmyId, (f) =>
     unownedSideFailure(f, 'White'),
   );

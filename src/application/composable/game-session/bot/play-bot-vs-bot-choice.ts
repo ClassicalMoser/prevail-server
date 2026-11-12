@@ -33,6 +33,7 @@ const playBotVsBotChoice = async (
   if (meta === undefined || meta.kind !== 'botVsBot') {
     return 'missing';
   }
+  // After a bot failure the game stays stopped, so a later step plays nothing.
   if (meta.stuck) {
     return 'stuck';
   }
@@ -46,6 +47,8 @@ const playBotVsBotChoice = async (
     return opened.status;
   }
 
+  // Options from the authoritative state name which seat owes, so the bot plays
+  // for whichever side the prompt belongs to.
   const options = getLegalPlayerChoiceOptions(opened.game.gameState);
   const choice =
     options === null
@@ -61,6 +64,8 @@ const playBotVsBotChoice = async (
     return 'stuck';
   }
 
+  // The bot's choice goes through the same engine check as a human's; a refusal is
+  // a bug in rules or this server, so the game is marked stuck.
   const submitted = await store.runner.handlePlayerChoiceSubmission(
     gameId,
     meta.gameMode,

@@ -23,6 +23,7 @@ const fanoutRoundSnapshot = async (input: {
   gameState: GameState;
 }): Promise<void> => {
   const { store, gameId } = input;
+  // A round saved for a game this process does not host has nobody to tell.
   const meta = store.metaByGameId.get(gameId);
   if (meta === undefined) {
     return;
@@ -35,6 +36,8 @@ const fanoutRoundSnapshot = async (input: {
   if (authoritative === undefined) {
     return;
   }
+  // Each seat gets its own projection, so the opponent's chosen card stays hidden
+  // in the round snapshot that reconciles a client's drift.
   for (const side of ['white', 'black'] as const) {
     const visibility = side === 'white' ? 'whiteSeen' : 'blackSeen';
     sendToSeat({
@@ -50,6 +53,7 @@ const fanoutRoundSnapshot = async (input: {
       store,
     });
   }
+  // A watcher has no hand to hide, so it gets the authoritative state.
   sendToWatchers({
     gameId,
     message: { payload: authoritative.gameState, type: 'gameSnapshot' },

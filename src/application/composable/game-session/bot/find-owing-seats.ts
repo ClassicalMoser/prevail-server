@@ -18,6 +18,7 @@ import type {
 const findOwingSeats = (
   options: LegalPlayerChoiceOptions,
 ): readonly PlayerSide[] => {
+  // One side owes: the rules name it.
   if (options.playerSource !== 'bothPlayers') {
     const only: readonly PlayerSide[] = [options.playerSource];
     return only;

@@ -12,6 +12,8 @@ const unregisterSeatConnection = (
   store: GameSessionStore,
   connection: GameSeatConnection,
 ): void => {
+  // A closed socket must stop receiving the stream, so fan-out does not send to
+  // a dead connection.
   getConnections(store, connection.gameId).delete(connection);
 };
 

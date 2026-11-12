@@ -21,10 +21,13 @@ const requireVsBotSeat = (
   input: { gameId: string; side: PlayerSide; subject: string },
 ): DataErrorSignature<VsBotSessionMeta> => {
   const meta = store.metaByGameId.get(input.gameId);
+  // A bot-vs-bot id has no seats, so a watcher game id cannot be played as one.
   if (meta === undefined || meta.kind !== 'vsBot') {
     const missing: DataErrorSignature<VsBotSessionMeta> = gameNotFound();
     return missing;
   }
+  // The seat comes from the socket path, so this stops a player opening the
+  // opponent's side or the bot's.
   if (input.subject !== subjectForSeat(meta, input.side)) {
     const forbidden: DataErrorSignature<VsBotSessionMeta> = {
       message: 'Seat not assigned to this player',

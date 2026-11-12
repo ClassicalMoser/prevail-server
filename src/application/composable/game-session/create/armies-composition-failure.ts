@@ -25,6 +25,8 @@ const armiesCompositionFailure = (
   ] as const;
 
   for (const side of sides) {
+    // The rules schema for the mode is the legality check an army list must pass
+    // before a game starts with it.
     const parsed = armySchemaForMode(gameMode).safeParse(side.army);
     if (parsed.success) {
       continue;

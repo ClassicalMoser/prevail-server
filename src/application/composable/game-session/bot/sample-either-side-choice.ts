@@ -7,6 +7,7 @@ import type {
 import { findOwingSeats } from './find-owing-seats';
 import { trySeatChoice } from './try-seat-choice';
 
+/** What `sampleEitherSideChoice` needs: the options that say who owes, and the state. */
 interface SampleEitherSideChoiceInput {
   /** Legal options for the authoritative state; they say who owes. */
   options: LegalPlayerChoiceOptions;
@@ -26,6 +27,8 @@ interface SampleEitherSideChoiceInput {
 const sampleEitherSideChoice = (
   input: SampleEitherSideChoiceInput,
 ): PlayerChoiceEvent | undefined => {
+  // No seat owing means nothing to play, and the rules bot throws for a seat that
+  // owes nothing.
   const [seat] = findOwingSeats(input.options);
   if (seat === undefined) {
     return undefined;

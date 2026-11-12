@@ -15,6 +15,7 @@ const sendGameSnapshotToConnection = (
   connection: GameSeatConnection,
   authoritative: Game,
 ): void => {
+  // The seat is fixed by the socket path, so a client can only ask for its own view.
   const visibility = connection.side === 'white' ? 'whiteSeen' : 'blackSeen';
   connection.send({
     payload: projectGameStateForVisibility(authoritative.gameState, visibility),

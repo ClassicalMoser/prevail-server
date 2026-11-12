@@ -13,6 +13,7 @@ import type {
   RandomSource,
 } from '@classicalmoser/prevail-rules/domain';
 
+/** What `getSeatChoice` needs: the game, the seat the bot plays, and a random source. */
 interface GetSeatChoiceInput {
   /** The authoritative state. The bot is shown only its seat's view of it. */
   state: AuthoritativeGameState;

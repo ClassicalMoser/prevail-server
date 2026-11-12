@@ -22,6 +22,7 @@ const loadOwnedArmy = async (
   armyId: string,
   describeFailure: (failure: ErrorSignature) => ErrorSignature,
 ): Promise<DataErrorSignature<Army>> => {
+  // Keyed by subject: a game cannot be started from another player's saved list.
   const owned = await store.ownedArmyStorage.getOwnedArmyById(subject, armyId);
   if (!owned.success) {
     const failure = describeFailure(owned);

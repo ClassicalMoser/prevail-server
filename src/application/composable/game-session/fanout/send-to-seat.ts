@@ -18,6 +18,8 @@ const sendToSeat = (input: {
   message: GameSessionOutbound;
 }): void => {
   const { store, gameId, side, message } = input;
+  // Registration never evicts an earlier socket on a seat (a reconnect can
+  // overlap the old connection), so every match is sent the message.
   for (const connection of getConnections(store, gameId)) {
     if (connection.side === side) {
       connection.send(message);

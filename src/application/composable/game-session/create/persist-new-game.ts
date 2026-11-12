@@ -18,6 +18,7 @@ const persistNewGame = async (
   store: GameSessionStore,
   game: Game,
 ): Promise<ErrorSignature | undefined> => {
+  // A failed write is a server fault (500), not something the creator can fix.
   const saved = await store.enginePorts.gameStorage.saveNewGame(game);
   if (!saved.result) {
     const failure: ErrorSignature = {
@@ -28,6 +29,7 @@ const persistNewGame = async (
     return failure;
   }
 
+  // Without this stream the first setup event would have nowhere to be filed.
   const stream = await store.enginePorts.eventStreamStorage.newEventStream(
     game.id,
     game.gameState.currentRoundState.roundNumber,

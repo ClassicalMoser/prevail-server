@@ -20,6 +20,8 @@ const fanoutEvent = (
   gameId: string,
   event: Event,
 ): void => {
+  // Projection is where hidden information is removed: each seat's copy of the
+  // event reads the opponent's chosen card as hidden.
   for (const side of ['white', 'black'] as const) {
     const projected = projectEventForVisibility(event, side);
     if (projected.eventType === 'playerChoice') {

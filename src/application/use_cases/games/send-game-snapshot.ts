@@ -18,6 +18,7 @@ const sendGameSnapshot = async (
   store: GameSessionStore,
   connection: GameSeatConnection,
 ): Promise<DataErrorSignature<void>> => {
+  // A seat asks for a resync when its client suspects drift.
   const access = requireRegisteredSeat(store, connection);
   if (!access.success) {
     return access;

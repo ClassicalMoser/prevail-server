@@ -36,17 +36,22 @@ const drainToPlayerChoice = async (
     const missing: DrainToPlayerChoiceResult = { status: 'missing' };
     return missing;
   }
+  // A finished game owes no choice; the step reports it instead of playing.
   if (game.gameState.winner !== undefined) {
     const over: DrainToPlayerChoiceResult = { status: 'gameOver', game };
     return over;
   }
 
+  // Non-null options mean a player already owes a choice, so there are no effects
+  // to drain.
   const options = getLegalPlayerChoiceOptions(game.gameState);
   if (options !== null) {
     const ready: DrainToPlayerChoiceResult = { status: 'ready', game };
     return ready;
   }
 
+  // Null options also occur when the expected-event getter throws; only a pending
+  // game effect may be drained, anything else is a bug and marks the game stuck.
   let expected: ReturnType<typeof getExpectedEvent> | undefined;
   try {
     expected = getExpectedEvent(game.gameState);
@@ -63,6 +68,8 @@ const drainToPlayerChoice = async (
     return stuck;
   }
 
+  // The engine applies the run of effects, and each event reaches watchers through
+  // the append hook as it is written.
   const advanced = await store.runner.advanceUntilPlayerChoice(
     gameId,
     gameMode,
@@ -81,6 +88,8 @@ const drainToPlayerChoice = async (
     const over: DrainToPlayerChoiceResult = { status: 'gameOver', game: after };
     return over;
   }
+  // A drain that ends neither at a choice nor at the end of the game would leave
+  // the next step with nothing to play, so it is stuck.
   const afterOptions = getLegalPlayerChoiceOptions(after.gameState);
   if (afterOptions === null) {
     const stuck: DrainToPlayerChoiceResult = { status: 'stuck', game: after };

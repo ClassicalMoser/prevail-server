@@ -12,6 +12,8 @@ const unregisterWatchConnection = (
   store: GameSessionStore,
   connection: GameWatchConnection,
 ): void => {
+  // A closed watcher must stop receiving the stream. The game stays as it was:
+  // the server never advances a bot-vs-bot game on its own.
   getWatchers(store, connection.gameId).delete(connection);
 };
 

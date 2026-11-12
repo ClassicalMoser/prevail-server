@@ -21,6 +21,8 @@ const loadAuthoritativeGame = async (
     gameId,
     gameMode,
   );
+  // A missing or failed load reads as a game that is gone, which callers answer
+  // as not found.
   if (gameResult === undefined || !gameResult.result) {
     return undefined;
   }

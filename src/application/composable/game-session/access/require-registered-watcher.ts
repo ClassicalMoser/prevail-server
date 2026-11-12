@@ -18,6 +18,7 @@ const requireRegisteredWatcher = (
   store: GameSessionStore,
   connection: GameWatchConnection,
 ): DataErrorSignature<BotVsBotSessionMeta> => {
+  // Same creator-only check as at open.
   const access = requireBotVsBotSession(
     store,
     connection.subject,
@@ -26,6 +27,8 @@ const requireRegisteredWatcher = (
   if (!access.success) {
     return access;
   }
+  // A socket that never passed registration is not in the set; refuse it so a
+  // step cannot skip the open-time check.
   if (!getWatchers(store, connection.gameId).has(connection)) {
     const unregistered: DataErrorSignature<BotVsBotSessionMeta> = {
       message: 'Watcher connection is not registered',

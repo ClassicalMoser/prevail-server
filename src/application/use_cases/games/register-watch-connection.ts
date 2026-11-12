@@ -22,6 +22,7 @@ const registerWatchConnection = async (
   store: GameSessionStore,
   connection: GameWatchConnection,
 ): Promise<DataErrorSignature<void>> => {
+  // Policy: only the creator may watch.
   const access = requireBotVsBotSession(
     store,
     connection.subject,
@@ -43,6 +44,7 @@ const registerWatchConnection = async (
       if (game === undefined) {
         return gameNotFound();
       }
+      // Join and snapshot inside the queue so no event lands between them.
       getWatchers(store, connection.gameId).add(connection);
       connection.send({ payload: game.gameState, type: 'gameSnapshot' });
       return { data: undefined, success: true };

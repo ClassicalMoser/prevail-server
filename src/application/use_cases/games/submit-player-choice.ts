@@ -8,6 +8,7 @@ import type { GameSessionStore } from '@application/composable/game-session/sess
 import { requireVsBotSeat } from '@application/composable/game-session/access/require-vs-bot-seat';
 import { takeBotTurns } from '@application/composable/game-session/bot/take-bot-turns';
 
+/** A choice a socket submits: the game, the seat from its path, who it is, and the choice. */
 interface SubmitPlayerChoiceInput {
   gameId: string;
   side: PlayerSide;

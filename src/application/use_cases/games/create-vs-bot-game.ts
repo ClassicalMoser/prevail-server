@@ -33,6 +33,8 @@ const createVsBotGame = async (
   body: CreateVsBotGameBody,
 ): Promise<DataErrorSignature<string>> => {
   // Both armies must already belong to the creating subject.
+  // The create body names an army per side; split them into the human's and the
+  // bot's, since the creator supplies both until rules builds a bot army.
   const humanArmyId =
     body.humanSide === 'white' ? body.whiteArmyId : body.blackArmyId;
   const botArmyId =
@@ -101,6 +103,9 @@ const createVsBotGame = async (
     humanSubject: subject,
     kind: 'vsBot',
   });
+  // Both sides choose a card first, so the bot may already owe one; play it now
+  // so the game opens at the human's decision. Queued so a socket opening at
+  // once waits for it.
   await enqueue(store, gameId, async () => {
     await takeBotTurns(store, gameId);
   });
