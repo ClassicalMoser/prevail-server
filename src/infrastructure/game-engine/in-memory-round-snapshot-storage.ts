@@ -17,6 +17,8 @@ const createInMemoryRoundSnapshotStorage = (
 
   return {
     getRoundSnapshot: async (gameId, roundNumber) => {
+      // No snapshot for a round is a success with no value: the round has not
+      // been saved yet.
       const snapshot = ok(snapshots.get(streamKey(gameId, roundNumber)));
       return snapshot;
     },

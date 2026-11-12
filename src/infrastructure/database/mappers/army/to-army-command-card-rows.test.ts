@@ -8,9 +8,11 @@ describe('toArmyCommandCardRows function', () => {
     () => {
       expect.hasAssertions();
 
+      // One catalog command card.
       const card = tempCommandCards[4];
       const rows = toArmyCommandCardRows('army-1', [card]);
 
+      // Each command card is stored as one row at quantity 1.
       expect(rows).toStrictEqual([
         {
           army_id: 'army-1',

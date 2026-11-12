@@ -9,9 +9,11 @@ describe('enqueue function', () => {
       expect.hasAssertions();
 
       const store = gameSessionStore();
+      // The first job rejects; the queue must not stay broken for the game.
       const failed = enqueue(store, 'game-1', async () => {
         throw new Error('prior');
       });
+      // A second job queued behind the failed one still runs.
       const next = enqueue(store, 'game-1', async () => 'kept moving');
 
       await expect(failed).rejects.toThrow('prior');

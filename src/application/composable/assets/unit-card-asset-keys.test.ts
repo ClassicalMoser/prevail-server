@@ -12,6 +12,7 @@ describe('unitCardAssetKey function', () => {
     () => {
       expect.hasAssertions();
 
+      // The unit-card helper fixes the kind to unit, so only the id, version and type vary.
       const key = unitCardAssetKey(unit.id, unit.version, 'svg');
 
       expect(key).toBe(`cards/unit/svg/${unit.id}_${unit.version}.svg`);
@@ -26,6 +27,7 @@ describe('unitCardAssetTargets function', () => {
     () => {
       expect.hasAssertions();
 
+      // A unit card has the same three assets as any card: svg, pdf and bleed pdf, with the svg first.
       const targets = unitCardAssetTargets(unit);
 
       expect(targets).toHaveLength(3);

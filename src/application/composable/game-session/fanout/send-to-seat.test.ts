@@ -6,6 +6,7 @@ describe('sendToSeat function', () => {
   it('sends only to sockets on the named side', { timeout: 5000 }, () => {
     expect.hasAssertions();
 
+    // A white and a black socket in one game, each recording what it receives.
     const whiteMessages: GameSessionOutbound[] = [];
     const blackMessages: GameSessionOutbound[] = [];
     const white: GameSeatConnection = {
@@ -32,6 +33,7 @@ describe('sendToSeat function', () => {
       type: 'gameSnapshot',
     };
 
+    // Only white is addressed; black's socket must stay silent.
     sendToSeat({ gameId: 'game-1', message, side: 'white', store });
 
     expect(whiteMessages).toStrictEqual([message]);

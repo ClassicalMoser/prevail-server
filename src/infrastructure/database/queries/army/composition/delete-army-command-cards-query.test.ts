@@ -9,12 +9,15 @@ describe('deleteArmyCommandCardsQuery function', () => {
     async () => {
       expect.hasAssertions();
 
+      // No rows are produced; a delete has nothing to return.
       const recorded = recordedSql();
       const client = connectionClient(recorded.sql);
       await deleteArmyCommandCardsQuery(client, 'army-1');
       const call = recorded.calls[0];
 
+      // Replacing an army's composition clears its command-card rows first.
       expect(call?.text).toContain('DELETE FROM army_command_cards');
+      // Scoped to one army id, so other armies keep their cards.
       expect(call?.values).toStrictEqual(['army-1']);
     },
   );

@@ -14,6 +14,7 @@ interface RecordingStorage extends AssetStorage {
 
 const recordingStorage = (existing: Set<string>): RecordingStorage => {
   const putKeys: string[] = [];
+  // Storage starts empty and records every file written.
   const adapter: RecordingStorage = {
     objectExists: async (key): Promise<boolean> => existing.has(key),
     putImmutable: async (key) => {
@@ -34,12 +35,14 @@ describe('projectCardVersion function', () => {
       expect.hasAssertions();
 
       const adapter = recordingStorage(new Set());
+      // The second target's render fails; this is the failure the caller must see.
       const failure: DataErrorSignature<Buffer> = {
         message: 'second failed',
         status: 500,
         success: false,
       };
 
+      // Three targets, rendered in order: a.svg draws, b.svg fails, so c.svg must not be attempted.
       const result = await projectCardVersion(
         {
           assetStorage: adapter,
@@ -59,6 +62,7 @@ describe('projectCardVersion function', () => {
       );
 
       expect(result).toStrictEqual(failure);
+      // Only a.svg, drawn before the failure, was stored.
       expect(adapter.putKeys).toStrictEqual(['a.svg']);
     },
   );

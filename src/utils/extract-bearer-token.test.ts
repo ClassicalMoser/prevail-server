@@ -7,6 +7,7 @@ describe('extractBearerToken function', () => {
     () => {
       expect.hasAssertions();
 
+      // No Authorization header, so there is no token.
       const token = extractBearerToken({});
 
       expect(token).toBeUndefined();
@@ -16,6 +17,7 @@ describe('extractBearerToken function', () => {
   it('reads a Bearer token from Authorization', { timeout: 5000 }, () => {
     expect.hasAssertions();
 
+    // The token is what follows the Bearer scheme.
     const token = extractBearerToken({ authorization: 'Bearer secret-token' });
 
     expect(token).toBe('secret-token');
@@ -24,6 +26,8 @@ describe('extractBearerToken function', () => {
   it('rejects a non-Bearer scheme', { timeout: 5000 }, () => {
     expect.hasAssertions();
 
+    // Basic credentials are not a bearer token, so they are not passed on to
+    // token verification.
     const token = extractBearerToken({ Authorization: 'Basic abc' });
 
     expect(token).toBeUndefined();

@@ -2,10 +2,12 @@ import Fastify from 'fastify';
 import type { AuthPort, RegisteredRoute } from '@ports';
 import { registerHttp } from './register-http';
 
+// An auth port that accepts any token.
 const allowAllAuth: AuthPort = {
   checkToken: async () => ({ subject: 'test-subject' }),
 };
 
+// A public GET route that answers { ok: true }.
 const route: RegisteredRoute = {
   auth: { authRequired: false },
   invoke: async () => ({ data: { ok: true }, success: true }),
@@ -23,6 +25,8 @@ describe('registerHttp function', () => {
       expect.hasAssertions();
 
       const app = Fastify();
+      // The registry is registered on a bare Fastify app and the route is then
+      // called with inject, with no port opened.
       registerHttp(app, allowAllAuth, [route]);
 
       const response = await app.inject({
@@ -31,6 +35,7 @@ describe('registerHttp function', () => {
       });
 
       expect(response.statusCode).toBe(200);
+      // The route's data is the response body.
       expect(response.json()).toStrictEqual({ ok: true });
     },
   );

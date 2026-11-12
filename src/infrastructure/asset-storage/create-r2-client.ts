@@ -2,6 +2,7 @@ import { S3Client } from '@aws-sdk/client-s3';
 
 /** Endpoint and credentials for the Cloudflare R2 account holding card assets. */
 interface R2ClientConfig {
+  /** The account's S3-compatible R2 endpoint URL. */
   endpoint: string;
   accessKeyId: string;
   secretAccessKey: string;
@@ -23,6 +24,7 @@ interface R2ClientConfig {
  */
 const createR2Client = (config: R2ClientConfig): S3Client => {
   const client = new S3Client({
+    // R2 has no regions; 'auto' is the value it accepts.
     region: 'auto',
     endpoint: config.endpoint,
     credentials: {

@@ -9,6 +9,8 @@ const fakeUpgradedSocket = (): {
   sent: string[];
   closed: unknown[];
 } => {
+  // The fake keeps the listeners adaptWsSocket registers, so a test can fire a
+  // frame or a close by hand.
   const handlers: {
     message: ((raw: Buffer | ArrayBuffer | Buffer[]) => void)[];
     close: (() => void)[];
@@ -18,6 +20,8 @@ const fakeUpgradedSocket = (): {
   const on = ((event: 'message' | 'close', listener: () => void): void => {
     handlers[event].push(listener);
   }) as UpgradedSocket['on']; // one function answers both event overloads
+  // send and close only record their arguments: the adapter must pass them
+  // straight through.
   const socket: UpgradedSocket = {
     close: (code, reason) => closed.push([code, reason]),
     on,
@@ -39,11 +43,14 @@ describe('adaptWsSocket function', () => {
     () => {
       expect.hasAssertions();
 
+      // One handler is registered, then one frame is fired as raw bytes.
       const { socket, fireMessage } = fakeUpgradedSocket();
       const received: string[] = [];
       adaptWsSocket(socket).onMessage((text) => received.push(text));
       fireMessage(Buffer.from('hello'));
 
+      // The handler gets the frame's text, not a Buffer, so route code never
+      // handles raw bytes.
       expect(received).toStrictEqual(['hello']);
     },
   );
@@ -54,11 +61,13 @@ describe('adaptWsSocket function', () => {
     () => {
       expect.hasAssertions();
 
+      // One close handler is registered, then the socket closes.
       const { socket, fireClose } = fakeUpgradedSocket();
       const closedFor: string[] = [];
       adaptWsSocket(socket).onClose(() => closedFor.push('left'));
       fireClose();
 
+      // The seat or watcher is told the connection is gone.
       expect(closedFor).toStrictEqual(['left']);
     },
   );
@@ -69,9 +78,13 @@ describe('adaptWsSocket function', () => {
     const { socket, sent, closed } = fakeUpgradedSocket();
     const adapted = adaptWsSocket(socket);
     adapted.send('{}');
+    // 1008 is the policy-violation close code the server uses for refused
+    // connections.
     adapted.close(1008, 'Unauthorized');
 
+    // The text reaches the socket unchanged.
     expect(sent).toStrictEqual(['{}']);
+    // The close code and reason reach the socket unchanged.
     expect(closed).toStrictEqual([[1008, 'Unauthorized']]);
   });
 });

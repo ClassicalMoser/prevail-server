@@ -18,6 +18,7 @@ describe('registerSeatConnection function', () => {
     async () => {
       expect.hasAssertions();
 
+      // Mini-legal armies for both sides, so a vs-bot game can be created.
       const { store } = liveGameStore({
         [blackArmyId]: miniArmy(blackArmyId),
         [whiteArmyId]: miniArmy(whiteArmyId),
@@ -35,6 +36,7 @@ describe('registerSeatConnection function', () => {
       });
       assert.ok(created.success);
 
+      // A different subject tries to sit in the human's seat.
       const registered = await registerSeatConnection(store, {
         gameId: created.data,
         send: () => {
@@ -58,6 +60,7 @@ describe('registerSeatConnection function', () => {
     async () => {
       expect.hasAssertions();
 
+      // Mini-legal armies for both sides, so a vs-bot game can be created.
       const { store } = liveGameStore({
         [blackArmyId]: miniArmy(blackArmyId),
         [whiteArmyId]: miniArmy(whiteArmyId),
@@ -75,6 +78,7 @@ describe('registerSeatConnection function', () => {
       });
       assert.ok(created.success);
 
+      // Record what the human's socket receives on connecting.
       const messages: GameSessionOutbound[] = [];
       const registered = await registerSeatConnection(store, {
         gameId: created.data,
@@ -86,6 +90,7 @@ describe('registerSeatConnection function', () => {
       });
 
       expect(registered.success).toBe(true);
+      // Connecting sends exactly one message, the seat's own snapshot, before anything else.
       expect(messages).toStrictEqual([
         expect.objectContaining({ type: 'gameSnapshot' }),
       ]);
@@ -113,6 +118,7 @@ describe('registerSeatConnection function', () => {
     async () => {
       expect.hasAssertions();
 
+      // A 25 ms bot gap makes the bot's reply slow enough to overlap with the reconnect below.
       const { store, enginePorts } = liveGameStore(
         {
           [blackArmyId]: miniArmy(blackArmyId),
@@ -129,6 +135,7 @@ describe('registerSeatConnection function', () => {
       });
       assert.ok(created.success);
 
+      // Read the stored opening so the setup placement below is built from the rules' own offer.
       const game = await enginePorts.gameStorage.getGame(created.data, 'mini');
       assert.ok(game !== undefined);
       assert.ok(game.result);
@@ -155,6 +162,7 @@ describe('registerSeatConnection function', () => {
       assert.ok(firstPlacement !== undefined);
 
       const messages: GameSessionOutbound[] = [];
+      // The human's setup submit is started but not awaited, so it is still in flight when the socket connects.
       const submitPromise = submitPlayerChoice(store, {
         gameId: created.data,
         playerChoice: {
@@ -168,6 +176,7 @@ describe('registerSeatConnection function', () => {
         subject: 'auth0|human-sub',
       });
 
+      // The same seat connects while that submit (and the bot reply it triggers) is running.
       const registerPromise = registerSeatConnection(store, {
         gameId: created.data,
         send: (message) => {
@@ -177,6 +186,7 @@ describe('registerSeatConnection function', () => {
         subject: 'auth0|human-sub',
       });
 
+      // Both finish; the connection is queued with the submit, so neither is lost.
       const [submitted, registered] = await Promise.all([
         submitPromise,
         registerPromise,

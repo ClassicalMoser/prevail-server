@@ -7,6 +7,8 @@ describe('streamKey function', () => {
     () => {
       expect.hasAssertions();
 
+      // The key is the game id and round, so each round of each game has its
+      // own event stream.
       const key = streamKey('game-1', 3);
 
       expect(key).toBe('game-1:3');

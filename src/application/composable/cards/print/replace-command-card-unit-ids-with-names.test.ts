@@ -26,9 +26,11 @@ describe('replaceCommandCardUnitIdsWithNames function', () => {
     () => {
       expect.hasAssertions();
 
+      // A card that restricts and supports by unit type, so both places hold unit ids.
       const card = commandCardNamed('Fearless Velites');
       assert.ok(card.command.restrictions.restrictionType === 'unitType');
       assert.ok(card.unitSupport.supportType === 'unitType');
+      // Placeholder names stand in for storage; only that an id becomes its name matters here.
       const unitIdToNameMap = namesFor(card);
       const expectedName = unitIdToNameMap.get(card.unitSupport.unitTypeId);
 
@@ -47,6 +49,7 @@ describe('replaceCommandCardUnitIdsWithNames function', () => {
   it('leaves a trait restriction unchanged', { timeout: 5000 }, () => {
     expect.hasAssertions();
 
+    // A trait-restricted card has no unit ids in its restriction, so printing must leave it as it is.
     const card = commandCardNamed('Brace');
     const printed = replaceCommandCardUnitIdsWithNames(card, namesFor(card));
 

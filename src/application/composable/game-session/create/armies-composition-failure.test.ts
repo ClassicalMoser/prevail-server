@@ -8,6 +8,7 @@ describe('armiesCompositionFailure function', () => {
     () => {
       expect.hasAssertions();
 
+      // Two mini-sized armies for a mini game: the composition rule is met.
       const failure = armiesCompositionFailure(
         miniArmy(whiteArmyId),
         miniArmy(whiteArmyId),
@@ -24,6 +25,7 @@ describe('armiesCompositionFailure function', () => {
     () => {
       expect.hasAssertions();
 
+      // White gets an empty army, which fails the mini mode composition rules, while black passes.
       const failure = armiesCompositionFailure(
         army(whiteArmyId),
         miniArmy(whiteArmyId),

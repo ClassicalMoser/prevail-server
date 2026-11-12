@@ -24,11 +24,13 @@ describe('createVsBotGame function', () => {
     async () => {
       expect.hasAssertions();
 
+      // The creator owns mini-legal armies for both sides, matching the mode they ask for.
       const { store } = liveGameStore({
         [blackArmyId]: miniArmy(blackArmyId),
         [whiteArmyId]: miniArmy(whiteArmyId),
       });
 
+      // The human asks for white; black is left to the bot.
       const body: CreateVsBotGameBody = {
         blackArmyId,
         gameMode: 'mini',
@@ -39,6 +41,7 @@ describe('createVsBotGame function', () => {
       const result = await createVsBotGame(store, 'human-sub', body);
       expect(result).toMatchObject({ success: true, data: expect.any(String) });
       assert.ok(result.success);
+      // The human subject holds their chosen side; the other seat is the bot's fixed subject.
       expect(getSeatSubject(store, result.data, 'white')).toBe('human-sub');
       expect(getSeatSubject(store, result.data, 'black')).toBe('bot:prevail');
     },
@@ -50,6 +53,7 @@ describe('createVsBotGame function', () => {
     async () => {
       expect.hasAssertions();
 
+      // Mini-legal armies; the engine ports are kept to read the stored game and stream back.
       const { store, enginePorts } = liveGameStore({
         [blackArmyId]: miniArmy(blackArmyId),
         [whiteArmyId]: miniArmy(whiteArmyId),
@@ -67,6 +71,7 @@ describe('createVsBotGame function', () => {
       });
       assert.ok(created.success);
 
+      // Setup happens in round 0, so only round 0 has a stream; round 1 has none yet.
       const streamForProcessRound =
         await enginePorts.eventStreamStorage.getEventStream(created.data, 0);
       const wrongRoundStream =
@@ -79,6 +84,7 @@ describe('createVsBotGame function', () => {
         wrongRound: { data: undefined, result: true },
       });
 
+      // A fresh mini game opens with white owing its setup, so the stored game is playable.
       const game = await enginePorts.gameStorage.getGame(created.data, 'mini');
       expect(game).toMatchObject({ result: true, data: expect.anything() });
       assert.ok(game !== undefined);
@@ -91,6 +97,7 @@ describe('createVsBotGame function', () => {
       assert.ok(options !== null);
       assert.ok(options.choiceType === 'setupUnits');
 
+      // Place every unit the rules offer, on the coordinates they offer, facing south, so the setup is legal.
       const { setupUnits } = options;
       const unitPlacements = setupUnits.units.map((unit, index) => {
         const coordinate = setupUnits.coordinates[index];
@@ -106,6 +113,7 @@ describe('createVsBotGame function', () => {
       });
       const firstPlacement = unitPlacements[0];
       assert.ok(firstPlacement !== undefined);
+      // White's setup goes through the use case; it only succeeds if the round 0 stream was opened at creation.
       const submitted = await submitPlayerChoice(store, {
         gameId: created.data,
         playerChoice: {
@@ -129,11 +137,13 @@ describe('createVsBotGame function', () => {
     async () => {
       expect.hasAssertions();
 
+      // Empty armies, which fail the mini mode's composition rules.
       const { store } = liveGameStore({
         [blackArmyId]: army(blackArmyId),
         [whiteArmyId]: army(whiteArmyId),
       });
 
+      // The creator asked for mini with unfit armies: their mistake, so 400.
       const result = await createVsBotGame(store, 'human-sub', {
         blackArmyId,
         gameMode: 'mini',
@@ -151,11 +161,13 @@ describe('createVsBotGame function', () => {
     async () => {
       expect.hasAssertions();
 
+      // Standard-mode-legal armies, so a standard game can be created.
       const { store, enginePorts } = liveGameStore({
         [blackArmyId]: standardArmy(blackArmyId),
         [whiteArmyId]: standardArmy(whiteArmyId),
       });
 
+      // The body names standard; the stored game must keep that mode, not a default.
       const created = await createVsBotGame(store, 'auth0|human-sub', {
         blackArmyId,
         gameMode: 'standard',

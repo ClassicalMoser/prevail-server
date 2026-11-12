@@ -11,6 +11,7 @@ const game = buildNewGame({
   whitePlayerId: 'white-player',
 });
 
+// Rules-side storage ports are mocked, so each write can be made to succeed or fail on demand.
 /** A store whose engine writes succeed, except the one the test names. */
 const storeWhere = (fails: {
   save?: string;
@@ -39,6 +40,7 @@ describe('persistNewGame function', () => {
     async () => {
       expect.hasAssertions();
 
+      // Both writes succeed.
       const store = storeWhere({});
 
       await expect(persistNewGame(store, game)).resolves.toBeUndefined();
@@ -54,6 +56,7 @@ describe('persistNewGame function', () => {
     async () => {
       expect.hasAssertions();
 
+      // Saving the game fails; no event stream should be opened for a game that was not saved.
       const store = storeWhere({ save: 'disk full' });
 
       await expect(persistNewGame(store, game)).resolves.toStrictEqual({
@@ -73,6 +76,7 @@ describe('persistNewGame function', () => {
     async () => {
       expect.hasAssertions();
 
+      // The game saves but its event stream cannot be opened; the creator still gets the failure.
       const store = storeWhere({ stream: 'no stream' });
 
       await expect(persistNewGame(store, game)).resolves.toStrictEqual({

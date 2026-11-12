@@ -28,7 +28,9 @@ interface GameSessionUseCasesDeps {
 
 /** Session API plus fanout hooks for engine port wiring. */
 interface GameSessionRuntime extends GameSessionUseCasesPort {
+  /** Called by the engine's event-append hook so each applied event reaches the sockets. */
   fanoutEvent: (gameId: string, event: Event) => void;
+  /** Called by the engine's round-snapshot hook so clients can reconcile drift. */
   fanoutRoundSnapshot: (
     gameId: string,
     roundNumber: number,

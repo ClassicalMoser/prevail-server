@@ -5,6 +5,7 @@ import path from 'node:path';
 const { fetchUnitArtwork } = await import('./fetch-unit-artwork');
 
 describe('fetchUnitArtwork', () => {
+  // The only origin artwork may be fetched from.
   const allowedOrigin = 'https://assets.example.com';
 
   beforeEach(() => {
@@ -17,10 +18,13 @@ describe('fetchUnitArtwork', () => {
     async () => {
       expect.hasAssertions();
 
+      // A temporary folder stands in for the render workspace the artwork is
+      // saved into.
       const dir = await mkdtemp(path.join(tmpdir(), 'unit-artwork-'));
       const destinationPath = path.join(dir, 'unit-image.png');
       const body = Buffer.from('png-bytes');
 
+      // A stubbed fetch answers 200 with the body, so no network is used.
       vi.stubGlobal(
         'fetch',
         vi.fn().mockResolvedValue({
@@ -40,7 +44,9 @@ describe('fetchUnitArtwork', () => {
         allowedOrigin,
       );
 
+      // The fetch reports success.
       expect(result).toStrictEqual({ success: true, data: true });
+      // The bytes written equal the response body.
       await expect(readFile(destinationPath)).resolves.toStrictEqual(body);
     },
   );
@@ -52,6 +58,7 @@ describe('fetchUnitArtwork', () => {
       expect.hasAssertions();
 
       const result = await fetchUnitArtwork(
+        // A URL on another origin: it is refused before any request is made.
         'https://evil.example.com/unit.png',
         '/tmp/unit-image.png',
         allowedOrigin,
@@ -68,6 +75,7 @@ describe('fetchUnitArtwork', () => {
   it('rejects redirects', { timeout: 5000 }, async () => {
     expect.hasAssertions();
 
+    // A 302 answer stands for a redirect to somewhere else.
     vi.stubGlobal(
       'fetch',
       vi.fn().mockResolvedValue({
@@ -86,6 +94,8 @@ describe('fetchUnitArtwork', () => {
       allowedOrigin,
     );
 
+    // Artwork is only taken from the allowed origin, so a redirect, which could
+    // lead off it, is refused with 400.
     expect(result).toStrictEqual({
       success: false,
       message: 'Redirects are not allowed for unit artwork',
@@ -112,11 +122,14 @@ describe('fetchUnitArtwork', () => {
       );
 
       const result = await fetchUnitArtwork(
+        // A URL the allowed origin answers with 404.
         'https://assets.example.com/missing.png',
         '/tmp/unit-image.png',
         allowedOrigin,
       );
 
+      // A missing image is the server's failure to render, status 500, with the
+      // upstream status in the message.
       expect(result).toStrictEqual({
         success: false,
         message: 'Failed to fetch unit artwork (404 Not Found)',
@@ -130,6 +143,7 @@ describe('fetchUnitArtwork', () => {
 
     vi.stubGlobal(
       'fetch',
+      // A network error stands for the artwork host being unreachable.
       vi.fn().mockRejectedValue(new Error('network down')),
     );
 
@@ -139,6 +153,7 @@ describe('fetchUnitArtwork', () => {
       allowedOrigin,
     );
 
+    // The thrown error's message is passed back, with status 500.
     expect(result).toStrictEqual({
       success: false,
       message: 'network down',

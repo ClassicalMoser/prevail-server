@@ -7,6 +7,8 @@ describe('templatePathInWorkspace function', () => {
     () => {
       expect.hasAssertions();
 
+      // Typst is run on the workspace copy of the template, not the shared
+      // assets.
       const path = templatePathInWorkspace('/tmp/ws', 'command.typ');
 
       expect(path).toBe('/tmp/ws/templates/command.typ');

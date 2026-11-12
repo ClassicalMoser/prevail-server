@@ -9,6 +9,7 @@ describe('sendToWatchers function', () => {
     () => {
       expect.hasAssertions();
 
+      // One watcher on game-1 and one on another game; only the first should hear it.
       const watching = watcher('game-1');
       const elsewhere = watcher('game-2');
       const store = gameSessionStore({

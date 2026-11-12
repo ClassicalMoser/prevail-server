@@ -10,11 +10,15 @@ describe('createAuth0Adapter function', () => {
     () => {
       expect.hasAssertions();
 
+      // Placeholder tenant and audience: construction must not contact Auth0,
+      // so nothing real is needed.
       const auth = createAuth0Adapter(logger, {
         audience: 'https://api.example',
         domain: 'tenant.auth0.com',
       });
 
+      // The adapter exposes the token check; verifying a real token needs Auth0
+      // and is not run here.
       expect(auth.checkToken).toBeTypeOf('function');
     },
   );

@@ -7,6 +7,7 @@ describe('cardAssetKey function', () => {
     () => {
       expect.hasAssertions();
 
+      // A command card's svg key is built from kind, id and version, with the extension of its type.
       const key = cardAssetKey({
         assetType: 'svg',
         cardId: 'card-1',
@@ -24,6 +25,7 @@ describe('cardAssetKey function', () => {
     () => {
       expect.hasAssertions();
 
+      // Print assets live under a print folder; the bleed variant has its own extension so it cannot collide with the plain pdf.
       const key = cardAssetKey({
         assetType: 'pdf-bleed',
         cardId: 'unit-1',
@@ -43,6 +45,7 @@ describe('cardAssetTargets function', () => {
     () => {
       expect.hasAssertions();
 
+      // One card projects three files: svg, pdf and bleed pdf.
       const targets = cardAssetTargets('command', {
         id: 'card-1',
         version: '1.0.0',

@@ -22,6 +22,8 @@ const runTypstCompile = async (
 ): Promise<Buffer> => {
   // execFile with an argument array (no shell) keeps paths and format from being
   // interpreted as commands.
+  // The compiled card is read back from stdout, so a render leaves nothing
+  // behind for the next request to find or for a client to guess a path to.
   const { stdout } = await execFile(
     'typst',
     [
@@ -37,6 +39,8 @@ const runTypstCompile = async (
     ],
     {
       encoding: 'buffer',
+      // Stdout holds the whole card; a larger one fails the render instead of
+      // growing the server's memory without bound.
       maxBuffer: 10 * 1024 * 1024,
     },
   );

@@ -5,6 +5,8 @@ import { recordingLogger } from '@testing';
 
 const logger = recordingLogger();
 
+// A partial use-case double: only createVsBotGame exists, and it echoes the
+// subject and mode.
 const useCases = (): GameSessionUseCasesPort =>
   ({
     createVsBotGame: async (subject, body) => ({
@@ -13,6 +15,8 @@ const useCases = (): GameSessionUseCasesPort =>
     }),
   }) as GameSessionUseCasesPort; // partial double; this suite only hits createVsBotGame
 
+// A request to start a mini game against a bot, the human playing white, with
+// two army ids.
 const createBody = {
   blackArmyId: '550e8400-e29b-41d4-a716-446655440002',
   gameMode: 'mini' as const,
@@ -27,6 +31,7 @@ describe('createGameRoutes function', () => {
     const [route] = createGameRoutes(useCases(), logger);
     assert.ok(route !== undefined);
 
+    // A request with no auth field, as when no token was sent.
     const result = await route.invoke({
       body: createBody,
       headers: {},
@@ -34,6 +39,7 @@ describe('createGameRoutes function', () => {
       query: {},
     } satisfies WireRouteRequest);
 
+    // The route answers 401 and the game is not created.
     expect(result).toStrictEqual({
       message: 'Unauthorized',
       status: 401,
@@ -51,6 +57,7 @@ describe('createGameRoutes function', () => {
       assert.ok(route !== undefined);
 
       const result = await route.invoke({
+        // The caller is authenticated as auth0|human.
         auth: { subject: 'auth0|human' },
         body: createBody,
         headers: {},
@@ -58,6 +65,8 @@ describe('createGameRoutes function', () => {
         query: {},
       } satisfies WireRouteRequest);
 
+      // The id the echo returns shows the use case got the authenticated
+      // subject and the body's mode.
       expect(result).toStrictEqual({
         data: 'auth0|human:mini',
         success: true,

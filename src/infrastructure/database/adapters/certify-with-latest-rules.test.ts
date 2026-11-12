@@ -13,7 +13,11 @@ describe('certifyWithLatestRules function', () => {
     async () => {
       expect.hasAssertions();
 
+      // The insert is a recording stand-in, so the test sees which ids and
+      // rules version certification was given.
       const inserted: unknown[] = [];
+      // The rules_versions read answers one row, rules-9, as if it were the
+      // newest rules release.
       const recorded = recordedSql(
         rowsForStatement('FROM rules_versions', [
           { rules_version_id: 'rules-9' },
@@ -29,6 +33,8 @@ describe('certifyWithLatestRules function', () => {
           },
         ),
       ).resolves.toStrictEqual({ data: undefined, success: true });
+      // The card was certified against the rules version the query returned,
+      // not a fixed one.
       expect(inserted).toStrictEqual([[['card-1'], 'rules-9']]);
     },
   );
@@ -39,11 +45,13 @@ describe('certifyWithLatestRules function', () => {
     async () => {
       expect.hasAssertions();
 
+      // No rows are scripted: with nothing to certify, no query may run at all.
       const recorded = recordedSql();
 
       await expect(
         certifyWithLatestRules(recorded.sql, [], skipInsert),
       ).resolves.toStrictEqual({ data: undefined, success: true });
+      // No statement was sent, not even the rules lookup.
       expect(recorded.calls).toStrictEqual([]);
     },
   );
@@ -55,6 +63,8 @@ describe('certifyWithLatestRules function', () => {
       expect.hasAssertions();
 
       await expect(
+        // With no rules version row, certification cannot happen: the server
+        // reports its own fault as 500, not a client error.
         certifyWithLatestRules(recordedSql([]).sql, ['card-1'], skipInsert),
       ).resolves.toStrictEqual({
         message: 'No rules version found',

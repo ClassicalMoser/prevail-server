@@ -17,6 +17,7 @@ describe('buildNewGame function', () => {
     () => {
       expect.hasAssertions();
 
+      // The distinct ids and armies in `input` show each lands on its own side.
       const game = buildNewGame(input);
 
       expect(game).toMatchObject({
@@ -33,6 +34,7 @@ describe('buildNewGame function', () => {
   it('starts in setup, before any round is played', { timeout: 5000 }, () => {
     expect.hasAssertions();
 
+    // Round 0 is the setup round, before any command round begins.
     expect(buildNewGame(input).gameState.currentRoundState.roundNumber).toBe(0);
   });
 });

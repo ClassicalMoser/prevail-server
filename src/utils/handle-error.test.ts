@@ -8,6 +8,8 @@ describe('handleError function', () => {
     () => {
       expect.hasAssertions();
 
+      // The logger records error messages so the test can see what the operator
+      // would read.
       const logged: string[] = [];
       const logger: LoggerPort = {
         error: (message): void => {
@@ -21,6 +23,7 @@ describe('handleError function', () => {
         },
       };
 
+      // A thrown Error with the message 'boom'.
       const result = handleError({
         context: 'saving',
         error: new Error('boom'),
@@ -29,11 +32,13 @@ describe('handleError function', () => {
         status: 500,
       });
 
+      // The caller gets the safe message and status, not the error text.
       expect(result).toStrictEqual({
         message: 'Failed to save',
         status: 500,
         success: false,
       });
+      // The log keeps the error's own text for the operator.
       expect(logged[0]).toContain('boom');
     },
   );
@@ -44,6 +49,7 @@ describe('handleError function', () => {
     () => {
       expect.hasAssertions();
 
+      // Same recording logger.
       const logged: string[] = [];
       const logger: LoggerPort = {
         error: (message): void => {
@@ -57,6 +63,7 @@ describe('handleError function', () => {
         },
       };
 
+      // Something other than an Error was thrown, a bare string.
       const result = handleError({
         context: 'saving',
         error: 'raw',
@@ -65,7 +72,9 @@ describe('handleError function', () => {
         status: 500,
       });
 
+      // The failure envelope is returned all the same.
       expect(result.success).toBe(false);
+      // The log line names the context ('saving') and the string.
       expect(logged).toStrictEqual(['Unknown error while saving: raw']);
     },
   );

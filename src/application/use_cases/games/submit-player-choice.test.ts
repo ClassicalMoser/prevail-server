@@ -8,6 +8,7 @@ describe('submitPlayerChoice function', () => {
     async () => {
       expect.hasAssertions();
 
+      // An empty store hosts no game, so the submit has nowhere to go.
       const store = gameSessionStore();
       const result = await submitPlayerChoice(store, {
         gameId: 'missing',
@@ -34,6 +35,7 @@ describe('submitPlayerChoice function', () => {
     async () => {
       expect.hasAssertions();
 
+      // A human-vs-bot game owned by `auth0|human`.
       const store = gameSessionStore();
       store.metaByGameId.set('game-1', {
         gameMode: 'mini',
@@ -42,6 +44,7 @@ describe('submitPlayerChoice function', () => {
         kind: 'vsBot',
       });
 
+      // A different subject sends a choice for white's seat; only the seat's owner may submit for it.
       const result = await submitPlayerChoice(store, {
         gameId: 'game-1',
         playerChoice: {

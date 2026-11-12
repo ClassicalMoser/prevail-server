@@ -8,6 +8,7 @@ describe('drainToPlayerChoice function', () => {
     async () => {
       expect.hasAssertions();
 
+      // An empty store holds no game, so there is nothing to drain.
       const store = gameSessionStore();
       const drained = await drainToPlayerChoice(store, 'game-1', 'mini');
 

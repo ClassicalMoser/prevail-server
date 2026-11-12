@@ -19,6 +19,7 @@ describe('requireVsBotSeat function', () => {
   it('admits the human to their own seat', { timeout: 5000 }, () => {
     expect.hasAssertions();
 
+    // A human-vs-bot game where the human plays white.
     const store = gameSessionStore({
       metaByGameId: new Map([['game-1', { ...vsBotMeta }]]),
     });
@@ -35,6 +36,7 @@ describe('requireVsBotSeat function', () => {
   it("refuses the human the bot's seat with 403", { timeout: 5000 }, () => {
     expect.hasAssertions();
 
+    // The human holds white, so black is the bot's seat; a human may not speak for it.
     const store = gameSessionStore({
       metaByGameId: new Map([['game-1', { ...vsBotMeta }]]),
     });
@@ -55,6 +57,7 @@ describe('requireVsBotSeat function', () => {
       expect.hasAssertions();
 
       expect(
+        // An empty store: this process hosts no such game, so the answer is not-found.
         requireVsBotSeat(gameSessionStore(), {
           gameId: 'nope',
           side: 'white',
@@ -70,6 +73,7 @@ describe('requireVsBotSeat function', () => {
     () => {
       expect.hasAssertions();
 
+      // A bot-vs-bot game has only watchers, so asking for a seat in it finds nothing.
       const store = gameSessionStore({
         metaByGameId: new Map([['game-1', { ...botVsBotMeta }]]),
       });

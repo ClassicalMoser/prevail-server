@@ -23,6 +23,7 @@ describe('unitCardProjectOps function', () => {
     async () => {
       expect.hasAssertions();
 
+      // Counts calls to the unit card renderer, to show the ops draw through it.
       let renderCalls = 0;
       const unitCardRenderer: UnitCardRendererPort = {
         renderUnitCard: async (): Promise<DataErrorSignature<Buffer>> => {
@@ -36,6 +37,7 @@ describe('unitCardProjectOps function', () => {
         unitCardRenderer,
       });
 
+      // Take the first target; one render for it is enough to show where the drawing is sent.
       const [target] = ops.targets(unit);
       assert.ok(target !== undefined);
       const result = await ops.render(unit, target);

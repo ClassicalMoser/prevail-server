@@ -19,6 +19,7 @@ describe('previewUnitCard function', () => {
     async () => {
       expect.hasAssertions();
 
+      // The renderer draws an SVG.
       const deps = depsRendering(
         vi
           .fn<UnitCardRendererPort['renderUnitCard']>()
@@ -29,6 +30,7 @@ describe('previewUnitCard function', () => {
         data: '<svg/>',
         success: true,
       });
+      // A preview is only shown to the author, so nothing is written to asset storage.
       expect(deps.assetStorage.putImmutable).not.toHaveBeenCalled();
     },
   );
@@ -36,6 +38,7 @@ describe('previewUnitCard function', () => {
   it('answers the render failure unchanged', { timeout: 5000 }, async () => {
     expect.hasAssertions();
 
+    // The renderer fails.
     const deps = depsRendering(
       vi.fn<UnitCardRendererPort['renderUnitCard']>().mockResolvedValue({
         message: 'render failed',

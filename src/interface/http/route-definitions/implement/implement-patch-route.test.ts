@@ -5,11 +5,14 @@ import { implementPatchRoute } from './implement-patch-route';
 
 const logger = recordingLogger();
 
+// Builds a successful parse outcome around the given value.
 const pass = <T>(data: T): { success: true; data: T } => ({
   success: true,
   data,
 });
 
+// A stub contract, since no live PATCH contract exists yet; its validators
+// accept the request and the response.
 const stubContract = {
   auth: { authRequired: false },
   method: 'PATCH',
@@ -27,6 +30,7 @@ const stubContract = {
   { name: string }
 >; // no live PATCH contract yet; stub only the safeParse surface
 
+// An empty request off the wire; each case overrides only the part it checks.
 const wire = (overrides: Partial<WireRouteRequest> = {}): WireRouteRequest => ({
   body: { name: 'x' },
   headers: {},
@@ -43,6 +47,8 @@ describe('implementPatchRoute function', () => {
       expect.hasAssertions();
 
       const route = implementPatchRoute(stubContract, logger, {
+        // The handler echoes the parsed body, to show it received the validated
+        // body.
         handler: async (request) => ({
           data: request.body,
           success: true,
@@ -51,11 +57,13 @@ describe('implementPatchRoute function', () => {
 
       const result = await route.invoke(wire());
 
+      // The route is a PATCH at the stub's path answering 200.
       expect(route).toMatchObject({
         method: 'PATCH',
         path: '/stub',
         successStatus: 200,
       });
+      // The handler's result passes through.
       expect(result).toStrictEqual({ data: { name: 'x' }, success: true });
     },
   );

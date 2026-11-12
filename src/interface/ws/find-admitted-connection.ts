@@ -23,6 +23,8 @@ const findAdmittedConnection = <TParams>(input: {
   socket: WsSocket;
   paramsSchema: ParamsSchema<TParams>;
 }): AdmittedConnection<TParams> | undefined => {
+  // The path params (such as the game id) come from the URL and are client
+  // input; a malformed one never reaches the session.
   const parsed = input.paramsSchema.safeParse(input.wire.params);
   if (!parsed.success) {
     input.socket.close(1008, 'Invalid params');

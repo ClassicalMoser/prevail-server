@@ -21,6 +21,7 @@ describe('allCommandCardAssetsExist function', () => {
     async () => {
       expect.hasAssertions();
 
+      // Storage holds none of the card's files, so the card is not fully printed.
       const exists = await allCommandCardAssetsExist(
         assetStorage(new Set()),
         card,

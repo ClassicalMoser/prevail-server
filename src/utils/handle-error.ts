@@ -1,10 +1,14 @@
 import type { ErrorSignature, LoggerPort } from '@ports';
 
 interface ErrorHandler {
+  /** Whatever was thrown; logged, never sent to the client. */
   error: unknown;
   logger: LoggerPort;
+  /** What was in flight, for the log line when the thrown value is not an Error. */
   context: string;
+  /** The fixed text the client receives. */
   message: string;
+  /** The HTTP status the client receives. */
   status: number;
 }
 

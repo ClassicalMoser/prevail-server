@@ -14,6 +14,7 @@ describe('unregisterWatchConnection function', () => {
       const { connection, sent } = watcher(gameId);
       await registerWatchConnection(store, connection);
 
+      // The watcher closes; a later step from the same socket is then refused rather than streamed.
       unregisterWatchConnection(store, connection);
       const stepped = await stepBotVsBotGame(store, connection);
 

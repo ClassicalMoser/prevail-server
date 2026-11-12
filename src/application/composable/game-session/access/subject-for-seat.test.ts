@@ -8,6 +8,7 @@ describe('subjectForSeat function', () => {
     () => {
       expect.hasAssertions();
 
+      // A human-vs-bot game with the human on white; the bot holds black.
       const meta = {
         gameMode: 'mini' as const,
         humanSide: 'white' as const,

@@ -9,11 +9,15 @@ describe('getUnitCardByIdQuery function', () => {
       expect.hasAssertions();
 
       const produced = [{ unit_card_id: 'unit-1' }];
+      // A recorded tag stands in for postgres; the test pins the statement
+      // shape, not database behaviour.
       const recorded = recordedSql(produced);
       const rows = await getUnitCardByIdQuery(recorded.sql, 'unit-1');
       const call = recorded.calls[0];
 
       expect(call?.text).toContain('unit_card_id');
+      // Only the card id is bound; the latest version is chosen inside the
+      // statement.
       expect(call?.values).toStrictEqual(['unit-1']);
       expect(rows).toStrictEqual(produced);
     },

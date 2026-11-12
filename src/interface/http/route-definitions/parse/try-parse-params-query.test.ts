@@ -24,6 +24,7 @@ const fail: ParseFailure = {
   error: { issues: [] },
 };
 
+// Stub validators: params must carry a string id; the query accepts anything.
 const validators = {
   params: {
     safeParse: (value: unknown): ParseOutcome<{ id: string }> => {
@@ -43,6 +44,7 @@ const validators = {
   },
 };
 
+// An empty request off the wire; each case overrides only the part it checks.
 const wire = (overrides: Partial<WireRouteRequest> = {}): WireRouteRequest => ({
   body: undefined,
   headers: {},
@@ -59,6 +61,7 @@ describe('tryParseParamsQuery function', () => {
       expect.hasAssertions();
 
       const parsed = tryParseParamsQuery(
+        // A request with no id in its params, which the stub refuses.
         wire(),
         validators as unknown as Pick<
           GetRouteValidators<{ id: string }, Record<string, never>, unknown>,
@@ -66,6 +69,7 @@ describe('tryParseParamsQuery function', () => {
         >, // stub safeParse doubles; ZodType is too large to fake fully
       );
 
+      // A bad id is a 400 'Invalid params'.
       expect(parsed).toStrictEqual({
         error: { message: 'Invalid params', status: 400, success: false },
         ok: false,

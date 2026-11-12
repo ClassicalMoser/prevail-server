@@ -16,6 +16,9 @@ describe('createDbRoot function', () => {
         'postgres://user:pass@127.0.0.1:1/none',
       );
 
+      // The root hands out one storage port per concern (command cards, unit
+      // cards, users, owned armies); each is checked by one method it must
+      // carry.
       expect(storage.commandCardStorage.getCommandCardById).toBeTypeOf(
         'function',
       );

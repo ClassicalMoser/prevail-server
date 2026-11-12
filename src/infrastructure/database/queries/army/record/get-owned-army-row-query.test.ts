@@ -17,6 +17,8 @@ describe('getOwnedArmyRowQuery function', () => {
           archived_at: null,
         },
       ];
+      // A recorded tag stands in for postgres; the test pins the statement
+      // shape.
       const recorded = recordedSql(produced);
       const rows = await getOwnedArmyRowQuery(
         recorded.sql,
@@ -25,7 +27,10 @@ describe('getOwnedArmyRowQuery function', () => {
       );
       const call = recorded.calls[0];
 
+      // The query is keyed by the auth subject through the users join, so
+      // another player's army id finds nothing.
       expect(call?.text).toContain('u.user_auth_sub');
+      // Army id first, then the owner's auth subject, as bound parameters.
       expect(call?.values).toStrictEqual(['army-1', 'auth0|owner']);
       expect(rows).toStrictEqual(produced);
     },

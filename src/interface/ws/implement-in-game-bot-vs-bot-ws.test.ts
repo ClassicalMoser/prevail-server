@@ -7,10 +7,12 @@ import { recordingLogger } from '@testing';
 
 const logger = recordingLogger();
 
+// A well-formed game id, which the contract's params accept.
 const validGameId = '550e8400-e29b-41d4-a716-446655440000';
 
 type WatchHandlers = InGameBotVsBotWsHandler<{ gameId: string }, unknown>;
 
+// Handlers that all succeed; a case overrides only the one it checks.
 const stubHandlers = (overrides?: {
   onStep?: WatchHandlers['onStep'];
 }): WatchHandlers => ({
@@ -32,9 +34,13 @@ const stubHandlers = (overrides?: {
  * @param handlers - Watcher handlers under test.
  * @returns What the socket sent, and its message handler.
  */
+// Opens the watcher route on a fake socket and hands back its sent frames and
+// its message handler.
 const openSocket = async (
   handlers: WatchHandlers,
 ): Promise<{ sent: string[]; receive: (raw: string) => void }> => {
+  // The real contract and route are used; only the handlers and socket are
+  // doubles.
   const route = implementInGameBotVsBotWs(
     botVsBotInGameWsContract,
     logger,
@@ -72,6 +78,7 @@ describe('bot-vs-bot WS implement helper', () => {
   it('routes step to the step handler', { timeout: 5000 }, async () => {
     expect.hasAssertions();
 
+    // The step handler counts its calls.
     let steps = 0;
     const { receive } = await openSocket(
       stubHandlers({
@@ -82,9 +89,11 @@ describe('bot-vs-bot WS implement helper', () => {
       }),
     );
 
+    // A watcher asks for the next bot move.
     receive('{"type":"step","payload":{}}');
     await delay(0);
 
+    // The step message reached the step handler.
     expect(steps).toBe(1);
   });
 
@@ -96,6 +105,8 @@ describe('bot-vs-bot WS implement helper', () => {
 
       const { receive, sent } = await openSocket(
         stubHandlers({
+          // The handler refuses the step, as it would when the game has already
+          // ended.
           onStep: async () => ({
             ok: false,
             stepRejected: { errorReason: 'The game is over', result: false },
@@ -107,6 +118,8 @@ describe('bot-vs-bot WS implement helper', () => {
       await delay(0);
       assert.ok(sent[0] !== undefined);
 
+      // The refusal reaches the watcher as stepRejected with the handler's
+      // reason.
       expect(JSON.parse(sent[0])).toStrictEqual({
         payload: { errorReason: 'The game is over', result: false },
         type: 'stepRejected',
@@ -122,9 +135,12 @@ describe('bot-vs-bot WS implement helper', () => {
 
       const { receive, sent } = await openSocket(stubHandlers());
 
+      // A watcher has no seat, so a player choice is not a message this route
+      // takes.
       receive('{"type":"playerChoice","payload":{}}');
       assert.ok(sent[0] !== undefined);
 
+      // It is answered as an invalid message rather than ignored or run.
       expect(JSON.parse(sent[0])).toStrictEqual({
         payload: { errorReason: 'Invalid inbound message', result: false },
         type: 'stepRejected',

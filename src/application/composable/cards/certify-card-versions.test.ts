@@ -7,7 +7,9 @@ describe('certifyCardVersions function', () => {
     async () => {
       expect.hasAssertions();
 
+      // Records what is written to certify, since the write is what players rely on.
       const certifiedIds: string[] = [];
+      // Three latest cards: one ready and uncertified, one already certified, one the schema rejects. Every asset exists, so none needs healing.
       const result = await certifyCardVersions({
         allAssetsExist: async () => true,
         cardId: (card) => card.id,
@@ -28,7 +30,9 @@ describe('certifyCardVersions function', () => {
         prepare: async () => ({ data: undefined, success: true }),
       });
 
+      // Only the ready card is written: the certified one is skipped and the schema-invalid one never certified.
       expect(certifiedIds).toStrictEqual(['ready']);
+      // The report comes from the stubbed read, which never changes, so 'ready' still shows as uncertified here; the write above is the fact under test.
       expect(result).toStrictEqual({
         data: {
           certified: ['already'],
@@ -45,7 +49,9 @@ describe('certifyCardVersions function', () => {
     async () => {
       expect.hasAssertions();
 
+      // Records which cards had their assets re-drawn.
       const healed: string[] = [];
+      // No card has its assets at first, so the card must be healed before it can be certified.
       const exists = new Set<string>();
       const result = await certifyCardVersions({
         allAssetsExist: async (card) => exists.has(card.id),
@@ -69,6 +75,7 @@ describe('certifyCardVersions function', () => {
         prepare: async () => ({ data: undefined, success: true }),
       });
 
+      // The card was healed once, and then (its assets now existing) it reads as certified in the final report.
       expect(healed).toStrictEqual(['needs-heal']);
       expect(result).toStrictEqual({
         data: {

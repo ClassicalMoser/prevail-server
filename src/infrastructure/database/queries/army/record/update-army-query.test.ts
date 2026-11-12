@@ -18,6 +18,8 @@ describe('updateArmyQuery function', () => {
           archived_at: null,
         },
       ];
+      // The tag records the UPDATE; connectionClient wraps it as the SqlClient
+      // the query expects.
       const recorded = recordedSql(produced);
       const client = connectionClient(recorded.sql);
       const rows = await updateArmyQuery(client, {
@@ -28,7 +30,11 @@ describe('updateArmyQuery function', () => {
       const call = recorded.calls[0];
 
       expect(call?.text).toContain('UPDATE armies');
+      // An archived army is not renamed: the WHERE keeps the update to live
+      // armies.
       expect(call?.text).toContain('archived_at IS NULL');
+      // New name, army id, then owner id: the owner id in the WHERE means
+      // another player cannot rename this army.
       expect(call?.values).toStrictEqual(['Renamed', 'army-1', 'user-1']);
       expect(rows).toStrictEqual(produced);
     },

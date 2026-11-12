@@ -40,6 +40,7 @@ const isPermission = (value: string): value is Permission =>
 const toPermissions = (
   claims: Record<string, unknown>,
 ): readonly Permission[] => {
+  // Auth0 puts the player's granted API permissions in the `permissions` claim.
   const granted = toStringArray(claims.permissions).filter((entry) =>
     isPermission(entry),
   );
@@ -50,10 +51,12 @@ const hasPermissions = (
   granted: readonly Permission[],
   required: readonly Permission[],
 ): boolean => {
+  // A route that names no permission only needs a verified player.
   if (required.length === 0) {
     return true;
   }
 
+  // Every required permission must be held; holding extras does not matter.
   const grantedSet = new Set(granted);
   return required.every((permission) => grantedSet.has(permission));
 };

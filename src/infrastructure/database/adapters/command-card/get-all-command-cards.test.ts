@@ -9,6 +9,7 @@ describe('getAllCommandCards function', () => {
       expect.hasAssertions();
 
       await expect(
+        // With no rows, the catalog is an empty list, not a failure.
         getAllCommandCards(recordedSql([]).sql),
       ).resolves.toStrictEqual({
         data: [],

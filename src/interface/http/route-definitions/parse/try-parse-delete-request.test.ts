@@ -24,6 +24,7 @@ const fail: ParseFailure = {
   error: { issues: [] },
 };
 
+// Stub validators: params must carry a string id; the query accepts anything.
 const deleteValidators = {
   params: {
     safeParse: (value: unknown): ParseOutcome<{ id: string }> => {
@@ -43,6 +44,7 @@ const deleteValidators = {
   },
 };
 
+// An empty request off the wire; each case overrides only the part it checks.
 const wire = (overrides: Partial<WireRouteRequest> = {}): WireRouteRequest => ({
   body: undefined,
   headers: {},
@@ -59,6 +61,7 @@ describe('tryParseDeleteRequest function', () => {
       expect.hasAssertions();
 
       const parsed = tryParseDeleteRequest(
+        // A delete request for card-1 with a bearer header.
         wire({
           headers: { authorization: 'Bearer x' },
           params: { id: 'card-1' },
@@ -69,6 +72,8 @@ describe('tryParseDeleteRequest function', () => {
         >, // stub safeParse doubles; ZodType is too large to fake fully
       );
 
+      // The parsed params, the empty query and the headers come back, so the
+      // handler can read the authorization header.
       expect(parsed).toStrictEqual({
         ok: true,
         value: {

@@ -31,6 +31,8 @@ const runWsMessage = (input: {
         });
       }
     } catch (error) {
+      // The thrown text stays in the server log; the client is told only
+      // 'Internal error' so a bug never leaks internals to a player.
       handleError({
         context: `handling ${input.type} on ${input.path}`,
         error,

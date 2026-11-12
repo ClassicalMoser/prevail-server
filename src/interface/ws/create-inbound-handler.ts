@@ -41,12 +41,15 @@ const createInboundHandler = <TData, TContext, THandle>(input: {
     context,
     connectionHandle,
   ) => {
+    // A client that sends `{ type: 'step' }` with no payload means an empty
+    // request; without this the schema would refuse it as undefined.
     const candidate =
       input.emptyPayloadAllowed === true ? (payload ?? {}) : payload;
     const parsed = input.schema.safeParse(candidate);
     if (!parsed.success) {
       return;
     }
+    // Handed back unrun: the router decides when the handler executes.
     const work = (): Promise<WsOutcome> =>
       input.run(parsed.data, context, connectionHandle);
     return work;

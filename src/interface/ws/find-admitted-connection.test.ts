@@ -2,9 +2,11 @@ import { gameIdParamsSchema } from '@testing';
 import { findAdmittedConnection } from './find-admitted-connection';
 import type { WsSocket } from './ws-types';
 
+// The route's params must be a game id.
 const paramsSchema = gameIdParamsSchema;
 
 /** A socket that records its close, and nothing else. */
+// A socket that only records its close; this function never sends or listens.
 const closingSocket = (): { socket: WsSocket; closed: unknown[] } => {
   const closed: unknown[] = [];
   const socket: WsSocket = {
@@ -29,6 +31,7 @@ describe('findAdmittedConnection function', () => {
     () => {
       expect.hasAssertions();
 
+      // A client with a valid game id and an authenticated subject.
       const { socket, closed } = closingSocket();
       const admitted = findAdmittedConnection({
         paramsSchema,
@@ -40,10 +43,12 @@ describe('findAdmittedConnection function', () => {
         },
       });
 
+      // Both the subject and the parsed params come through.
       expect(admitted).toStrictEqual({
         auth: { subject: 'auth0|a' },
         params: { gameId: 'g' },
       });
+      // The socket stays open.
       expect(closed).toStrictEqual([]);
     },
   );
@@ -55,10 +60,12 @@ describe('findAdmittedConnection function', () => {
     const admitted = findAdmittedConnection({
       paramsSchema,
       socket,
+      // An authenticated client with no game id.
       wire: { auth: { subject: 'auth0|a' }, headers: {}, params: {} },
     });
 
     expect(admitted).toBeUndefined();
+    // 1008 is the policy-violation close code; the reason says why.
     expect(closed).toStrictEqual([[1008, 'Invalid params']]);
   });
 
@@ -69,10 +76,12 @@ describe('findAdmittedConnection function', () => {
     const admitted = findAdmittedConnection({
       paramsSchema,
       socket,
+      // A valid game id but no auth on the wire.
       wire: { headers: {}, params: { gameId: 'g' } },
     });
 
     expect(admitted).toBeUndefined();
+    // An unauthenticated client is closed with 1008, not admitted as a guest.
     expect(closed).toStrictEqual([[1008, 'Unauthorized']]);
   });
 });

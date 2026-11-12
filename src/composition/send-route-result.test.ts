@@ -2,6 +2,7 @@ import Fastify from 'fastify';
 import type { RegisteredRoute, RouteInvokeResult } from '@ports';
 import { sendRouteResult } from './send-route-result';
 
+// A JSON GET route that succeeds with 200.
 const jsonRoute: RegisteredRoute = {
   auth: { authRequired: false },
   invoke: async () => ({ success: true, data: undefined }),
@@ -12,6 +13,8 @@ const jsonRoute: RegisteredRoute = {
 };
 
 /** Answer one request with the given envelope through `sendRouteResult`. */
+// Sends one request through sendRouteResult with the envelope a use case would
+// return, and reports what the client sees.
 const inject = async (
   envelope: RouteInvokeResult,
   route: RegisteredRoute = jsonRoute,
@@ -34,13 +37,16 @@ describe('sendRouteResult function', () => {
     async () => {
       expect.hasAssertions();
 
+      // A failure envelope with status 404.
       const sent = await inject({
         message: 'Nope',
         status: 404,
         success: false,
       });
 
+      // The envelope's own status becomes the HTTP status.
       expect(sent.statusCode).toBe(404);
+      // The body is just { message }, not the whole envelope.
       expect(JSON.parse(sent.body)).toStrictEqual({ message: 'Nope' });
     },
   );
@@ -48,8 +54,11 @@ describe('sendRouteResult function', () => {
   it('sends a bare string id as valid JSON', { timeout: 5000 }, async () => {
     expect.hasAssertions();
 
+    // A create route answering with a bare string id.
     const sent = await inject({ data: 'army-1', success: true });
 
+    // The body is the JSON string, quotes included, so a client's JSON parse
+    // works.
     expect(sent.body).toBe('"army-1"');
   });
 
@@ -61,10 +70,12 @@ describe('sendRouteResult function', () => {
 
       const sent = await inject(
         { success: true },
+        // A route declared as 204 and a success envelope with no data.
         { ...jsonRoute, successStatus: 204 },
       );
 
       expect(sent.statusCode).toBe(204);
+      // A 204 has no body.
       expect(sent.body).toBe('');
     },
   );
@@ -77,10 +88,13 @@ describe('sendRouteResult function', () => {
 
       const sent = await inject(
         { data: '<svg/>', success: true },
+        // A route declared as serving SVG.
         { ...jsonRoute, successContentType: 'image/svg+xml' },
       );
 
+      // The image is sent as is, not quoted as JSON.
       expect(sent.body).toBe('<svg/>');
+      // The route's declared content type is on the response.
       expect(String(sent.contentType)).toContain('image/svg+xml');
     },
   );

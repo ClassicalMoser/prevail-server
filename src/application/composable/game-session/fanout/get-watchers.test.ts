@@ -10,6 +10,7 @@ describe('getWatchers function', () => {
 
       const store = gameSessionStore();
 
+      // Two lookups for the same game: registrations must land in one shared set.
       const first = getWatchers(store, 'game-1');
       const second = getWatchers(store, 'game-1');
 

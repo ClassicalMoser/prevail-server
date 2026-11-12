@@ -9,6 +9,7 @@ describe('loadAuthoritativeState function', () => {
       expect.hasAssertions();
 
       const store = gameSessionStore();
+      // Storage holds no game, so there is no state to return.
       vi.mocked(store.enginePorts.gameStorage.getGame).mockImplementation(
         async () => {
           /* storage has no game */

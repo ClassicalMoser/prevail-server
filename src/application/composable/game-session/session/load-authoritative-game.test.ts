@@ -9,6 +9,7 @@ describe('loadAuthoritativeGame function', () => {
       expect.hasAssertions();
 
       const store = gameSessionStore();
+      // Storage answers with nothing, as for an id it has never stored.
       vi.mocked(store.enginePorts.gameStorage.getGame).mockImplementation(
         async () => {
           /* storage has no game */
@@ -28,6 +29,7 @@ describe('loadAuthoritativeGame function', () => {
       expect.hasAssertions();
 
       const store = gameSessionStore();
+      // Storage answers with a failure result; callers treat that as a game that is gone.
       vi.mocked(store.enginePorts.gameStorage.getGame).mockResolvedValue({
         errorReason: 'missing',
         result: false,

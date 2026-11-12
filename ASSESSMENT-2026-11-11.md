@@ -55,6 +55,6 @@ Each is a `TODO(...)` where it stands; this only indexes them.
 
 ## Deferred
 
-- Commentary is still thin by `pnpm check:commentary` (the rules script, ported): source 9% overall (application 11%, infrastructure 5%, interface 9%, composition 18%), specs about 0%. `testing` is not a boundary, so it is not measured. Rules' own target is 25%.
+- Commentary is still under rules' 25% by `pnpm check:commentary` (the rules script, ported): source 10% overall (application 12%, infrastructure 7%, interface 10%, composition 18%), specs 12% (application 7%, the rest 12–18%). `testing` is not a boundary, so it is not measured. Two reading passes found that most steps already had their reason written; what is left is mainly SQL (explained above the function, which the in-body measure does not see) and plain delegation. A low number in those places is expected; the human read decides whether a file needs more.
 - A self-proof check that no spec reaches its own subject (rules has `check:selfProof`; not ported).
 - Spec titles and setup, once structure holds still.

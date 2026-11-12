@@ -16,10 +16,12 @@ describe('getCommandCardUnitIds function', () => {
     () => {
       expect.hasAssertions();
 
+      // A command card that restricts and supports by unit type.
       const card = commandCardNamed('Fearless Velites');
       assert.ok(card.unitSupport.supportType === 'unitType');
       const supportedUnitTypeId = card.unitSupport.unitTypeId;
 
+      // The restriction and the support name the same unit, so its id is listed once.
       const ids = getCommandCardUnitIds(card);
 
       expect(ids).toStrictEqual([supportedUnitTypeId]);
@@ -32,11 +34,13 @@ describe('getCommandCardUnitIds function', () => {
     () => {
       expect.hasAssertions();
 
+      // A card restricted by trait (no unit ids) whose round effect is restricted by unit type.
       const card = commandCardNamed('Brace');
       assert.ok(card.command.restrictions.restrictionType === 'trait');
       const roundRestrictions = card.roundEffect.restrictions;
       assert.ok(roundRestrictions.restrictionType === 'unitType');
 
+      // The trait restriction adds no ids; the round effect's unit ids are all that are listed.
       const ids = getCommandCardUnitIds(card);
 
       expect(ids).toStrictEqual(roundRestrictions.unitRestrictions);

@@ -40,6 +40,7 @@ describe('projectCommandCardVersion function', () => {
     async () => {
       expect.hasAssertions();
 
+      // Storage starts empty, so every target must be drawn and stored.
       const existing = new Set<string>();
       const result = await projectCommandCardVersion(
         {
@@ -53,6 +54,7 @@ describe('projectCommandCardVersion function', () => {
       );
 
       expect(result).toStrictEqual({ data: undefined, success: true });
+      // Three files stored: a command card has three asset targets.
       expect(existing.size).toBe(3);
     },
   );

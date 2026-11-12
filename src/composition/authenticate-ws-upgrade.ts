@@ -3,6 +3,7 @@ import { extractAccessToken } from '@utils';
 
 /** The verified caller of a socket route. */
 interface WsUpgradeAuth {
+  /** The Auth0 subject; later compared with a seat's or game's owner. */
   subject: string;
 }
 

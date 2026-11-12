@@ -11,8 +11,10 @@ describe('sendWatchSnapshot function', () => {
 
       const { store, gameId } = await hostedBotVsBotGame();
       const { connection, sent } = watcher(gameId);
+      // The creator registers as a watcher and receives the opening snapshot.
       await registerWatchConnection(store, connection);
 
+      // An explicit resync request sends a second snapshot.
       const resent = await sendWatchSnapshot(store, connection);
 
       expect(resent).toStrictEqual({ data: undefined, success: true });
@@ -30,6 +32,7 @@ describe('sendWatchSnapshot function', () => {
       expect.hasAssertions();
 
       const { store, gameId } = await hostedBotVsBotGame();
+      // This watcher never registers, so a resync request cannot skip the open-time check.
       const { connection, sent } = watcher(gameId);
 
       const resent = await sendWatchSnapshot(store, connection);

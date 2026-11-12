@@ -8,6 +8,8 @@ describe('archiveOwnedArmy function', () => {
     async () => {
       expect.hasAssertions();
 
+      // The archive statement returns the army id, meaning one live army of
+      // this subject was archived.
       const recorded = recordedSql([{ army_id: 'army-1' }]);
 
       await expect(
@@ -26,6 +28,8 @@ describe('archiveOwnedArmy function', () => {
       expect.hasAssertions();
 
       await expect(
+        // No row comes back: the army is missing, archived already, or someone
+        // else's, and the caller cannot tell which.
         archiveOwnedArmy(recordedSql([]).sql, 'auth0|a', 'army-1'),
       ).resolves.toStrictEqual({
         message: 'Army not found',

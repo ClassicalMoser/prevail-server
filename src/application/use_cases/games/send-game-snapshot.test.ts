@@ -13,6 +13,7 @@ describe('sendGameSnapshot function', () => {
     async () => {
       expect.hasAssertions();
 
+      // Mini-legal armies for both sides, so a vs-bot game can be created.
       const { store } = liveGameStore({
         [blackArmyId]: miniArmy(blackArmyId),
         [whiteArmyId]: miniArmy(whiteArmyId),
@@ -35,10 +36,13 @@ describe('sendGameSnapshot function', () => {
         side: 'white' as const,
         subject: 'auth0|human-sub',
       };
+      // The human connects and gets an opening snapshot.
       const registered = await registerSeatConnection(store, connection);
       expect(registered.success).toBe(true);
+      // Forget the opening snapshot so only the explicitly requested resend is counted.
       messages.length = 0;
 
+      // The client asks again; it receives the current state once more, as its own side sees it.
       const sent = await sendGameSnapshot(store, connection);
       expect(sent).toStrictEqual({ data: undefined, success: true });
       expect(messages).toStrictEqual([

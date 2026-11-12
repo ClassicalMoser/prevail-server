@@ -8,6 +8,8 @@ describe('extractAccessToken function', () => {
       expect.hasAssertions();
 
       const token = extractAccessToken(
+        // Both sources are present: the header wins, so a stray query value
+        // cannot replace the real token.
         { authorization: 'Bearer from-header' },
         { access_token: 'from-query' },
       );
@@ -22,6 +24,7 @@ describe('extractAccessToken function', () => {
     () => {
       expect.hasAssertions();
 
+      // A browser socket cannot set headers, so the token arrives in the query.
       const token = extractAccessToken({}, { access_token: 'from-query' });
 
       expect(token).toBe('from-query');
@@ -36,6 +39,7 @@ describe('extractAccessToken function', () => {
 
       const token = extractAccessToken(
         {},
+        // A repeated query key arrives as an array; only the first is read.
         { access_token: ['first', 'second'] },
       );
 

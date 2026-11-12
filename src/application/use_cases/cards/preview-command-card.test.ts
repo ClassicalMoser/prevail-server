@@ -31,7 +31,9 @@ describe('previewCommandCard function', () => {
     async () => {
       expect.hasAssertions();
 
+      // The card names units by id; a preview must print their names, not ids.
       const unitIds = getCommandCardUnitIds(commandCardNamingUnits);
+      // Storage answers each id with a unit of that id named `Unit-<id>`.
       const getUnitCardsByIds = vi
         .fn<UnitCardStorage['getUnitCardsByIds']>()
         .mockResolvedValue({
@@ -42,6 +44,7 @@ describe('previewCommandCard function', () => {
             name: `Unit-${id}`,
           })),
         });
+      // A renderer that returns a tiny SVG, so the preview can be read back as text.
       const renderer: CommandCardRendererPort = {
         renderCommandCard: vi
           .fn<CommandCardRendererPort['renderCommandCard']>()
@@ -61,6 +64,7 @@ describe('previewCommandCard function', () => {
         commandCardNamingUnits,
       );
 
+      // Names were looked up for exactly the card's unit ids, and the card was drawn once.
       expect(getUnitCardsByIds).toHaveBeenCalledWith(unitIds);
       expect(renderer.renderCommandCard).toHaveBeenCalledTimes(1);
       expect(result).toStrictEqual({ success: true, data: '<svg/>' });

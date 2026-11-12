@@ -21,6 +21,7 @@ describe('createUseCasesRoot function', () => {
     () => {
       expect.hasAssertions();
 
+      // Every collaborator is an empty stand-in: the root only wires the ports together, so none is called.
       const root = createUseCasesRoot({
         assetStorage: {} as AssetStorage, // unused until a use case runs
         commandCardRenderer: {} as CommandCardRendererPort, // unused until a use case runs

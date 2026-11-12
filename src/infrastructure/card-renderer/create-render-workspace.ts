@@ -4,7 +4,9 @@ import path from 'node:path';
 
 /** A temp Typst project root for one render, and the call that removes it. */
 interface RenderWorkspace {
+  /** Typst `--root` for this render; holds the copied assets and the input JSON. */
   workspaceDir: string;
+  /** Deletes `workspaceDir`; the renderer calls it whether or not the compile worked. */
   cleanup: () => Promise<void>;
 }
 
@@ -29,6 +31,8 @@ const copyAsset = async (
 const createRenderWorkspace = async (
   assetsDir: string,
 ): Promise<RenderWorkspace> => {
+  // A fresh directory per render, so two authors previewing at once cannot
+  // overwrite each other's card data or artwork.
   const workspaceDir = await mkdtemp(
     path.join(tmpdir(), 'prevail-card-render-'),
   );

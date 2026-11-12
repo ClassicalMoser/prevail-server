@@ -9,11 +9,14 @@ describe('createInMemoryRoundSnapshotStorage function', () => {
       expect.hasAssertions();
 
       const storage = createInMemoryRoundSnapshotStorage({});
+      // An empty mini-mode state stands for the board at the start of round 2.
       const state = createEmptyGameState('mini');
       const saved = await storage.saveRoundSnapshot('game-1', 2, state);
       const loaded = await storage.getRoundSnapshot('game-1', 2);
 
+      // The snapshot is stored under game-1 and round 2.
       expect(saved).toStrictEqual({ data: undefined, result: true });
+      // The same game and round return the same state.
       expect(loaded).toStrictEqual({ data: state, result: true });
     },
   );

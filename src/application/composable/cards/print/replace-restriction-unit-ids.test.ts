@@ -5,6 +5,7 @@ describe('replaceRestrictionUnitIds function', () => {
   it('shows each restricted unit type by name', { timeout: 5000 }, () => {
     expect.hasAssertions();
 
+    // A restriction naming one unit type by id, with a range value that must survive the swap.
     const restrictions: Restrictions = {
       inspirationRangeRestriction: 2,
       restrictionType: 'unitType',
@@ -23,6 +24,7 @@ describe('replaceRestrictionUnitIds function', () => {
   it('leaves an open restriction as it is', { timeout: 5000 }, () => {
     expect.hasAssertions();
 
+    // A restriction with no unit ids to name.
     const restrictions = {
       inspirationRangeRestriction: 1,
       restrictionType: 'none',

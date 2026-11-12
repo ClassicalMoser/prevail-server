@@ -24,6 +24,7 @@ const fail: ParseFailure = {
   error: { issues: [] },
 };
 
+// Stub validators: params must carry a string id; the query accepts anything.
 const getValidators = {
   params: {
     safeParse: (value: unknown): ParseOutcome<{ id: string }> => {
@@ -46,6 +47,7 @@ const getValidators = {
   },
 };
 
+// An empty request off the wire; each case overrides only the part it checks.
 const wire = (overrides: Partial<WireRouteRequest> = {}): WireRouteRequest => ({
   body: undefined,
   headers: {},
@@ -62,6 +64,7 @@ describe('tryParseGetRequest function', () => {
       expect.hasAssertions();
 
       const parsed = tryParseGetRequest(
+        // A request with no id in its params, which the stub refuses.
         wire(),
         getValidators as unknown as GetRouteValidators<
           { id: string },
@@ -70,6 +73,7 @@ describe('tryParseGetRequest function', () => {
         >, // stub safeParse doubles; ZodType is too large to fake fully
       );
 
+      // A bad id is a 400 'Invalid params'.
       expect(parsed).toStrictEqual({
         error: { message: 'Invalid params', status: 400, success: false },
         ok: false,
@@ -84,6 +88,7 @@ describe('tryParseGetRequest function', () => {
       expect.hasAssertions();
 
       const parsed = tryParseGetRequest(
+        // A request for card-1 with a bearer header.
         wire({
           headers: { authorization: 'Bearer x' },
           params: { id: 'card-1' },
@@ -95,6 +100,7 @@ describe('tryParseGetRequest function', () => {
         >, // stub safeParse doubles; ZodType is too large to fake fully
       );
 
+      // The parsed params, the empty query and the headers come back.
       expect(parsed).toStrictEqual({
         ok: true,
         value: {

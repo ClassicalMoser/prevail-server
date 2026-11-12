@@ -5,6 +5,7 @@ const detachedTasks = new Set<Promise<unknown>>();
  * Errors are swallowed so sync callers (engine hooks, WS message handlers) stay safe.
  */
 const runDetached = (task: () => Promise<unknown>): void => {
+  // The promise must be reachable from inside its own finally block to remove itself.
   const holder: { current: Promise<unknown> | undefined } = {
     current: undefined,
   };

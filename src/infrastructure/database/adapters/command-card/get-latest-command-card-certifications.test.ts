@@ -9,6 +9,7 @@ describe('getLatestCommandCardCertifications function', () => {
       expect.hasAssertions();
 
       await expect(
+        // With no cards, the certification list is empty, not a failure.
         getLatestCommandCardCertifications(recordedSql([]).sql),
       ).resolves.toStrictEqual({
         data: [],

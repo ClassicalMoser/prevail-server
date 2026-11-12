@@ -17,6 +17,8 @@ const createInMemoryEventStreamStorage = (
 
   return {
     getEventStream: async (gameId, roundNumber) => {
+      // An unknown round answers ok with no stream; the engine reads that as
+      // 'nothing recorded yet', not as a failure.
       const stream = streams.get(streamKey(gameId, roundNumber));
       const response = ok(stream);
       return response;
@@ -47,6 +49,8 @@ const createInMemoryEventStreamStorage = (
         const response = fail('Event stream already exists');
         return response;
       }
+      // A round starts with an empty stream, and starting one twice is refused
+      // so a replayed start cannot wipe recorded events.
       const empty: Event[] = [];
       streams.set(key, empty);
       const response = ok(empty);

@@ -8,6 +8,8 @@ describe('toArmy function', () => {
     () => {
       expect.hasAssertions();
 
+      // An army with one unit type and one command card from the sample
+      // catalog.
       const units = [{ unitType: tempUnits[0], count: 1 }];
       const commandCards = [tempCommandCards[4]];
       const army = toArmy({
@@ -17,6 +19,8 @@ describe('toArmy function', () => {
         commandCards,
       });
 
+      // The same units and cards come through; only the id and name are renamed
+      // to domain fields.
       expect(army).toStrictEqual({
         commandCards,
         id: 'army-1',

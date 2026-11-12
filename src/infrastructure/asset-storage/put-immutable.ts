@@ -8,8 +8,11 @@ import { httpStatusCode } from './http-status-code';
 interface PutImmutableParams {
   client: S3Client;
   bucket: string;
+  /** Object key; versioned, so the same key always means the same bytes. */
   key: string;
+  /** The rendered card file to store. */
   body: Buffer;
+  /** Picks the Content-Type a browser or print tool sees on download. */
   assetType: AssetType;
 }
 

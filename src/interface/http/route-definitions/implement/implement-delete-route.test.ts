@@ -5,6 +5,7 @@ import { implementDeleteRoute } from './implement-delete-route';
 
 const logger = recordingLogger();
 
+// An empty request off the wire; each case overrides only the part it checks.
 const wire = (overrides: Partial<WireRouteRequest> = {}): WireRouteRequest => ({
   body: undefined,
   headers: {},
@@ -20,6 +21,8 @@ describe('implementDeleteRoute function', () => {
     async () => {
       expect.hasAssertions();
 
+      // The real delete-empty command cards contract, with a handler that
+      // succeeds with no data.
       const route = implementDeleteRoute(
         deleteEmptyCommandCardsContract,
         logger,
@@ -30,11 +33,14 @@ describe('implementDeleteRoute function', () => {
 
       const result = await route.invoke(wire());
 
+      // The route is a DELETE at the contract's path and answers 204, which a
+      // browser expects for a delete with no body.
       expect(route).toMatchObject({
         method: 'DELETE',
         path: deleteEmptyCommandCardsContract.path,
         successStatus: 204,
       });
+      // The handler's result passes through with no data field.
       expect(result).toStrictEqual({ success: true });
     },
   );

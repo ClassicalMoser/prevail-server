@@ -41,11 +41,13 @@ describe('ensureCommandCardProjection function', () => {
     async () => {
       expect.hasAssertions();
 
+      // One of the card's three files is already stored, so only the other two should be drawn.
       const [firstTarget] = commandCardAssetTargets(card);
       assert.ok(firstTarget !== undefined);
       const existing = new Set<string>([firstTarget.key]);
       const beforeSize = existing.size;
 
+      // A stub renderer and placeholder unit names are enough: the test counts files stored, not their content.
       const result = await ensureCommandCardProjection(
         {
           assetStorage: assetStorage(existing),
@@ -58,6 +60,7 @@ describe('ensureCommandCardProjection function', () => {
       );
 
       expect(result).toStrictEqual({ data: undefined, success: true });
+      // The set grew past the one file it started with, and now holds all three.
       expect(existing.size).toBeGreaterThan(beforeSize);
       expect(existing.size).toBe(3);
     },

@@ -9,11 +9,15 @@ describe('getAllCommandCardsQuery function', () => {
       expect.hasAssertions();
 
       const produced = [{ command_card_id: 'card-1' }];
+      // A recorded tag stands in for postgres; the test pins the statement
+      // shape, not database behaviour.
       const recorded = recordedSql(produced);
       const rows = await getAllCommandCardsQuery(recorded.sql);
       const call = recorded.calls[0];
 
       expect(call?.text).toContain('FROM command_cards');
+      // No filter: an author sees every card, certified or not, so nothing is
+      // bound.
       expect(call?.values).toStrictEqual([]);
       expect(rows).toStrictEqual(produced);
     },

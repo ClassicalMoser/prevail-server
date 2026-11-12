@@ -8,9 +8,11 @@ describe('toArmyUnitCardRows function', () => {
     () => {
       expect.hasAssertions();
 
+      // One catalog unit type.
       const unitType = tempUnits[0];
       const rows = toArmyUnitCardRows('army-1', [{ unitType, count: 3 }]);
 
+      // A unit row carries the count this army holds, here 3.
       expect(rows).toStrictEqual([
         {
           army_id: 'army-1',

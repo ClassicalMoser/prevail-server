@@ -30,6 +30,7 @@ describe('commandCardProjectOps function', () => {
     async () => {
       expect.hasAssertions();
 
+      // Records whether the renderer received unit names rather than ids.
       let renderedWithNames = false;
       const commandCardRenderer: CommandCardRendererPort = {
         renderCommandCard: async (
@@ -44,6 +45,7 @@ describe('commandCardProjectOps function', () => {
         },
       };
 
+      // Placeholder names (prefixed NAME_) stand in for storage, so the test can tell a name from an id.
       const ops = commandCardProjectOps({
         assetStorage: assetStorage(),
         commandCardRenderer,
@@ -52,6 +54,7 @@ describe('commandCardProjectOps function', () => {
         ),
       });
 
+      // Take the first target; one render for it is enough to show what the renderer is handed.
       const [target] = ops.targets(card);
       assert.ok(target !== undefined);
       const result = await ops.render(card, target);

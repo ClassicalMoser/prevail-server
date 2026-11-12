@@ -1,6 +1,7 @@
 import { recordedSql } from '@testing';
 import { renameOwnedArmy } from './rename-owned-army';
 
+// One rename request: army-1, owned by user-1, to 'Legion'.
 const rename = { armyId: 'army-1', armyName: 'Legion', userId: 'user-1' };
 const row = {
   army_id: 'army-1',
@@ -17,6 +18,7 @@ describe('renameOwnedArmy function', () => {
     async () => {
       expect.hasAssertions();
 
+      // The update returns the row, meaning a live army of this owner matched.
       const recorded = recordedSql([row]);
 
       await expect(
@@ -31,6 +33,8 @@ describe('renameOwnedArmy function', () => {
     async () => {
       expect.hasAssertions();
 
+      // The update returns no row: the army is archived, missing, or another
+      // player's.
       const recorded = recordedSql([]);
 
       await expect(

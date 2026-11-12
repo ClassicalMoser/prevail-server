@@ -10,11 +10,13 @@ describe('createCommandCardStorage function', () => {
     async () => {
       expect.hasAssertions();
 
+      // The tag answers with no rows, so the card has no version.
       const recorded = recordedSql([]);
       const storage = createCommandCardStorage(logger, recorded.sql);
 
       const result = await storage.getCommandCardById('missing');
 
+      // A card with no version is a 404, not an empty success.
       expect(result).toStrictEqual({
         message: 'Command card not found',
         status: 404,
@@ -29,6 +31,7 @@ describe('createCommandCardStorage function', () => {
     async () => {
       expect.hasAssertions();
 
+      // The insert of an empty card returns the id the database assigned.
       const recorded = recordedSql([
         { command_card_id: '550e8400-e29b-41d4-a716-446655440099' },
       ]);
@@ -36,6 +39,7 @@ describe('createCommandCardStorage function', () => {
 
       const result = await storage.createEmptyCommandCard();
 
+      // The caller gets the new id as the data.
       expect(result).toStrictEqual({
         data: '550e8400-e29b-41d4-a716-446655440099',
         success: true,
@@ -49,12 +53,15 @@ describe('createCommandCardStorage function', () => {
     async () => {
       expect.hasAssertions();
 
+      // No rows needed: an empty id list is answered without asking the
+      // database.
       const recorded = recordedSql([]);
       const storage = createCommandCardStorage(logger, recorded.sql);
 
       const result = await storage.getCommandCardsByIds([]);
 
       expect(result).toStrictEqual({ data: [], success: true });
+      // No statement ran for an empty list.
       expect(recorded.calls).toHaveLength(0);
     },
   );

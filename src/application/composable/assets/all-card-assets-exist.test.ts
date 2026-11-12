@@ -21,8 +21,10 @@ describe('allCardAssetsExist function', () => {
     async () => {
       expect.hasAssertions();
 
+      // Storage holds only a.svg, so b.svg, which the card needs, is missing.
       const adapter = recordingStorage(new Set(['a.svg']));
 
+      // One missing target is enough: a card with any asset absent is not complete.
       const exists = await allCardAssetsExist(
         {
           assetStorage: adapter,

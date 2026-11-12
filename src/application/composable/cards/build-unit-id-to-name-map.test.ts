@@ -21,6 +21,7 @@ describe('buildUnitIdToNameMap function', () => {
     async () => {
       expect.hasAssertions();
 
+      // No ids means no lookup is needed, so the map comes back empty and successful.
       const result = await buildUnitIdToNameMap(storage([]), []);
 
       expect(result).toStrictEqual({ data: new Map(), success: true });
@@ -33,6 +34,7 @@ describe('buildUnitIdToNameMap function', () => {
     async () => {
       expect.hasAssertions();
 
+      // Storage holds only one of the two ids asked for; a card naming a unit that does not exist cannot be printed.
       const result = await buildUnitIdToNameMap(storage([unit]), [
         unit.id,
         'missing-unit',
@@ -52,6 +54,7 @@ describe('buildUnitIdToNameMap function', () => {
     async () => {
       expect.hasAssertions();
 
+      // The stored unit is asked for by id; its name is what a printed command card shows.
       const result = await buildUnitIdToNameMap(storage([unit]), [unit.id]);
 
       expect(result).toStrictEqual({

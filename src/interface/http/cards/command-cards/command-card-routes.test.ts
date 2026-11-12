@@ -6,6 +6,7 @@ import { recordingLogger } from '@testing';
 
 const logger = recordingLogger();
 
+// A partial use-case double: only getCurrentCommandCards exists.
 const useCases = (): CommandCardUseCasesPort =>
   ({
     getCurrentCommandCards: async () => ({
@@ -22,6 +23,8 @@ describe('createCommandCardRoutes function', () => {
       expect.hasAssertions();
 
       const routes = createCommandCardRoutes(useCases(), logger);
+      // Find the current-cards route by the contract's path rather than by
+      // position.
       const current = routes.find(
         (route) => route.path === getCurrentCommandCardsContract.path,
       );
@@ -34,7 +37,10 @@ describe('createCommandCardRoutes function', () => {
         query: {},
       } satisfies WireRouteRequest);
 
+      // The command-card API has nine routes in all.
       expect(routes).toHaveLength(9);
+      // The route returns what the use case returned, which shows it is wired
+      // to the right method.
       expect(result).toStrictEqual({
         data: [{ id: 'current' }],
         success: true,

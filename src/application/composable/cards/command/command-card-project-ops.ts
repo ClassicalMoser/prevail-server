@@ -15,6 +15,7 @@ import { replaceCommandCardUnitIdsWithNames } from '../print/replace-command-car
 interface CommandCardProjectionDeps {
   assetStorage: AssetStorage;
   commandCardRenderer: CommandCardRendererPort;
+  /** Names for every unit id the card cites, so the printed face shows names. */
   unitIdToNameMap: UnitIdToNameMap;
 }
 

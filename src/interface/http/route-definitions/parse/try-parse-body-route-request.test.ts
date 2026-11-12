@@ -24,6 +24,8 @@ const fail: ParseFailure = {
   error: { issues: [] },
 };
 
+// Stub validators: the body must be an object with a string name; params and
+// query accept anything.
 const bodyValidators = {
   body: {
     safeParse: (value: unknown): ParseOutcome<{ name: string }> => {
@@ -49,6 +51,7 @@ const bodyValidators = {
   },
 };
 
+// An empty request off the wire; each case overrides only the part it checks.
 const wire = (overrides: Partial<WireRouteRequest> = {}): WireRouteRequest => ({
   body: undefined,
   headers: {},
@@ -64,6 +67,7 @@ describe('tryParseBodyRouteRequest function', () => {
     () => {
       expect.hasAssertions();
 
+      // A body whose name is a number, which the stub refuses.
       const parsed = tryParseBodyRouteRequest(
         wire({ body: { name: 1 } }),
         bodyValidators as unknown as PostRouteValidators<
@@ -74,6 +78,8 @@ describe('tryParseBodyRouteRequest function', () => {
         >, // stub safeParse doubles; ZodType is too large to fake fully
       );
 
+      // A bad body is a 400 'Invalid body', not an exception, so the client
+      // sees what was wrong.
       expect(parsed).toStrictEqual({
         error: { message: 'Invalid body', status: 400, success: false },
         ok: false,

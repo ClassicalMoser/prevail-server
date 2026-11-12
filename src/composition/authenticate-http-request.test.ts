@@ -2,12 +2,15 @@ import type { AuthRequired } from '@classicalmoser/prevail-contracts';
 import type { AuthPort } from '@ports';
 import { authenticateHttpRequest } from './authenticate-http-request';
 
+// A route that needs a token and no particular permission.
 const auth: AuthRequired = { authRequired: true, permissionsRequired: [] };
 
+// An auth port that accepts any token as the player auth0|a.
 const accepting: AuthPort = {
   checkToken: async () => ({ subject: 'auth0|a' }),
 };
 
+// An auth port that refuses with 403, as when the token lacks a permission.
 const rejecting: AuthPort = {
   checkToken: async () => ({
     message: 'Missing permission',
@@ -21,6 +24,7 @@ describe('authenticateHttpRequest function', () => {
     expect.hasAssertions();
 
     await expect(
+      // A bearer token in the Authorization header.
       authenticateHttpRequest(accepting, auth, {
         authorization: 'Bearer good',
       }),
@@ -34,6 +38,8 @@ describe('authenticateHttpRequest function', () => {
       expect.hasAssertions();
 
       await expect(
+        // No Authorization header at all: the port is not even asked, and the
+        // answer is 401.
         authenticateHttpRequest(accepting, auth, {}),
       ).resolves.toStrictEqual({
         message: 'Unauthorized',
@@ -50,6 +56,8 @@ describe('authenticateHttpRequest function', () => {
       expect.hasAssertions();
 
       await expect(
+        // The port's own status and message come through, so the player sees
+        // 403 rather than a generic 401.
         authenticateHttpRequest(rejecting, auth, {
           authorization: 'Bearer bad',
         }),

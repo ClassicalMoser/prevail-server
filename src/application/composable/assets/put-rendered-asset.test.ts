@@ -13,6 +13,7 @@ interface RecordingStorage extends AssetStorage {
 
 const recordingStorage = (existing: Set<string>): RecordingStorage => {
   const putKeys: string[] = [];
+  // Storage starts empty and records every file written.
   const adapter: RecordingStorage = {
     objectExists: async (key): Promise<boolean> => existing.has(key),
     putImmutable: async (key) => {
@@ -33,6 +34,7 @@ describe('putRenderedAsset function', () => {
       expect.hasAssertions();
 
       const adapter = recordingStorage(new Set());
+      // The renderer has already failed, so there is nothing valid to store.
       const renderFailure: DataErrorSignature<Buffer> = {
         message: 'render failed',
         status: 500,
@@ -45,6 +47,7 @@ describe('putRenderedAsset function', () => {
         renderFailure,
       );
 
+      // The failure is returned as it came, and nothing was written under the target key.
       expect(result).toStrictEqual(renderFailure);
       expect(adapter.putKeys).toStrictEqual([]);
     },
@@ -58,6 +61,7 @@ describe('putRenderedAsset function', () => {
 
       const adapter = recordingStorage(new Set());
 
+      // A successful render is stored under the key the target names.
       const result = await putRenderedAsset(
         adapter,
         target('cards/command/svg/a.svg'),

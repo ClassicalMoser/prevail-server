@@ -56,6 +56,8 @@ const implementWsRoute = <TParams, TContext, THandle>(input: {
     }
 
     const context = input.buildContext(admitted, wire);
+    // The client reads JSON text frames, so every outbound message (events,
+    // snapshots, rejections) is stringified here once.
     const sendJson: SendJson = (message) => {
       socket.send(JSON.stringify(message));
     };
@@ -67,11 +69,15 @@ const implementWsRoute = <TParams, TContext, THandle>(input: {
       path: input.path,
     });
     if (!opened.ok) {
+      // A refusal from the game (not your seat, not the creator) is a policy
+      // violation, 1008; only a thrown open supplies its own code, 1011.
       socket.close(opened.closeCode ?? 1008, opened.reason);
       return;
     }
     const { connectionHandle } = opened;
 
+    // Only after the open succeeded does the client's traffic reach the route,
+    // so a refused client never gets a message handled.
     socket.onMessage((raw) => {
       routeWsMessage({
         connectionHandle,

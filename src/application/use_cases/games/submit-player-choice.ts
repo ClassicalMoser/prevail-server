@@ -11,8 +11,11 @@ import { takeBotTurns } from '@application/composable/game-session/bot/take-bot-
 /** A choice a socket submits: the game, the seat from its path, who it is, and the choice. */
 interface SubmitPlayerChoiceInput {
   gameId: string;
+  /** The seat named by the socket path, never by the message body. */
   side: PlayerSide;
+  /** Auth subject of the socket, checked against the seat's owner. */
   subject: string;
+  /** The choice as the client sent it; its `player` must equal `side`. */
   playerChoice: PlayerChoiceEvent;
 }
 

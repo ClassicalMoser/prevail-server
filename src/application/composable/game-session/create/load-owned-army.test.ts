@@ -7,6 +7,7 @@ describe('loadOwnedArmy function', () => {
   it('answers the army the subject owns', { timeout: 5000 }, async () => {
     expect.hasAssertions();
 
+    // Owned-army storage holds this army for the subject (a stand-in for the owner's saved armies).
     const store = gameSessionStore({
       ownedArmyStorage: ownedArmyStorage({ [armyId]: army(armyId) }),
     });
@@ -22,11 +23,13 @@ describe('loadOwnedArmy function', () => {
     async () => {
       expect.hasAssertions();
 
+      // Storage holds no armies, so the lookup fails as not-found.
       const store = gameSessionStore({
         ownedArmyStorage: ownedArmyStorage({}),
       });
 
       await expect(
+        // The caller supplies the wording for the failure; the function returns it unchanged.
         loadOwnedArmy(store, 'sub', armyId, () => ({
           message: 'mine',
           status: 400,

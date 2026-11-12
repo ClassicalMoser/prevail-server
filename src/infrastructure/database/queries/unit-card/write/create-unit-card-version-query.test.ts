@@ -9,7 +9,11 @@ describe('createUnitCardVersionQuery function', () => {
       expect.hasAssertions();
 
       const produced = [{ unit_card_id: 'unit-1' }];
+      // A recorded tag stands in for postgres; the test pins the statement
+      // shape, not database behaviour.
       const recorded = recordedSql(produced);
+      // A version row as the author writes it: no artwork yet (null) and the
+      // definition already serialized JSON.
       const writeVersion = {
         unit_card_id: 'unit-1',
         unit_card_name: 'Hastati',
@@ -22,7 +26,10 @@ describe('createUnitCardVersionQuery function', () => {
       const rows = await createUnitCardVersionQuery(recorded.sql, writeVersion);
       const call = recorded.calls[0];
 
+      // Publishing a card adds a new version row; earlier versions stay.
       expect(call?.text).toContain('INSERT INTO unit_card_versions');
+      // Bound in statement order (id, name, artwork, version triple,
+      // definition), which differs from the row's key order.
       expect(call?.values).toStrictEqual([
         'unit-1',
         'Hastati',

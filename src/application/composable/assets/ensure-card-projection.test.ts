@@ -13,6 +13,7 @@ interface RecordingStorage extends AssetStorage {
 
 const recordingStorage = (existing: Set<string>): RecordingStorage => {
   const putKeys: string[] = [];
+  // Storage already holds a.svg; the recording storage notes every file written.
   const adapter: RecordingStorage = {
     objectExists: async (key): Promise<boolean> => existing.has(key),
     putImmutable: async (key) => {
@@ -31,6 +32,7 @@ describe('ensureCardProjection function', () => {
 
     const adapter = recordingStorage(new Set(['a.svg']));
 
+    // The card needs a.svg and b.svg; only b.svg is missing, so only it should be drawn and stored.
     const result = await ensureCardProjection(
       {
         assetStorage: adapter,

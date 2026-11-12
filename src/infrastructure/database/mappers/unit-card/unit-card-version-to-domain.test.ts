@@ -9,11 +9,15 @@ describe('unitCardVersionMapperToDomain function', () => {
     () => {
       expect.hasAssertions();
 
+      // A catalog unit type; its fields fill a database row's definition
+      // column.
       const unitType = tempUnits[0];
       const row: UnitCardVersionDb = {
         unit_card_id: unitType.id,
         unit_card_version_id: `${unitType.id}-v`,
         unit_card_artwork_url: 'https://assets.example/unit.png',
+        // The row's name and artwork column differ from the catalog unit, so
+        // the test shows the columns win.
         unit_card_name: 'Renamed',
         unit_card_definition: {
           traits: unitType.traits,
@@ -27,8 +31,11 @@ describe('unitCardVersionMapperToDomain function', () => {
         version_patch: 1,
       };
 
+      // Version columns 8.0.1 are not written anywhere in the definition.
       const mapped = unitCardVersionMapperToDomain(row);
 
+      // Name, image and version come from the columns; limit comes from the
+      // definition.
       expect(mapped).toMatchObject({
         id: unitType.id,
         name: 'Renamed',

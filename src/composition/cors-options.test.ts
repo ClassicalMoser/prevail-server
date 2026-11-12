@@ -12,8 +12,11 @@ describe('createCorsOptions function', () => {
     () => {
       expect.hasAssertions();
 
+      // One allowed origin chosen by the test.
       const options = createCorsOptions(['https://app.example']);
 
+      // The options carry exactly the named origin, the shared header and
+      // method lists, and credentials, so the browser can send tokens.
       expect(options).toStrictEqual({
         allowedHeaders: [...CORS_ALLOWED_HEADERS],
         credentials: true,
@@ -21,6 +24,7 @@ describe('createCorsOptions function', () => {
         methods: [...CORS_ALLOWED_METHODS],
         origin: ['https://app.example'],
       });
+      // DELETE is among the methods: delete-empty routes need it.
       expect(options.methods).toContain('DELETE');
     },
   );

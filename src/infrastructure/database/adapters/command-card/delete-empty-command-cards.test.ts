@@ -11,6 +11,7 @@ describe('deleteEmptyCommandCards function', () => {
       data: undefined,
       success: true,
     });
+    // The cleanup is one DELETE statement.
     expect(recorded.calls[0]?.text).toContain('DELETE');
   });
 });

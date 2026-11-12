@@ -8,6 +8,7 @@ describe('replaceRoundEffectUnitIds function', () => {
     () => {
       expect.hasAssertions();
 
+      // A round effect restricted to one unit type by id, with a modifier that printing must not touch.
       const roundEffect: RoundEffect = {
         modifiers: [{ type: 'attack', value: 1 }],
         restrictions: {

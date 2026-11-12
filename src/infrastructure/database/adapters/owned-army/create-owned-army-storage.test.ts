@@ -3,6 +3,8 @@ import type { UserStorage } from '@ports';
 import type { Sql } from '@infrastructure/database/sql-type';
 import { createOwnedArmyStorage } from './create-owned-army-storage';
 
+// A user storage that must not be called: these cases fail before a user is
+// needed.
 const unused = async (): Promise<never> => {
   throw new Error('not used here');
 };
@@ -20,6 +22,8 @@ const lostConnection = async (): Promise<never> => {
 
 /** A client whose every statement throws. */
 const brokenSql = (): Sql => {
+  // A function throwing on any call is enough: every adapter statement goes
+  // through the tag, so each one fails the same way.
   const sql = lostConnection as unknown as Sql; // template-tag double; Sql also owns the pool
   return sql;
 };
@@ -31,7 +35,9 @@ describe('createOwnedArmyStorage function', () => {
     async () => {
       expect.hasAssertions();
 
+      // The recording logger lets the test see that the failure was logged.
       const logger = recordingLogger();
+      // A broken connection stands for a database outage.
       const storage = createOwnedArmyStorage(logger, brokenSql(), users);
 
       await expect(
@@ -41,6 +47,7 @@ describe('createOwnedArmyStorage function', () => {
         status: 500,
         success: false,
       });
+      // The failure is logged once for the operator.
       expect(logger.errors).toHaveLength(1);
     },
   );

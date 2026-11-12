@@ -9,6 +9,7 @@ describe('getCurrentCommandCards function', () => {
       expect.hasAssertions();
 
       await expect(
+        // No certified cards yet is an empty catalog, not an error.
         getCurrentCommandCards(recordedSql([]).sql),
       ).resolves.toStrictEqual({
         data: [],
@@ -23,9 +24,12 @@ describe('getCurrentCommandCards function', () => {
     async () => {
       expect.hasAssertions();
 
+      // Only the statement is under test here.
       const recorded = recordedSql([]);
       await getCurrentCommandCards(recorded.sql);
 
+      // Players are offered certified versions only; the statement mentions
+      // certification.
       expect(recorded.calls[0]?.text).toContain('certif');
     },
   );

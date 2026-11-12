@@ -9,6 +9,7 @@ describe('fanoutRoundSnapshot function', () => {
     async () => {
       expect.hasAssertions();
 
+      // A seat socket exists but the game has no session meta, so this process is not hosting it.
       const store = gameSessionStore();
       const sent = vi.fn<(message: unknown) => void>();
       store.connections.set(
@@ -23,6 +24,7 @@ describe('fanoutRoundSnapshot function', () => {
         ]),
       );
 
+      // The state is a bare stand-in cast; it must not be read, because the game is not hosted.
       await fanoutRoundSnapshot({
         gameId: 'game-1',
         gameState: { winner: 'white' } as never,
@@ -41,6 +43,7 @@ describe('fanoutRoundSnapshot function', () => {
     async () => {
       expect.hasAssertions();
 
+      // A hosted bot-vs-bot game whose creator is watching.
       const { store, gameId } = await hostedBotVsBotGame();
       const watching = watcher(gameId);
       await registerWatchConnection(store, watching.connection);
@@ -52,6 +55,7 @@ describe('fanoutRoundSnapshot function', () => {
         store,
       });
 
+      // The first snapshot comes from registration; the second is the round snapshot, authoritative because a watcher has no hand to hide.
       expect(watching.sent).toMatchObject([
         { type: 'gameSnapshot' },
         { payload: { visibility: 'authoritative' }, type: 'gameSnapshot' },

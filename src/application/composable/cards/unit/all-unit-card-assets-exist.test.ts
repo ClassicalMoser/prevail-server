@@ -21,6 +21,7 @@ describe('allUnitCardAssetsExist function', () => {
     async () => {
       expect.hasAssertions();
 
+      // Storage holds none of the unit's files, so the unit card is not fully printed.
       const exists = await allUnitCardAssetsExist(
         assetStorage(new Set()),
         unit,

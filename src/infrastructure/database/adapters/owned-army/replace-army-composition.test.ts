@@ -8,6 +8,8 @@ describe('replaceArmyComposition function', () => {
     async () => {
       expect.hasAssertions();
 
+      // One catalog command card and four of one catalog unit are written to an
+      // army.
       const recorded = recordedSql();
       await replaceArmyComposition(
         { kind: 'connection', sql: recorded.sql },
@@ -18,6 +20,8 @@ describe('replaceArmyComposition function', () => {
         },
       );
 
+      // Order matters: both old join tables are cleared before any insert, so a
+      // shorter new list leaves no stale rows.
       expect(
         recorded.calls.map((call) => call.text.split(' (')[0]),
       ).toStrictEqual([
@@ -45,6 +49,8 @@ describe('replaceArmyComposition function', () => {
         },
       );
 
+      // An army with no units or cards still has its old rows cleared, and
+      // nothing is inserted.
       expect(recorded.calls).toHaveLength(2);
     },
   );

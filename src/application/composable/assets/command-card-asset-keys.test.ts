@@ -15,6 +15,7 @@ describe('commandCardAssetKey function', () => {
     () => {
       expect.hasAssertions();
 
+      // The command-card helper fixes the kind to command, so only the id, version and type vary.
       const key = commandCardAssetKey(card.id, card.version, 'pdf');
 
       expect(key).toBe(`cards/command/print/${card.id}_${card.version}.pdf`);
@@ -29,6 +30,7 @@ describe('commandCardAssetTargets function', () => {
     () => {
       expect.hasAssertions();
 
+      // A command card has the same three assets as any card: svg, pdf and bleed pdf, with the svg first.
       const targets = commandCardAssetTargets(card);
 
       expect(targets).toHaveLength(3);

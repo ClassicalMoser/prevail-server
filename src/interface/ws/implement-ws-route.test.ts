@@ -5,6 +5,8 @@ import { implementWsRoute } from './implement-ws-route';
 import type { WsSocket } from './ws-types';
 
 /** A socket whose handlers the test can fire. */
+// A socket stand-in: the test fires its message and close events and reads what
+// was sent and closed.
 const fakeSocket = (): {
   socket: WsSocket;
   sent: string[];
@@ -41,12 +43,14 @@ const fakeSocket = (): {
   };
 };
 
+// An authenticated connection for game g.
 const wire = {
   auth: { subject: 'auth0|a' },
   headers: {},
   params: { gameId: 'g' },
 };
 
+// Builds a route with one inbound type, step, and handlers a case can override.
 const buildRoute = (overrides: {
   open?: () => Promise<
     { ok: true; connectionHandle: string } | { ok: false; reason: string }
@@ -85,10 +89,12 @@ describe('implementWsRoute function', () => {
 
       const { socket, closed } = fakeSocket();
       const route = buildRoute({
+        // The open handler refuses the connection.
         open: async () => ({ ok: false, reason: 'Forbidden' }),
       });
       await route.onConnection(wire, socket);
 
+      // The client is closed with 1008 and the open handler's own reason.
       expect(closed).toStrictEqual([[1008, 'Forbidden']]);
     },
   );
@@ -101,9 +107,11 @@ describe('implementWsRoute function', () => {
 
       const { socket, sent, fireMessage } = fakeSocket();
       await buildRoute({}).onConnection(wire, socket);
+      // The client sends text that is not JSON.
       fireMessage('nope');
       await delay(10);
 
+      // It is answered with the route's rejection type, stepRejected.
       expect(JSON.parse(String(sent[0]))).toStrictEqual({
         payload: { errorReason: 'Invalid JSON', result: false },
         type: 'stepRejected',
@@ -116,10 +124,12 @@ describe('implementWsRoute function', () => {
 
     const closedFor: unknown[] = [];
     const { socket, fireClose } = fakeSocket();
+    // The close handler is how the game learns a player has left.
     const route = buildRoute({ close: () => closedFor.push('left') });
     await route.onConnection(wire, socket);
     fireClose();
 
+    // The close handler ran when the socket closed.
     expect(closedFor).toStrictEqual(['left']);
   });
 });

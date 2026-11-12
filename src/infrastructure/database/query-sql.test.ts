@@ -21,6 +21,8 @@ describe('querySql function', () => {
   it('runs the connection template', { timeout: 5000 }, async () => {
     expect.hasAssertions();
 
+    // A tag that answers with a marker row is enough: the test only needs to
+    // know which handle ran the template.
     const sql = connectionTag as postgres.Sql; // template-tag double; Sql also owns the pool
     const query = querySql(connectionClient(sql));
     const rows = await query`select connection`;
@@ -33,6 +35,8 @@ describe('querySql function', () => {
   it('runs the transaction template', { timeout: 5000 }, async () => {
     expect.hasAssertions();
 
+    // The same check on the transaction handle: inside a begin block the
+    // transaction tag must run, not the root pool.
     const sql = transactionTag as postgres.TransactionSql; // template-tag double; TransactionSql also has savepoint
     const query = querySql(transactionClient(sql));
     const rows = await query`select transaction`;

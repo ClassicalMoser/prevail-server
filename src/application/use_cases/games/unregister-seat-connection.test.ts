@@ -7,6 +7,7 @@ describe('unregisterSeatConnection function', () => {
     expect.hasAssertions();
 
     const store = gameSessionStore();
+    // A seat socket already registered in the game's connection set.
     const connection: GameSeatConnection = {
       gameId: 'game-1',
       send: vi.fn<(message: unknown) => void>(),
@@ -15,6 +16,7 @@ describe('unregisterSeatConnection function', () => {
     };
     store.connections.set('game-1', new Set([connection]));
 
+    // The socket closes, so it must leave the set and stop receiving fanout.
     unregisterSeatConnection(store, connection);
 
     expect(store.connections.get('game-1')?.has(connection)).toBe(false);

@@ -10,8 +10,11 @@ import type {
  */
 interface VsBotSessionMeta {
   kind: 'vsBot';
+  /** The rules mode, needed to load the stored game back. */
   gameMode: GameModeName;
+  /** The seat the human took; the other seat belongs to the bot. */
   humanSide: PlayerSide;
+  /** Auth0 subject of the human; kept here because it is not a UUID and cannot sit on the game. */
   humanSubject: string;
 }
 
@@ -24,8 +27,11 @@ interface VsBotSessionMeta {
  */
 interface BotVsBotSessionMeta {
   kind: 'botVsBot';
+  /** The rules mode, needed to load the stored game back. */
   gameMode: GameModeName;
+  /** The only subject allowed to watch and step this game. */
   creatorSubject: string;
+  /** Set once a bot or engine failure halts the game; every later step is refused. */
   stuck: boolean;
 }
 

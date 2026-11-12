@@ -8,6 +8,7 @@ describe('getSeatSubject function', () => {
     () => {
       expect.hasAssertions();
 
+      // An empty store hosts no game, so no seat has a subject.
       const store = gameSessionStore();
 
       expect(getSeatSubject(store, 'missing', 'white')).toBeUndefined();
@@ -20,6 +21,7 @@ describe('getSeatSubject function', () => {
     () => {
       expect.hasAssertions();
 
+      // A human-vs-bot game with the human on white.
       const store = gameSessionStore();
       store.metaByGameId.set('game-1', {
         gameMode: 'mini',

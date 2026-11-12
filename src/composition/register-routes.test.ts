@@ -3,16 +3,20 @@ import type { FastifyInstance } from 'fastify';
 import type { AuthPort, RegisteredRoute } from '@ports';
 import { registerRoutes } from './register-routes';
 
+// An auth port that accepts any token.
 const allowAllAuth: AuthPort = {
   checkToken: async () => ({ subject: 'test-subject' }),
 };
 
+// Builds a bare Fastify app with one route registered, so each case sees only
+// the serialization.
 const buildApp = (route: RegisteredRoute): FastifyInstance => {
   const app = Fastify();
   registerRoutes(app, [route], allowAllAuth);
   return app;
 };
 
+// A public POST route answering 201 with JSON; cases override what they need.
 const baseRoute = {
   method: 'POST' as const,
   path: '/resource',
@@ -28,6 +32,7 @@ describe('registerRoutes JSON serialization', () => {
     async () => {
       expect.hasAssertions();
 
+      // A uuid-shaped string stands for the id a create route returns.
       const id = '550e8400-e29b-41d4-a716-446655440000';
       const app = buildApp({
         ...baseRoute,
@@ -38,6 +43,8 @@ describe('registerRoutes JSON serialization', () => {
 
       expect(response.statusCode).toBe(201);
       expect(response.headers['content-type']).toContain('application/json');
+      // A bare string, which is not JSON on its own, comes back as a quoted
+      // JSON string that parses to the id.
       expect(JSON.parse(response.body)).toBe(id);
 
       await app.close();
@@ -49,6 +56,7 @@ describe('registerRoutes JSON serialization', () => {
 
     const app = buildApp({
       ...baseRoute,
+      // An object payload with status 200.
       successStatus: 200,
       invoke: async () => ({ success: true, data: { id: 'x' } }),
     });
@@ -67,10 +75,12 @@ describe('registerRoutes JSON serialization', () => {
     async () => {
       expect.hasAssertions();
 
+      // A rendered card image as text.
       const svg = '<svg></svg>';
       const app = buildApp({
         ...baseRoute,
         successStatus: 200,
+        // A media route declares its content type.
         successContentType: 'image/svg+xml',
         invoke: async () => ({ success: true, data: svg }),
       });
@@ -79,6 +89,7 @@ describe('registerRoutes JSON serialization', () => {
 
       expect(response.statusCode).toBe(200);
       expect(response.headers['content-type']).toContain('image/svg+xml');
+      // The image is sent as is, not wrapped in quotes as JSON.
       expect(response.body).toBe(svg);
 
       await app.close();

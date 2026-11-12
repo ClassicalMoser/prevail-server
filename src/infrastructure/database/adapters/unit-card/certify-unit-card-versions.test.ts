@@ -8,6 +8,7 @@ describe('certifyUnitCardVersions function', () => {
     async () => {
       expect.hasAssertions();
 
+      // The rules_versions read answers rules-9 as the newest rules release.
       const recorded = recordedSql(
         rowsForStatement('FROM rules_versions', [
           { rules_version_id: 'rules-9' },
@@ -20,6 +21,8 @@ describe('certifyUnitCardVersions function', () => {
         data: undefined,
         success: true,
       });
+      // The second statement is the certification insert: rules version first,
+      // then the unit ids.
       expect(recorded.calls[1]?.values).toStrictEqual(['rules-9', ['a']]);
     },
   );
@@ -27,9 +30,11 @@ describe('certifyUnitCardVersions function', () => {
   it('is a no-op for no ids', { timeout: 5000 }, async () => {
     expect.hasAssertions();
 
+    // No rows are scripted; an empty id list must not reach the database.
     const recorded = recordedSql([]);
     await certifyUnitCardVersions(recorded.sql, []);
 
+    // Nothing is certified and no statement ran.
     expect(recorded.calls).toStrictEqual([]);
   });
 });

@@ -19,6 +19,7 @@ describe('trySeatChoice function', () => {
     () => {
       expect.hasAssertions();
 
+      // Silence and capture the error log; the failure is reported, not thrown to the caller.
       const logged = vi.spyOn(console, 'error').mockReturnValue(undefined);
       // Black owes nothing at the opening, so the rules bot throws.
       const choice = trySeatChoice({ seat: 'black', state: openingState });

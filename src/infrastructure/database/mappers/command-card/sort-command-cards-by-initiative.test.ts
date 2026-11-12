@@ -18,6 +18,7 @@ describe('sortCommandCardsByInitiative function', () => {
     () => {
       expect.hasAssertions();
 
+      // Three cards at initiatives 4, 2, 1, given highest first.
       const high = withInitiative(tempCommandCards[0], 4);
       const mid = withInitiative(tempCommandCards[1], 2);
       const low = withInitiative(tempCommandCards[2], 1);
@@ -25,7 +26,9 @@ describe('sortCommandCardsByInitiative function', () => {
 
       const sorted = sortCommandCardsByInitiative(input);
 
+      // Sorted lowest first: the card that acts first leads.
       expect(sorted.map((card) => card.initiative)).toStrictEqual([1, 2, 4]);
+      // The caller's array is untouched.
       expect(input.map((card) => card.initiative)).toStrictEqual([4, 2, 1]);
     },
   );
@@ -33,9 +36,11 @@ describe('sortCommandCardsByInitiative function', () => {
   it('keeps relative order for equal initiative', { timeout: 5000 }, () => {
     expect.hasAssertions();
 
+    // Two cards that tie on initiative.
     const first = withInitiative(tempCommandCards[0], 2);
     const second = withInitiative(tempCommandCards[1], 2);
 
+    // A tie keeps the order the input had: second stays ahead of first.
     expect(sortCommandCardsByInitiative([second, first])).toStrictEqual([
       second,
       first,

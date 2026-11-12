@@ -8,6 +8,7 @@ const allowAllAuth: AuthPort = {
   checkToken: async () => ({ subject: 'test-subject' }),
 };
 
+// An auth port that refuses every token.
 const denyAuth: AuthPort = {
   checkToken: async () => ({
     message: 'Unauthorized',
@@ -16,6 +17,8 @@ const denyAuth: AuthPort = {
   }),
 };
 
+// A real socket needs a real port: listen on port 0 and return the port the OS
+// chose.
 const listen = async (
   app: ReturnType<typeof Fastify>,
 ): Promise<{ port: number; close: () => Promise<void> }> => {
@@ -36,6 +39,7 @@ describe('websocket route registration', () => {
   it('rejects upgrade when auth fails', { timeout: 5000 }, async () => {
     expect.hasAssertions();
 
+    // A socket route that needs the game:play permission.
     const route: RegisteredWsRoute = {
       auth: {
         authRequired: true,
@@ -52,10 +56,12 @@ describe('websocket route registration', () => {
     const server = await listen(app);
 
     const ws = new WebSocket(`ws://127.0.0.1:${server.port}/ws/test`, {
+      // The client presents a token the auth port will refuse.
       headers: { authorization: 'Bearer bad' },
     });
     const [code] = (await once(ws, 'close')) as [number]; // 'once' types the event args as unknown[]
 
+    // A refused upgrade is closed with 1008, the policy-violation code.
     expect(code).toBe(1008);
     await server.close();
   });
@@ -71,6 +77,7 @@ describe('websocket route registration', () => {
           authRequired: true,
           permissionsRequired: ['game:play'],
         },
+        // Once admitted, the route sends one snapshot-shaped message.
         onConnection: async (_wire, socket) => {
           socket.send(
             JSON.stringify({
@@ -87,11 +94,13 @@ describe('websocket route registration', () => {
       const server = await listen(app);
 
       const ws = new WebSocket(`ws://127.0.0.1:${server.port}/ws/test`, {
+        // A header token that the auth port accepts.
         headers: { authorization: 'Bearer good' },
       });
       const [data] = (await once(ws, 'message')) as [Buffer | string]; // 'once' types the event args as unknown[]
       ws.close();
 
+      // The client receives the message the route sent.
       expect(JSON.parse(String(data))).toStrictEqual({
         payload: { ok: true },
         type: 'gameSnapshot',
@@ -127,6 +136,8 @@ describe('websocket route registration', () => {
       const server = await listen(app);
 
       const ws = new WebSocket(
+        // A browser cannot set Authorization on a socket, so the token rides in
+        // the query.
         `ws://127.0.0.1:${server.port}/ws/test-query?access_token=good`,
       );
       const [data] = (await once(ws, 'message')) as [Buffer | string]; // 'once' types the event args as unknown[]

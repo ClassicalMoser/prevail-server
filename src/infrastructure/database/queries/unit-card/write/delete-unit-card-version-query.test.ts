@@ -8,7 +8,10 @@ describe('deleteUnitCardVersionQuery function', () => {
     async () => {
       expect.hasAssertions();
 
+      // A recorded tag stands in for postgres; the test pins the statement
+      // shape, not database behaviour.
       const recorded = recordedSql();
+      // Version 1.2.3 of one card, named as a triple.
       await deleteUnitCardVersionQuery({
         sql: recorded.sql,
         unitCardId: 'unit-1',
@@ -19,6 +22,7 @@ describe('deleteUnitCardVersionQuery function', () => {
       const call = recorded.calls[0];
 
       expect(call?.text).toContain('DELETE FROM unit_card_versions');
+      // Card id then major, minor, patch: only that one version is removed.
       expect(call?.values).toStrictEqual(['unit-1', 1, 2, 3]);
     },
   );

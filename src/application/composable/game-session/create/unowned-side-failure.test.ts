@@ -15,6 +15,7 @@ describe('unownedSideFailure function', () => {
     () => {
       expect.hasAssertions();
 
+      // A 404 from the army port means the creator named an army they do not own: their mistake, so 400.
       expect(unownedSideFailure(failure(404), 'Black')).toStrictEqual({
         message: 'Black army must be an army owned by the creating player',
         status: 400,
@@ -29,6 +30,7 @@ describe('unownedSideFailure function', () => {
     () => {
       expect.hasAssertions();
 
+      // A 503 is storage trouble, not the creator's mistake, so its status is kept with a neutral message.
       expect(unownedSideFailure(failure(503), 'White')).toStrictEqual({
         message: 'Army could not be loaded',
         status: 503,

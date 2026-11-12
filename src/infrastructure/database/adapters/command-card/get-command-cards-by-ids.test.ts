@@ -8,6 +8,8 @@ describe('getCommandCardsByIds function', () => {
     async () => {
       expect.hasAssertions();
 
+      // No rows are scripted: an army with no command cards must not cost a
+      // query.
       const recorded = recordedSql([]);
 
       await expect(
@@ -16,6 +18,7 @@ describe('getCommandCardsByIds function', () => {
         data: [],
         success: true,
       });
+      // No statement ran.
       expect(recorded.calls).toStrictEqual([]);
     },
   );
@@ -23,9 +26,11 @@ describe('getCommandCardsByIds function', () => {
   it('asks for exactly the ids it was given', { timeout: 5000 }, async () => {
     expect.hasAssertions();
 
+    // Two ids stand for the cards an army names.
     const recorded = recordedSql([]);
     await getCommandCardsByIds(recorded.sql, ['a', 'b']);
 
+    // The same ids reach the statement, as one array.
     expect(recorded.calls[0]?.values).toStrictEqual([['a', 'b']]);
   });
 });

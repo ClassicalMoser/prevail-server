@@ -8,9 +8,12 @@ describe('createUnitCardVersion function', () => {
     async () => {
       expect.hasAssertions();
 
+      // The existence check finds no card, so this id is unknown.
       const recorded = recordedSql([]);
 
       await expect(
+        // A catalog unit from the sample set, offered as a new version of a
+        // card the database does not have.
         createUnitCardVersion(recorded.sql, tempUnits[0]),
       ).resolves.toStrictEqual({
         message: 'Unit card not found',

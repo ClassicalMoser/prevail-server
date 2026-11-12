@@ -48,6 +48,7 @@ describe('updateCommandCardCertifications function', () => {
           success: true,
           data: undefined,
         });
+      // Two valid latest versions, both uncertified at first. The second read, after the write, shows both certified.
       const getStatuses = vi
         .fn<CommandCardStorage['getLatestCommandCardCertifications']>()
         .mockResolvedValueOnce({
@@ -74,6 +75,7 @@ describe('updateCommandCardCertifications function', () => {
 
       const result = await updateCommandCardCertifications(useCaseDeps);
 
+      // Every uncertified valid card is written, and the answer is the post-write read (two reads) by card id.
       expect(certify).toHaveBeenCalledWith([
         commandCardNamingUnits.id,
         otherValidCommandCard.id,
@@ -101,6 +103,7 @@ describe('updateCommandCardCertifications function', () => {
           success: true,
           data: undefined,
         });
+      // One card is already certified and the other is not; after the write both are.
       const getStatuses = vi
         .fn<CommandCardStorage['getLatestCommandCardCertifications']>()
         .mockResolvedValueOnce({
@@ -127,6 +130,7 @@ describe('updateCommandCardCertifications function', () => {
 
       const result = await updateCommandCardCertifications(useCaseDeps);
 
+      // Only the uncertified card is written: a certified card is not certified again.
       expect(certify).toHaveBeenCalledWith([otherValidCommandCard.id]);
       expect(result).toStrictEqual({
         success: true,
@@ -150,6 +154,7 @@ describe('updateCommandCardCertifications function', () => {
           success: true,
           data: undefined,
         });
+      // One valid card and one the rules schema rejects (see the invalid fixture); neither is certified at first, and after the write only the valid one is.
       const getStatuses = vi
         .fn<CommandCardStorage['getLatestCommandCardCertifications']>()
         .mockResolvedValueOnce({
@@ -176,6 +181,7 @@ describe('updateCommandCardCertifications function', () => {
 
       const result = await updateCommandCardCertifications(useCaseDeps);
 
+      // Only the valid card is written; the schema-invalid one can never be played, so it is reported uncertified.
       expect(certify).toHaveBeenCalledWith([commandCardNamingUnits.id]);
       expect(result).toStrictEqual({
         success: true,
@@ -193,6 +199,7 @@ describe('updateCommandCardCertifications function', () => {
     async () => {
       expect.hasAssertions();
 
+      // The asset store reports a file as present only after three have been written, so every asset looks missing at first.
       let putCount = 0;
       const assetStorage: AssetStorage = {
         putImmutable: vi
@@ -218,6 +225,7 @@ describe('updateCommandCardCertifications function', () => {
           success: true,
           data: [certificationStatus(commandCardNamingUnits, true)],
         });
+      // A renderer that draws a tiny SVG, so re-rendering can succeed.
       const renderer: CommandCardRendererPort = {
         renderCommandCard: vi
           .fn<CommandCardRendererPort['renderCommandCard']>()
@@ -236,8 +244,10 @@ describe('updateCommandCardCertifications function', () => {
         assetStorage,
       });
 
+      // The result is not the point here; the effects on the renderer, the assets and the write are.
       await updateCommandCardCertifications(useCaseDeps);
 
+      // A card with missing assets is drawn and stored (three assets) before it is certified.
       expect(renderer.renderCommandCard).toHaveBeenCalledTimes(3);
       expect(assetStorage.putImmutable).toHaveBeenCalledTimes(3);
       expect(certify).toHaveBeenCalledWith([commandCardNamingUnits.id]);
@@ -250,6 +260,7 @@ describe('updateCommandCardCertifications function', () => {
     async () => {
       expect.hasAssertions();
 
+      // Certify is never programmed, because it must not run when the first read fails.
       const certify = vi.fn<CommandCardStorage['certifyCommandCardVersions']>();
       const useCaseDeps = deps({
         commandCardStorage: commandCardStorageDouble({
@@ -266,6 +277,7 @@ describe('updateCommandCardCertifications function', () => {
 
       const result = await updateCommandCardCertifications(useCaseDeps);
 
+      // A failed catalog read stops the run before any write.
       expect(certify).not.toHaveBeenCalled();
       expect(result).toStrictEqual({
         success: false,
@@ -281,6 +293,7 @@ describe('updateCommandCardCertifications function', () => {
     async () => {
       expect.hasAssertions();
 
+      // The first read succeeds; it is the write that follows that fails.
       const getStatuses = vi
         .fn<CommandCardStorage['getLatestCommandCardCertifications']>()
         .mockResolvedValue({
@@ -302,6 +315,7 @@ describe('updateCommandCardCertifications function', () => {
 
       const result = await updateCommandCardCertifications(useCaseDeps);
 
+      // The catalog is read once only: after a failed write there is no post-write state to report.
       expect(getStatuses).toHaveBeenCalledTimes(1);
       expect(result).toStrictEqual({
         success: false,
@@ -317,6 +331,7 @@ describe('updateCommandCardCertifications function', () => {
     async () => {
       expect.hasAssertions();
 
+      // The first read and the write succeed; only the post-write read fails, and that failure is what the caller gets.
       const useCaseDeps = deps({
         commandCardStorage: commandCardStorageDouble({
           getLatestCommandCardCertifications: vi

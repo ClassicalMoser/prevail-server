@@ -8,6 +8,7 @@ describe('getAllUnitCards function', () => {
     async () => {
       expect.hasAssertions();
 
+      // With no rows, the catalog is an empty list, not a failure.
       await expect(getAllUnitCards(recordedSql([]).sql)).resolves.toStrictEqual(
         {
           data: [],

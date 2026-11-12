@@ -4,6 +4,7 @@ import type { DataErrorSignature } from '@ports';
 /** A card version with whether it is already certified for army building. */
 interface CardCertificationStatus<TCard> {
   card: TCard;
+  /** True once the card may be used in an army. */
   certified: boolean;
 }
 
@@ -12,9 +13,11 @@ interface CardCertificationStatus<TCard> {
  * policy runs over both without knowing either's storage or renderer.
  */
 interface CertifyCardVersionsOps<TCard, TContext> {
+  /** The latest version of each card with whether it is certified yet. */
   getLatest: () => Promise<
     DataErrorSignature<CardCertificationStatus<TCard>[]>
   >;
+  /** Whether the rules schema accepts the card; a rejected card is never certified. */
   isSchemaValid: (card: TCard) => boolean;
   /**
    * Prep after the schema filter (for example the unit name map), answering
@@ -24,12 +27,16 @@ interface CertifyCardVersionsOps<TCard, TContext> {
   prepare: (
     schemaValid: CardCertificationStatus<TCard>[],
   ) => Promise<DataErrorSignature<TContext>>;
+  /** Whether every print and screen file for the card is already stored. */
   allAssetsExist: (card: TCard, context: TContext) => Promise<boolean>;
+  /** Draws only the files still missing, healing an interrupted publish. */
   ensureProjection: (
     card: TCard,
     context: TContext,
   ) => Promise<DataErrorSignature<void>>;
+  /** Stamps these card ids so players may put them in an army. */
   certify: (ids: string[]) => Promise<DataErrorSignature<void>>;
+  /** The id the certify write and the result lists use for this card. */
   cardId: (card: TCard) => string;
 }
 

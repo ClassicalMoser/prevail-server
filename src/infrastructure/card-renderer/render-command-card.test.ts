@@ -5,6 +5,8 @@ import path from 'node:path';
 import { renderCommandCard } from './render-command-card';
 import { tempCommandCards } from '@testing';
 
+// The Typst compile is stubbed to return a fixed buffer: the real compiler is
+// an external binary, and this test covers only the render's own steps.
 vi.mock(import('./run-typst-compile'), async (importOriginal) => {
   const actual = await importOriginal();
   return {
@@ -18,6 +20,7 @@ vi.mock(import('./run-typst-compile'), async (importOriginal) => {
 describe('renderCommandCard function', () => {
   let assetsDir = '';
 
+  // A throwaway assets folder with the command template, an icon and a font.
   beforeEach(async () => {
     vi.clearAllMocks();
     assetsDir = await mkdtemp(path.join(tmpdir(), 'prevail-cmd-assets-'));
@@ -42,16 +45,21 @@ describe('renderCommandCard function', () => {
       expect.hasAssertions();
 
       const { runTypstCompile } = await import('./run-typst-compile');
+      // A catalog command card.
       const card = tempCommandCards[0];
       assert.ok(card !== undefined);
 
       const result = await renderCommandCard(
         card,
+        // SVG output with no bleed and no unit image, which a command card does
+        // not have.
         { bleed: false, format: 'svg', unitImage: false },
         { assetsDir },
       );
 
+      // The compiler runs once for the card.
       expect(runTypstCompile).toHaveBeenCalledTimes(1);
+      // The compiled buffer is returned as the success data.
       expect(result).toStrictEqual({
         data: Buffer.from('compiled'),
         success: true,

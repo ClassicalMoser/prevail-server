@@ -20,6 +20,7 @@ describe('getAllUnitCards function', () => {
   it('answers the storage failure unchanged', { timeout: 5000 }, async () => {
     expect.hasAssertions();
 
+    // Storage's list read fails; the renderer and asset storage are inert stubs, as this use case does not draw.
     const deps = depsListing(
       vi.fn<UnitCardStorage['getAllUnitCards']>().mockResolvedValue({
         message: 'boom',
@@ -28,6 +29,7 @@ describe('getAllUnitCards function', () => {
       }),
     );
 
+    // The use case adds nothing to a storage failure.
     await expect(getAllUnitCards(deps)).resolves.toStrictEqual({
       message: 'boom',
       status: 500,
@@ -41,6 +43,7 @@ describe('getAllUnitCards function', () => {
     async () => {
       expect.hasAssertions();
 
+      // A catalog with no cards yet is a valid answer, not an error.
       const deps = depsListing(
         vi
           .fn<UnitCardStorage['getAllUnitCards']>()

@@ -5,6 +5,8 @@ import path from 'node:path';
 import { renderUnitCard } from './render-unit-card';
 import { tempUnits } from '@testing';
 
+// The Typst compile is stubbed to return a fixed buffer: the real compiler is
+// an external binary, and this test covers only the render's own steps.
 vi.mock(import('./run-typst-compile'), async (importOriginal) => {
   const actual = await importOriginal();
   return {
@@ -18,6 +20,7 @@ vi.mock(import('./run-typst-compile'), async (importOriginal) => {
 describe('renderUnitCard function', () => {
   let assetsDir = '';
 
+  // A throwaway assets folder with the unit template, an icon and a font.
   beforeEach(async () => {
     vi.clearAllMocks();
     assetsDir = await mkdtemp(path.join(tmpdir(), 'prevail-unit-assets-'));
@@ -39,11 +42,14 @@ describe('renderUnitCard function', () => {
       expect.hasAssertions();
 
       const { runTypstCompile } = await import('./run-typst-compile');
+      // A catalog unit with its artwork URL cleared.
       const unit = tempUnits[0];
       assert.ok(unit !== undefined);
 
       const result = await renderUnitCard(
         { ...unit, imageUrl: null },
+        // unitImage is false, so no artwork is fetched and the allowed origin
+        // goes unused.
         { bleed: false, format: 'svg', unitImage: false },
         {
           allowedMediaOrigin: 'https://cdn.example',
@@ -51,7 +57,9 @@ describe('renderUnitCard function', () => {
         },
       );
 
+      // The compiler runs once for the unit.
       expect(runTypstCompile).toHaveBeenCalledTimes(1);
+      // The compiled buffer is returned as the success data.
       expect(result).toStrictEqual({
         data: Buffer.from('compiled'),
         success: true,

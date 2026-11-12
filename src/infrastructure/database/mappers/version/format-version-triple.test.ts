@@ -7,6 +7,7 @@ describe('formatVersionTriple function', () => {
     () => {
       expect.hasAssertions();
 
+      // Three distinct numbers, so any swap of major, minor and patch shows.
       const version = formatVersionTriple({ major: 9, minor: 8, patch: 7 });
 
       expect(version).toBe('9.8.7');

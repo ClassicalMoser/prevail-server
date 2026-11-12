@@ -22,6 +22,7 @@ describe('fanoutEvent function', () => {
     () => {
       expect.hasAssertions();
 
+      // One recording socket per seat, so each side's received messages can be compared.
       const whiteMessages: GameSessionOutbound[] = [];
       const blackMessages: GameSessionOutbound[] = [];
       const store = gameSessionStore({
@@ -35,6 +36,7 @@ describe('fanoutEvent function', () => {
           ],
         ]),
       });
+      // White lays a card face-down; the opponent must not learn which.
       const choice: ChooseCardEvent = {
         card: tempCommandCards[0],
         choiceType: 'chooseCard',
@@ -42,6 +44,7 @@ describe('fanoutEvent function', () => {
         player: 'white',
       };
 
+      // White's own socket sees the card; black's sees it hidden.
       fanoutEvent(store, 'game-1', choice);
 
       const whiteChoice = whiteMessages.find(
@@ -67,10 +70,12 @@ describe('fanoutEvent function', () => {
     () => {
       expect.hasAssertions();
 
+      // A single watcher and no seats in this game.
       const watching = watcher('game-1');
       const store = gameSessionStore({
         watchers: new Map([['game-1', new Set([watching.connection])]]),
       });
+      // The same white card choice, but a watcher has no hand to protect.
       const choice: ChooseCardEvent = {
         card: tempCommandCards[0],
         choiceType: 'chooseCard',

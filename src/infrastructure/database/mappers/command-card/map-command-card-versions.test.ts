@@ -34,12 +34,14 @@ describe('mapCommandCardVersions function', () => {
     () => {
       expect.hasAssertions();
 
+      // Three versions given in initiative order 3, 1, 2, not sorted.
       const mapped = mapCommandCardVersions([
         toVersion(tempCommandCards[0], 3),
         toVersion(tempCommandCards[1], 1),
         toVersion(tempCommandCards[2], 2),
       ]);
 
+      // The list comes out lowest initiative first, the order the cards act in.
       expect(mapped.map((card) => card.initiative)).toStrictEqual([1, 2, 3]);
       expect(mapped.map((card) => card.id)).toStrictEqual([
         tempCommandCards[1].id,

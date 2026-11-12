@@ -7,6 +7,7 @@ describe('commandCardListItemMapper function', () => {
     () => {
       expect.hasAssertions();
 
+      // A card list row with a major and patch but no minor.
       const versioned = commandCardListItemMapper({
         command_card_id: 'card-1',
         command_card_name: 'Advance',
@@ -14,6 +15,8 @@ describe('commandCardListItemMapper function', () => {
         version_minor: null,
         version_patch: 2,
       });
+      // A card list row with no version columns and no name, as an unversioned
+      // card would have.
       const unversioned = commandCardListItemMapper({
         command_card_id: 'card-2',
         command_card_name: null,
@@ -22,11 +25,13 @@ describe('commandCardListItemMapper function', () => {
         version_patch: null,
       });
 
+      // A missing minor becomes 0, so 1.null.2 reads 1.0.2.
       expect(versioned).toStrictEqual({
         id: 'card-1',
         name: 'Advance',
         version: '1.0.2',
       });
+      // With no major there is no version to show, so version is null.
       expect(unversioned).toStrictEqual({
         id: 'card-2',
         name: null,

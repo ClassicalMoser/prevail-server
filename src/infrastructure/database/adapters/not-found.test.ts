@@ -7,6 +7,7 @@ describe('notFound function', () => {
     () => {
       expect.hasAssertions();
 
+      // A missing army is a 404 envelope carrying the message the caller chose.
       const result = notFound('Army not found');
 
       expect(result).toStrictEqual({

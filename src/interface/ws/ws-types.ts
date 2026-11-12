@@ -15,7 +15,9 @@ type RejectionType = 'choiceRejected' | 'stepRejected';
 
 /** A connection that passed its params and auth checks. */
 interface AdmittedConnection<TParams> {
+  /** The URL params the contract accepted, such as the game id. */
   params: TParams;
+  /** The verified caller; the only source of the subject a use case acts for. */
   auth: RequestAuth;
 }
 

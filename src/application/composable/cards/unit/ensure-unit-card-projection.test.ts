@@ -29,11 +29,13 @@ describe('ensureUnitCardProjection function', () => {
   it('renders only missing unit asset targets', { timeout: 5000 }, async () => {
     expect.hasAssertions();
 
+    // One of the unit's three files is already stored, so only the other two should be drawn.
     const [firstTarget] = unitCardAssetTargets(unit);
     assert.ok(firstTarget !== undefined);
     const existing = new Set<string>([firstTarget.key]);
     const beforeSize = existing.size;
 
+    // The renderer is a stub that returns a tiny buffer; the test counts files stored, not their content.
     const result = await ensureUnitCardProjection(
       {
         assetStorage: assetStorage(existing),
@@ -43,6 +45,7 @@ describe('ensureUnitCardProjection function', () => {
     );
 
     expect(result).toStrictEqual({ data: undefined, success: true });
+    // The set grew past the one file it started with, and now holds all three.
     expect(existing.size).toBeGreaterThan(beforeSize);
     expect(existing.size).toBe(3);
   });

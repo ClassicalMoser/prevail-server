@@ -41,6 +41,7 @@ describe('getOwnedArmies', () => {
     async () => {
       expect.hasAssertions();
 
+      // Two armies the owner has saved; the storage mock stands in for the database.
       const armies = [emptyArmy('a'), emptyArmy('b')];
       const getOwnedArmies = vi
         .fn<OwnedArmyStorage['getOwnedArmies']>()
@@ -48,6 +49,7 @@ describe('getOwnedArmies', () => {
       const storage = buildStorage({ getOwnedArmies });
       const useCases = createUseCases(storage);
 
+      // The use case passes only the owner's auth subject, so one owner never sees another's armies.
       const result = await useCases.getOwnedArmies(ownerAuthSub);
 
       expect(result).toStrictEqual({ success: true, data: armies });
@@ -60,6 +62,7 @@ describe('getOwnedArmyById', () => {
   it('returns the army when found', { timeout: 5000 }, async () => {
     expect.hasAssertions();
 
+    // An empty army is enough: the use case only passes it through.
     const army = emptyArmy('army-1');
     const getOwnedArmyById = vi
       .fn<OwnedArmyStorage['getOwnedArmyById']>()
@@ -67,6 +70,7 @@ describe('getOwnedArmyById', () => {
     const storage = buildStorage({ getOwnedArmyById });
     const useCases = createUseCases(storage);
 
+    // Both the owner and the army id go to storage, so lookup is scoped to the owner.
     const result = await useCases.getOwnedArmyById(ownerAuthSub, 'army-1');
 
     expect(result).toStrictEqual({ success: true, data: army });
@@ -78,6 +82,7 @@ describe('createOwnedArmy', () => {
   it('returns the storage-assigned army id', { timeout: 5000 }, async () => {
     expect.hasAssertions();
 
+    // Storage assigns the id; the use case must return it as given.
     const createOwnedArmy = vi
       .fn<OwnedArmyStorage['createOwnedArmy']>()
       .mockResolvedValue({ success: true, data: 'new-id' });
@@ -87,6 +92,7 @@ describe('createOwnedArmy', () => {
     const result = await useCases.createOwnedArmy(ownerAuthSub);
 
     expect(result).toStrictEqual({ success: true, data: 'new-id' });
+    // A new army starts under the default name, since a create request carries no body.
     expect(createOwnedArmy).toHaveBeenCalledWith(ownerAuthSub, 'Untitled army');
   });
 });
@@ -98,6 +104,7 @@ describe('updateOwnedArmy', () => {
     async () => {
       expect.hasAssertions();
 
+      // The write body's `name` is the army's name on the wire.
       const body = emptyWriteBody();
       const updateOwnedArmy = vi
         .fn<OwnedArmyStorage['updateOwnedArmy']>()
@@ -111,6 +118,7 @@ describe('updateOwnedArmy', () => {
         body,
       );
 
+      // Success carries no army back: clients read the update with a GET.
       expect(result).toStrictEqual({ success: true, data: {} });
       expect(updateOwnedArmy).toHaveBeenCalledWith(ownerAuthSub, 'army-1', {
         armyName: 'Test Army',
@@ -123,6 +131,7 @@ describe('updateOwnedArmy', () => {
   it('propagates storage errors', { timeout: 5000 }, async () => {
     expect.hasAssertions();
 
+    // Storage refuses with not-found, as it would for an army the owner does not have.
     const updateOwnedArmy = vi
       .fn<OwnedArmyStorage['updateOwnedArmy']>()
       .mockResolvedValue({
@@ -133,6 +142,7 @@ describe('updateOwnedArmy', () => {
     const storage = buildStorage({ updateOwnedArmy });
     const useCases = createUseCases(storage);
 
+    // The id names an army that does not exist.
     const result = await useCases.updateOwnedArmy(
       ownerAuthSub,
       'missing',
@@ -151,6 +161,7 @@ describe('archiveOwnedArmy', () => {
   it('returns no-content on success', { timeout: 5000 }, async () => {
     expect.hasAssertions();
 
+    // Archiving succeeds in storage and returns nothing.
     const archiveOwnedArmy = vi
       .fn<OwnedArmyStorage['archiveOwnedArmy']>()
       .mockResolvedValue({ success: true, data: undefined });
@@ -159,6 +170,7 @@ describe('archiveOwnedArmy', () => {
 
     const result = await useCases.archiveOwnedArmy(ownerAuthSub, 'army-1');
 
+    // A successful archive answers without data (no content).
     expect(result).toStrictEqual({ success: true });
     expect(archiveOwnedArmy).toHaveBeenCalledWith(ownerAuthSub, 'army-1');
   });

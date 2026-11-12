@@ -1,6 +1,7 @@
 import type { AuthPort, RegisteredWsRoute } from '@ports';
 import { authenticateWsUpgrade } from './authenticate-ws-upgrade';
 
+// A socket route that requires a token.
 const protectedRoute: RegisteredWsRoute = {
   auth: { authRequired: true, permissionsRequired: [] },
   onConnection: async () => {
@@ -9,15 +10,18 @@ const protectedRoute: RegisteredWsRoute = {
   path: '/ws/test',
 };
 
+// The same route with auth turned off.
 const openRoute: RegisteredWsRoute = {
   ...protectedRoute,
   auth: { authRequired: false },
 };
 
+// An auth port that accepts any token as the player auth0|a.
 const accepting: AuthPort = {
   checkToken: async () => ({ subject: 'auth0|a' }),
 };
 
+// An auth port that refuses the token as expired.
 const rejecting: AuthPort = {
   checkToken: async () => ({
     message: 'Token expired',
@@ -37,6 +41,7 @@ describe('authenticateWsUpgrade function', () => {
         authenticateWsUpgrade({
           authPort: accepting,
           close: vi.fn<(code: number, reason: string) => void>(),
+          // A non-browser client sends the token in the Authorization header.
           headers: { authorization: 'Bearer good' },
           query: {},
           route: protectedRoute,
@@ -56,6 +61,8 @@ describe('authenticateWsUpgrade function', () => {
           authPort: accepting,
           close: vi.fn<(code: number, reason: string) => void>(),
           headers: {},
+          // A browser cannot set Authorization on a socket, so the token rides
+          // in the query.
           query: { access_token: 'good' },
           route: protectedRoute,
         }),
@@ -66,6 +73,8 @@ describe('authenticateWsUpgrade function', () => {
   it('closes with 1008 when there is no token', { timeout: 5000 }, async () => {
     expect.hasAssertions();
 
+    // close is a spy: the upgrade must be closed, not left open and
+    // unauthenticated.
     const close = vi.fn<(code: number, reason: string) => void>();
 
     await expect(
@@ -77,6 +86,7 @@ describe('authenticateWsUpgrade function', () => {
         route: protectedRoute,
       }),
     ).resolves.toBe('closed');
+    // No token closes with 1008, the policy-violation code.
     expect(close).toHaveBeenCalledWith(1008, 'Unauthorized');
   });
 
@@ -97,6 +107,7 @@ describe('authenticateWsUpgrade function', () => {
           route: protectedRoute,
         }),
       ).resolves.toBe('closed');
+      // The auth port's reason is the close reason.
       expect(close).toHaveBeenCalledWith(1008, 'Token expired');
     },
   );
@@ -109,12 +120,15 @@ describe('authenticateWsUpgrade function', () => {
 
       await expect(
         authenticateWsUpgrade({
+          // Even a port that would refuse is not asked: an open route has no
+          // token to check.
           authPort: rejecting,
           close: vi.fn<(code: number, reason: string) => void>(),
           headers: {},
           query: {},
           route: openRoute,
         }),
+        // The connection is let in with no subject.
       ).resolves.toBe('anonymous');
     },
   );

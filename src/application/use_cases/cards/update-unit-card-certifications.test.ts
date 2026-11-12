@@ -42,6 +42,7 @@ describe('updateUnitCardCertifications function', () => {
           success: true,
           data: undefined,
         });
+      // Two valid latest versions, both uncertified at first. The second read, after the write, shows both certified.
       const getStatuses = vi
         .fn<UnitCardStorage['getLatestUnitCardCertifications']>()
         .mockResolvedValueOnce({
@@ -68,6 +69,7 @@ describe('updateUnitCardCertifications function', () => {
 
       const result = await updateUnitCardCertifications(useCaseDeps);
 
+      // Every uncertified valid card is written, and the answer is the post-write read (two reads) by card id.
       expect(certify).toHaveBeenCalledWith([validUnitA.id, validUnitB.id]);
       expect(getStatuses).toHaveBeenCalledTimes(2);
       expect(result).toStrictEqual({
@@ -89,6 +91,7 @@ describe('updateUnitCardCertifications function', () => {
           success: true,
           data: undefined,
         });
+      // One card is already certified and the other is not; after the write both are.
       const getStatuses = vi
         .fn<UnitCardStorage['getLatestUnitCardCertifications']>()
         .mockResolvedValueOnce({
@@ -115,6 +118,7 @@ describe('updateUnitCardCertifications function', () => {
 
       const result = await updateUnitCardCertifications(useCaseDeps);
 
+      // Only the uncertified card is written: a certified card is not certified again.
       expect(certify).toHaveBeenCalledWith([validUnitB.id]);
       expect(result).toStrictEqual({
         success: true,
@@ -135,6 +139,7 @@ describe('updateUnitCardCertifications function', () => {
           success: true,
           data: undefined,
         });
+      // One valid card and one the rules schema rejects (see the invalid fixture); neither is certified at first, and after the write only the valid one is.
       const getStatuses = vi
         .fn<UnitCardStorage['getLatestUnitCardCertifications']>()
         .mockResolvedValueOnce({
@@ -161,6 +166,7 @@ describe('updateUnitCardCertifications function', () => {
 
       const result = await updateUnitCardCertifications(useCaseDeps);
 
+      // Only the valid card is written; the schema-invalid one can never be played, so it is reported uncertified.
       expect(certify).toHaveBeenCalledWith([validUnitA.id]);
       expect(result).toStrictEqual({
         success: true,
@@ -175,6 +181,7 @@ describe('updateUnitCardCertifications function', () => {
     async () => {
       expect.hasAssertions();
 
+      // Certify is never programmed, because it must not run when the first read fails.
       const certify = vi.fn<UnitCardStorage['certifyUnitCardVersions']>();
       const useCaseDeps = deps({
         unitCardStorage: unitCardStorageDouble({
@@ -191,6 +198,7 @@ describe('updateUnitCardCertifications function', () => {
 
       const result = await updateUnitCardCertifications(useCaseDeps);
 
+      // A failed catalog read stops the run before any write.
       expect(certify).not.toHaveBeenCalled();
       expect(result).toStrictEqual({
         success: false,
@@ -206,6 +214,7 @@ describe('updateUnitCardCertifications function', () => {
     async () => {
       expect.hasAssertions();
 
+      // The first read succeeds; it is the write that follows that fails.
       const getStatuses = vi
         .fn<UnitCardStorage['getLatestUnitCardCertifications']>()
         .mockResolvedValue({
@@ -227,6 +236,7 @@ describe('updateUnitCardCertifications function', () => {
 
       const result = await updateUnitCardCertifications(useCaseDeps);
 
+      // The catalog is read once only: after a failed write there is no post-write state to report.
       expect(getStatuses).toHaveBeenCalledTimes(1);
       expect(result).toStrictEqual({
         success: false,
@@ -242,6 +252,7 @@ describe('updateUnitCardCertifications function', () => {
     async () => {
       expect.hasAssertions();
 
+      // The first read and the write succeed; only the post-write read fails, and that failure is what the caller gets.
       const useCaseDeps = deps({
         unitCardStorage: unitCardStorageDouble({
           getLatestUnitCardCertifications: vi

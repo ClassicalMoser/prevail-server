@@ -24,6 +24,7 @@ describe('sampleEitherSideChoice function', () => {
     () => {
       expect.hasAssertions();
 
+      // The real opening options from the rules; white owes setup.
       const options = getLegalPlayerChoiceOptions(openingState);
       assert.ok(options !== null);
 
@@ -43,6 +44,7 @@ describe('sampleEitherSideChoice function', () => {
       expect.hasAssertions();
 
       // A card prompt with no card events left: no seat still owes.
+      // With no card event left, no side owes a choice, so the bot has nothing to sample.
       const allDown: LegalPlayerChoiceOptions = {
         choiceType: 'chooseCard',
         events: [],

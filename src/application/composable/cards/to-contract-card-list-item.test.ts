@@ -7,6 +7,7 @@ describe('toContractCardListItem function', () => {
     () => {
       expect.hasAssertions();
 
+      // The catalog row is passed as only these three fields, the same ones the contract lists.
       const item = toContractCardListItem({
         id: 'card-1',
         name: 'Charge',

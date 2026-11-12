@@ -16,6 +16,7 @@ const createInMemoryGameStorage = (): GameStorage => {
   return {
     getGame: async (gameId, gameMode) => {
       const game = games.get(gameId);
+      // An unknown id answers with nothing, which the caller reads as 'no such game'.
       if (game === undefined) {
         return;
       }
@@ -28,6 +29,7 @@ const createInMemoryGameStorage = (): GameStorage => {
       return response;
     },
     saveNewGame: async (game) => {
+      // A game id is created once; a second save would replace a game in play.
       if (games.has(game.id)) {
         const response = fail('Game already exists');
         return response;

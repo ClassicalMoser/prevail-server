@@ -4,6 +4,8 @@ import { recordingLogger } from '@testing';
 
 const logger = recordingLogger();
 
+// The route factory only wires handlers to use cases; nothing is called here,
+// so an empty object is enough.
 const useCases = (): GameSessionUseCasesPort => ({}) as GameSessionUseCasesPort; // route factory only wires handlers; not invoked here
 
 describe('createWsRoutes function', () => {
@@ -15,6 +17,7 @@ describe('createWsRoutes function', () => {
 
       const routes: WsRouteRegistry = createWsRoutes(useCases(), logger);
 
+      // One route per seat and one for bot-vs-bot watching, in this order.
       expect(routes.map((route) => route.path)).toStrictEqual([
         '/ws/games/id/:gameId/white',
         '/ws/games/id/:gameId/black',

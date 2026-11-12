@@ -9,6 +9,7 @@ describe('createGameSessionUseCases function', () => {
     () => {
       expect.hasAssertions();
 
+      // In-memory engine ports and a one-army stand-in are enough: the test only checks the shape, and calls no use case.
       const runtime = createGameSessionUseCases({
         botTurnGapMs: 0,
         enginePorts: createInMemoryEnginePorts(),

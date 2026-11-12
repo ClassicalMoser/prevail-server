@@ -27,10 +27,14 @@ const resolveUnitImage = async (
   imageUrl: string | null,
   allowedMediaOrigin: string,
 ): Promise<DataErrorSignature<boolean>> => {
+  // A unit with no artwork still renders; the template draws it without an
+  // image because `unitImage` is false.
   if (imageUrl === null) {
     return { success: true, data: false };
   }
 
+  // The template reads the artwork by this fixed name under --root, so it
+  // does not matter what the author's URL was called.
   const destinationPath = path.join(workspaceDir, 'unit-image.png');
   const fetched = await fetchUnitArtwork(
     imageUrl,

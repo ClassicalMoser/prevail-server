@@ -34,7 +34,9 @@ const CORS_PREFLIGHT_MAX_AGE_SECONDS = 86_400;
 const createCorsOptions = (
   allowedOrigins: readonly string[],
 ): FastifyCorsOptions => ({
+  // Only the listed web and desktop-app origins may call the API from a browser.
   origin: [...allowedOrigins],
+  // The browser client may make credentialed cross-origin requests.
   credentials: true,
   methods: [...CORS_ALLOWED_METHODS],
   allowedHeaders: [...CORS_ALLOWED_HEADERS],

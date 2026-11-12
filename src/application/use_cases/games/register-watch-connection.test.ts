@@ -8,9 +8,11 @@ describe('registerWatchConnection function', () => {
     async () => {
       expect.hasAssertions();
 
+      // A hosted bot-vs-bot game created by `botVsBotCreator`; the default watcher is that creator.
       const { store, gameId } = await hostedBotVsBotGame();
       const { connection, sent } = watcher(gameId);
 
+      // A watcher is sent the authoritative state first: it has no hand to hide.
       const registered = await registerWatchConnection(store, connection);
 
       expect(registered).toStrictEqual({ data: undefined, success: true });
@@ -30,6 +32,7 @@ describe('registerWatchConnection function', () => {
       expect.hasAssertions();
 
       const { store, gameId } = await hostedBotVsBotGame();
+      // A different subject from the creator: only the creator may watch.
       const { connection, sent } = watcher(gameId, `${botVsBotCreator}-other`);
 
       const registered = await registerWatchConnection(store, connection);

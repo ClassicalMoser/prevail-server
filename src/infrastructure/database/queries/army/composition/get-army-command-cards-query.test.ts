@@ -8,6 +8,7 @@ describe('getArmyCommandCardsQuery function', () => {
     async () => {
       expect.hasAssertions();
 
+      // One command-card join row, as the table would hold it.
       const produced = [
         { army_id: 'army-1', command_card_id: 'card-1', quantity: 1 },
       ];
@@ -15,7 +16,9 @@ describe('getArmyCommandCardsQuery function', () => {
       const rows = await getArmyCommandCardsQuery(recorded.sql, 'army-1');
       const call = recorded.calls[0];
 
+      // The army's command cards are read from the join table, with quantities.
       expect(call?.text).toContain('FROM army_command_cards');
+      // Scoped to one army id.
       expect(call?.values).toStrictEqual(['army-1']);
       expect(rows).toStrictEqual(produced);
     },

@@ -8,9 +8,12 @@ describe('createCommandCardVersion function', () => {
     async () => {
       expect.hasAssertions();
 
+      // The existence check finds no card, so this id is unknown.
       const recorded = recordedSql([]);
 
       await expect(
+        // A catalog card from the sample set, offered as a new version of a
+        // card the database does not have.
         createCommandCardVersion(recorded.sql, tempCommandCards[0]),
       ).resolves.toStrictEqual({
         message: 'Command card not found',
