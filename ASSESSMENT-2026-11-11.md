@@ -25,7 +25,8 @@ These are the cleanup's own backlog, in the order [`AUDIT_PROCESS.md`](./AUDIT_P
 
 1. **Twins.**
    - Done: the seat and bot-vs-bot socket implementations now share `implementWsRoute` and its helpers (`findAdmittedConnection`, `openWsConnection`, `routeWsMessage`, `runWsMessage`, `sendRejection`). Each keeps only its own message table.
-   - `create-vs-bot-game.ts` and `create-bot-vs-bot-game.ts` share army lookup, composition check, saving the game, and opening the event stream. They answer a missing army with different messages.
+   - Done: the two create use cases share `loadOwnedArmy`, `buildNewGame` and `persistNewGame` (`composable/game-session/create/`). They still word a missing army differently; vs-bot carries a `TODO(misleading)` for the author to settle.
+   - Their suites (`create-*-game.test.ts`) boot `createGameSessionUseCases` to reach the use case, which STYLE says not to. Rewrite them to call the function with `gameSessionStore`.
    - The seat and watcher versions of register, unregister, and send-snapshot repeat one pattern.
 2. **Factory closures that hold the implementations**: `createOwnedArmyStorage` (~170 lines), and the command-card and unit-card storage adapters.
 3. **`composable/game-session/session/`** mixes the store type, session policy (`other-side`, `subject-for-seat`) and `require-*` checks.

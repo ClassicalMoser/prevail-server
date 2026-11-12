@@ -1,13 +1,14 @@
 import type { CreateVsBotGameBody } from '@classicalmoser/prevail-contracts';
-import { createInitialGameState } from '@classicalmoser/prevail-rules/domain';
-import type { Game } from '@classicalmoser/prevail-rules/domain';
-import type { DataErrorSignature } from '@ports';
+import type { DataErrorSignature, ErrorSignature } from '@ports';
 import { randomUUID } from 'node:crypto';
 import { BOT_PLAYER_ID } from '@application/composable/game-session/bot/bot-player-id';
+import { takeBotTurns } from '@application/composable/game-session/bot/take-bot-turns';
+import { armiesCompositionFailure } from '@application/composable/game-session/create/armies-composition-failure';
+import { buildNewGame } from '@application/composable/game-session/create/build-new-game';
+import { loadOwnedArmy } from '@application/composable/game-session/create/load-owned-army';
+import { persistNewGame } from '@application/composable/game-session/create/persist-new-game';
 import { enqueue } from '@application/composable/game-session/session/enqueue';
 import type { GameSessionStore } from '@application/composable/game-session/session/game-session-store';
-import { takeBotTurns } from '@application/composable/game-session/bot/take-bot-turns';
-import { armiesCompositionFailure } from '@application/composable/game-session/session/armies-composition-failure';
 
 /**
  * Create a vs-bot game from two armies the subject owns.
@@ -37,28 +38,36 @@ const createVsBotGame = async (
   const botArmyId =
     body.humanSide === 'white' ? body.blackArmyId : body.whiteArmyId;
 
-  const humanArmy = await store.ownedArmyStorage.getOwnedArmyById(
+  // TODO(misleading): the two lookups word a missing army differently. The
+  // human's is the storage's own failure (404 stays 404); the bot's becomes a
+  // 400 "Bot army ...". bot-vs-bot answers 400 for both, naming the side.
+  // The author decides which wording a client should see before they merge.
+  const human = await loadOwnedArmy(
+    store,
     subject,
     humanArmyId,
+    (failure) => failure,
   );
-  if (!humanArmy.success) {
-    return humanArmy;
+  if (!human.success) {
+    return human;
   }
-
-  const botArmy = await store.ownedArmyStorage.getOwnedArmyById(
+  const bot = await loadOwnedArmy(
+    store,
     subject,
     botArmyId,
-  );
-  if (!botArmy.success) {
-    return {
+    (failure): ErrorSignature => ({
       message: 'Bot army must be an army owned by the creating player',
-      status: botArmy.status === 404 ? 400 : botArmy.status,
+      status: failure.status === 404 ? 400 : failure.status,
       success: false,
-    };
+    }),
+  );
+  if (!bot.success) {
+    return bot;
   }
 
-  const whiteArmy = body.humanSide === 'white' ? humanArmy.data : botArmy.data;
-  const blackArmy = body.humanSide === 'black' ? humanArmy.data : botArmy.data;
+  // The human's army goes on the side they chose; the bot's on the other.
+  const whiteArmy = body.humanSide === 'white' ? human.data : bot.data;
+  const blackArmy = body.humanSide === 'black' ? human.data : bot.data;
   const composition = armiesCompositionFailure(
     whiteArmy,
     blackArmy,
@@ -68,52 +77,21 @@ const createVsBotGame = async (
     return composition;
   }
 
-  // Auth0 subject stays in session meta. Game player fields must be UUIDs.
-  const gameId = randomUUID();
+  // The bot's seat has a fixed player id; the human's is fresh, since their
+  // Auth0 subject stays in session meta and is not a UUID.
   const humanPlayerId = randomUUID();
-  const whitePlayerId =
-    body.humanSide === 'white' ? humanPlayerId : BOT_PLAYER_ID;
-  const blackPlayerId =
-    body.humanSide === 'black' ? humanPlayerId : BOT_PLAYER_ID;
-  const gameState = createInitialGameState({
+  const gameId = randomUUID();
+  const game = buildNewGame({
     blackArmy,
+    blackPlayerId: body.humanSide === 'black' ? humanPlayerId : BOT_PLAYER_ID,
+    gameId,
     gameMode: body.gameMode,
     whiteArmy,
+    whitePlayerId: body.humanSide === 'white' ? humanPlayerId : BOT_PLAYER_ID,
   });
-  const game: Game = {
-    blackArmy,
-    blackPlayer: blackPlayerId,
-    gameMode: body.gameMode,
-    gameState,
-    id: gameId,
-    whiteArmy,
-    whitePlayer: whitePlayerId,
-  };
-
-  // Persist the game before the stream. The engine appends setup events on
-  // the round number, which is 0 during setup.
-  const saveResult = await store.enginePorts.gameStorage.saveNewGame(game);
-  if (!saveResult.result) {
-    return {
-      message: saveResult.errorReason,
-      status: 500,
-      success: false,
-    };
-  }
-
-  // processEvent files events under the round they are applied in, which is
-  // round 0 during setup.
-  const streamResult =
-    await store.enginePorts.eventStreamStorage.newEventStream(
-      gameId,
-      game.gameState.currentRoundState.roundNumber,
-    );
-  if (!streamResult.result) {
-    return {
-      message: streamResult.errorReason,
-      status: 500,
-      success: false,
-    };
+  const failure = await persistNewGame(store, game);
+  if (failure !== undefined) {
+    return failure;
   }
 
   // Remember who may open each seat, then play any bot turns already expected.
@@ -123,12 +101,12 @@ const createVsBotGame = async (
     humanSubject: subject,
     kind: 'vsBot',
   });
-
   await enqueue(store, gameId, async () => {
     await takeBotTurns(store, gameId);
   });
 
-  return { data: gameId, success: true };
+  const created: DataErrorSignature<string> = { data: gameId, success: true };
+  return created;
 };
 
 export { createVsBotGame };

@@ -1,39 +1,12 @@
 import type { CreateBotVsBotGameBody } from '@classicalmoser/prevail-contracts';
-import { createInitialGameState } from '@classicalmoser/prevail-rules/domain';
-import type { Game } from '@classicalmoser/prevail-rules/domain';
 import type { DataErrorSignature } from '@ports';
 import { randomUUID } from 'node:crypto';
-import { armiesCompositionFailure } from '@application/composable/game-session/session/armies-composition-failure';
+import { armiesCompositionFailure } from '@application/composable/game-session/create/armies-composition-failure';
+import { buildNewGame } from '@application/composable/game-session/create/build-new-game';
+import { loadOwnedArmy } from '@application/composable/game-session/create/load-owned-army';
+import { persistNewGame } from '@application/composable/game-session/create/persist-new-game';
+import { unownedSideFailure } from '@application/composable/game-session/create/unowned-side-failure';
 import type { GameSessionStore } from '@application/composable/game-session/session/game-session-store';
-
-/**
- * Owned-army lookup failure for one side of a bot-vs-bot create.
- *
- * A missing army is 400. Any other storage failure keeps its status.
- *
- * @param status - Status from the owned-army port.
- * @param sideLabel - Which seat the id was for.
- * @returns The envelope create should return.
- */
-const ownedArmyFailure = (
-  status: number,
-  sideLabel: 'White' | 'Black',
-): DataErrorSignature<string> => {
-  if (status === 404) {
-    const missing: DataErrorSignature<string> = {
-      message: `${sideLabel} army must be an army owned by the creating player`,
-      status: 400,
-      success: false,
-    };
-    return missing;
-  }
-  const failure: DataErrorSignature<string> = {
-    message: 'Army could not be loaded',
-    status,
-    success: false,
-  };
-  return failure;
-};
 
 /**
  * Create a bot-vs-bot game from two armies the subject owns.
@@ -53,74 +26,46 @@ const createBotVsBotGame = async (
   subject: string,
   body: CreateBotVsBotGameBody,
 ): Promise<DataErrorSignature<string>> => {
-  const whiteOwned = await store.ownedArmyStorage.getOwnedArmyById(
-    subject,
-    body.whiteArmyId,
+  // Both armies must already belong to the creating subject.
+  const white = await loadOwnedArmy(store, subject, body.whiteArmyId, (f) =>
+    unownedSideFailure(f, 'White'),
   );
-  if (!whiteOwned.success) {
-    const failure = ownedArmyFailure(whiteOwned.status, 'White');
-    return failure;
+  if (!white.success) {
+    return white;
   }
-  const blackOwned = await store.ownedArmyStorage.getOwnedArmyById(
-    subject,
-    body.blackArmyId,
+  const black = await loadOwnedArmy(store, subject, body.blackArmyId, (f) =>
+    unownedSideFailure(f, 'Black'),
   );
-  if (!blackOwned.success) {
-    const failure = ownedArmyFailure(blackOwned.status, 'Black');
-    return failure;
+  if (!black.success) {
+    return black;
   }
 
-  const whiteArmy = whiteOwned.data;
-  const blackArmy = blackOwned.data;
+  // An illegal list is refused before anything is saved.
   const composition = armiesCompositionFailure(
-    whiteArmy,
-    blackArmy,
+    white.data,
+    black.data,
     body.gameMode,
   );
   if (composition !== undefined) {
     return composition;
   }
 
+  // Neither seat has a human, so both sides get fresh player ids.
   const gameId = randomUUID();
-  const whitePlayerId = randomUUID();
-  const blackPlayerId = randomUUID();
-  const gameState = createInitialGameState({
-    blackArmy,
+  const game = buildNewGame({
+    blackArmy: black.data,
+    blackPlayerId: randomUUID(),
+    gameId,
     gameMode: body.gameMode,
-    whiteArmy,
+    whiteArmy: white.data,
+    whitePlayerId: randomUUID(),
   });
-  const game: Game = {
-    blackArmy,
-    blackPlayer: blackPlayerId,
-    gameMode: body.gameMode,
-    gameState,
-    id: gameId,
-    whiteArmy,
-    whitePlayer: whitePlayerId,
-  };
-
-  const saveResult = await store.enginePorts.gameStorage.saveNewGame(game);
-  if (!saveResult.result) {
-    return {
-      message: saveResult.errorReason,
-      status: 500,
-      success: false,
-    };
+  const failure = await persistNewGame(store, game);
+  if (failure !== undefined) {
+    return failure;
   }
 
-  const streamResult =
-    await store.enginePorts.eventStreamStorage.newEventStream(
-      gameId,
-      game.gameState.currentRoundState.roundNumber,
-    );
-  if (!streamResult.result) {
-    return {
-      message: streamResult.errorReason,
-      status: 500,
-      success: false,
-    };
-  }
-
+  // Only the creator may open the watcher socket. `stuck` starts clear.
   store.metaByGameId.set(gameId, {
     creatorSubject: subject,
     gameMode: body.gameMode,
@@ -128,7 +73,8 @@ const createBotVsBotGame = async (
     stuck: false,
   });
 
-  return { data: gameId, success: true };
+  const created: DataErrorSignature<string> = { data: gameId, success: true };
+  return created;
 };
 
 export { createBotVsBotGame };
