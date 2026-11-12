@@ -1,19 +1,8 @@
-import type { LoggerPort } from '@ports';
-import { recordedSql } from '@testing';
+import { recordedSql, recordingLogger } from '@testing';
 import type { UserDb } from '../db-types';
 import { createUserStorage } from './user-storage';
 
-const logger: LoggerPort = {
-  error: (): void => {
-    /* database failures; this suite asserts the envelope */
-  },
-  info: (): void => {
-    /* unused */
-  },
-  warn: (): void => {
-    /* unused */
-  },
-};
+const logger = recordingLogger();
 
 const userRow: UserDb = {
   user_auth_sub: 'auth0|owner',

@@ -1,18 +1,7 @@
-import type { LoggerPort } from '@ports';
-import { recordedSql } from '@testing';
+import { recordedSql, recordingLogger } from '@testing';
 import { createUnitCardStorage } from './create-unit-card-storage';
 
-const logger: LoggerPort = {
-  error: (): void => {
-    /* database failures; this suite asserts the envelope */
-  },
-  info: (): void => {
-    /* unused */
-  },
-  warn: (): void => {
-    /* unused */
-  },
-};
+const logger = recordingLogger();
 
 describe('createUnitCardStorage function', () => {
   it(

@@ -1,18 +1,9 @@
 import { getCommandCardByIdContract } from '@classicalmoser/prevail-contracts/contracts';
-import type { LoggerPort, WireRouteRequest } from '@ports';
+import type { WireRouteRequest } from '@ports';
+import { recordingLogger } from '@testing';
 import { implementGetRoute } from './implement-get-route';
 
-const logger: LoggerPort = {
-  error: (): void => {
-    /* unexpected handler failures; this suite asserts the envelope */
-  },
-  info: (): void => {
-    /* unused */
-  },
-  warn: (): void => {
-    /* unused */
-  },
-};
+const logger = recordingLogger();
 
 const wire = (overrides: Partial<WireRouteRequest> = {}): WireRouteRequest => ({
   body: undefined,

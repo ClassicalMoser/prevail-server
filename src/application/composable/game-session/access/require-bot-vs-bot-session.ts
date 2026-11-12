@@ -1,7 +1,7 @@
-import type { BotVsBotSessionMeta } from './game-session-meta';
+import type { BotVsBotSessionMeta } from '../session/game-session-meta';
 import type { DataErrorSignature } from '@ports';
 import { gameNotFound } from './game-not-found';
-import type { GameSessionStore } from './game-session-store';
+import type { GameSessionStore } from '../session/game-session-store';
 
 /**
  * Admit the creating subject to a bot-vs-bot game.

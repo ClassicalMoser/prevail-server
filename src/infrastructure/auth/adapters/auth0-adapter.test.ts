@@ -1,17 +1,7 @@
-import type { LoggerPort } from '@ports';
 import { createAuth0Adapter } from './auth0-adapter';
+import { recordingLogger } from '@testing';
 
-const logger: LoggerPort = {
-  error: (): void => {
-    /* unused */
-  },
-  info: (): void => {
-    /* unused */
-  },
-  warn: (): void => {
-    /* unused */
-  },
-};
+const logger = recordingLogger();
 
 describe('createAuth0Adapter function', () => {
   it(

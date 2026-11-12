@@ -1,18 +1,9 @@
 import type { MediaPostRoute } from '@classicalmoser/prevail-contracts';
-import type { LoggerPort, WireRouteRequest } from '@ports';
+import type { WireRouteRequest } from '@ports';
+import { recordingLogger } from '@testing';
 import { implementMediaPostRoute } from './implement-media-post-route';
 
-const logger: LoggerPort = {
-  error: (): void => {
-    /* unexpected handler failures; this suite asserts the envelope */
-  },
-  info: (): void => {
-    /* unused */
-  },
-  warn: (): void => {
-    /* unused */
-  },
-};
+const logger = recordingLogger();
 
 const pass = <T>(data: T): { success: true; data: T } => ({
   success: true,

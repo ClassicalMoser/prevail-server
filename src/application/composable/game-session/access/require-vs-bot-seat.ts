@@ -1,8 +1,8 @@
 import type { PlayerSide } from '@classicalmoser/prevail-rules/domain';
 import type { DataErrorSignature } from '@ports';
 import { gameNotFound } from './game-not-found';
-import type { VsBotSessionMeta } from './game-session-meta';
-import type { GameSessionStore } from './game-session-store';
+import type { VsBotSessionMeta } from '../session/game-session-meta';
+import type { GameSessionStore } from '../session/game-session-store';
 import { subjectForSeat } from './subject-for-seat';
 
 /**

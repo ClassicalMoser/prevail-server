@@ -1,10 +1,10 @@
 import type { DataErrorSignature, GameSeatConnection } from '@ports';
 import { enqueue } from '@application/composable/game-session/session/enqueue';
 import { getConnections } from '@application/composable/game-session/fanout/get-connections';
-import { gameNotFound } from '@application/composable/game-session/session/game-not-found';
+import { gameNotFound } from '@application/composable/game-session/access/game-not-found';
 import type { GameSessionStore } from '@application/composable/game-session/session/game-session-store';
 import { loadAuthoritativeGame } from '@application/composable/game-session/session/load-authoritative-game';
-import { requireVsBotSeat } from '@application/composable/game-session/session/require-vs-bot-seat';
+import { requireVsBotSeat } from '@application/composable/game-session/access/require-vs-bot-seat';
 import { sendGameSnapshotToConnection } from '@application/composable/game-session/fanout/send-game-snapshot-to-connection';
 import { takeBotTurns } from '@application/composable/game-session/bot/take-bot-turns';
 

@@ -1,6 +1,6 @@
 import type { PlayerSide } from '@classicalmoser/prevail-rules/domain';
 import { BOT_SUBJECT } from '../bot/bot-subject';
-import type { VsBotSessionMeta } from './game-session-meta';
+import type { VsBotSessionMeta } from '../session/game-session-meta';
 
 /**
  * Auth subject allowed to speak for a seat.

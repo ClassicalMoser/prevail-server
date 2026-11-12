@@ -32,11 +32,11 @@ These are the cleanup's own backlog, in the order [`AUDIT_PROCESS.md`](./AUDIT_P
    - `getLatestRulesVersionIdQuery` sits under the command-card queries but unit cards use it too (`TODO(composition)`). A missing rules version is a silent 500 (`TODO(wrong)` in `certifyWithLatestRules`).
    - `getOwnedArmies` runs a row query and four hydrate queries per army (`TODO(composition)` in the file).
 3. Done: the card use cases follow the application README. Each method with its own policy is a file under `use_cases/cards/` and the factories only compose them. The two factory-level suites were split per method; their storage doubles and fixtures moved to `@testing` (`card-use-case-doubles`, `card-fixtures`).
-4. **`composable/game-session/session/`** mixes the store type, session policy (`other-side`, `subject-for-seat`) and `require-*` checks.
+4. Done: `composable/game-session/` is now `access/` (who may touch a game: `subject-for-seat`, `require-*`, `gameNotFound`), `create/`, `session/` (store, meta, queue, loads), `bot/` and `fanout/`.
 5. **`use_cases/`** is the one directory name not in kebab-case. It is historical; changing it is the author's call.
 6. Done: `certifyCardVersions` took `prepare` as required, so its `undefined as TContext` assertion is gone. No production code asserts a type now.
 7. **`return <call>`** appears in HTTP route handlers, `register-ws.ts`, and `storage-op.ts`.
-8. **Logger stubs.** About a dozen suites each define their own `LoggerPort` stub. `recordingLogger` in `@testing` replaces them; move each suite over.
+8. Done: suites that defined a no-op `LoggerPort` stub now use `recordingLogger` from `@testing`. `handle-error.test.ts` keeps its own, because it asserts on the calls.
 9. **Commentary density** is under 20% in `composition`, `ports` and `testing`.
 
 ## Deferred

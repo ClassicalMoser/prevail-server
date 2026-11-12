@@ -1,8 +1,8 @@
 import type { DataErrorSignature, GameSeatConnection } from '@ports';
-import { gameNotFound } from '@application/composable/game-session/session/game-not-found';
+import { gameNotFound } from '@application/composable/game-session/access/game-not-found';
 import type { GameSessionStore } from '@application/composable/game-session/session/game-session-store';
 import { loadAuthoritativeGame } from '@application/composable/game-session/session/load-authoritative-game';
-import { requireRegisteredSeat } from '@application/composable/game-session/session/require-registered-seat';
+import { requireRegisteredSeat } from '@application/composable/game-session/access/require-registered-seat';
 import { sendGameSnapshotToConnection } from '@application/composable/game-session/fanout/send-game-snapshot-to-connection';
 
 /**

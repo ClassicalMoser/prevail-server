@@ -5,7 +5,7 @@ import type {
 import type { DataErrorSignature } from '@ports';
 import { enqueue } from '@application/composable/game-session/session/enqueue';
 import type { GameSessionStore } from '@application/composable/game-session/session/game-session-store';
-import { requireVsBotSeat } from '@application/composable/game-session/session/require-vs-bot-seat';
+import { requireVsBotSeat } from '@application/composable/game-session/access/require-vs-bot-seat';
 import { takeBotTurns } from '@application/composable/game-session/bot/take-bot-turns';
 
 interface SubmitPlayerChoiceInput {

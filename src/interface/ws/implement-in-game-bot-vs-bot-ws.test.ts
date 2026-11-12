@@ -1,20 +1,11 @@
 import assert from 'node:assert/strict';
 import { setTimeout as delay } from 'node:timers/promises';
 import { botVsBotInGameWsContract } from '@classicalmoser/prevail-contracts';
-import type { InGameBotVsBotWsHandler, LoggerPort } from '@ports';
+import type { InGameBotVsBotWsHandler } from '@ports';
 import { implementInGameBotVsBotWs } from './implement-in-game-bot-vs-bot-ws';
+import { recordingLogger } from '@testing';
 
-const logger: LoggerPort = {
-  error: (): void => {
-    /* Test stub */
-  },
-  info: (): void => {
-    /* Test stub */
-  },
-  warn: (): void => {
-    /* Test stub */
-  },
-};
+const logger = recordingLogger();
 
 const validGameId = '550e8400-e29b-41d4-a716-446655440000';
 

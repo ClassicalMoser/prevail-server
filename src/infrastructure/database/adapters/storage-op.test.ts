@@ -1,17 +1,7 @@
-import type { LoggerPort } from '@ports';
 import { storageOp } from './storage-op';
+import { recordingLogger } from '@testing';
 
-const logger: LoggerPort = {
-  error: (): void => {
-    /* unused unless run throws */
-  },
-  info: (): void => {
-    /* unused unless run throws */
-  },
-  warn: (): void => {
-    /* unused unless run throws */
-  },
-};
+const logger = recordingLogger();
 
 describe('storageOp function', () => {
   it('returns the run result when it succeeds', { timeout: 5000 }, async () => {

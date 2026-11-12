@@ -1,18 +1,9 @@
 import { updateOwnedArmyContract } from '@classicalmoser/prevail-contracts/contracts';
-import type { LoggerPort, WireRouteRequest } from '@ports';
+import type { WireRouteRequest } from '@ports';
+import { recordingLogger } from '@testing';
 import { implementPutRoute } from './implement-put-route';
 
-const logger: LoggerPort = {
-  error: (): void => {
-    /* unexpected handler failures; this suite asserts the envelope */
-  },
-  info: (): void => {
-    /* unused */
-  },
-  warn: (): void => {
-    /* unused */
-  },
-};
+const logger = recordingLogger();
 
 const armyId = '550e8400-e29b-41d4-a716-446655440001';
 

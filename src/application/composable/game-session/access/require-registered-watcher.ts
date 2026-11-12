@@ -1,7 +1,7 @@
 import type { DataErrorSignature, GameWatchConnection } from '@ports';
 import { getWatchers } from '../fanout/get-watchers';
-import type { BotVsBotSessionMeta } from './game-session-meta';
-import type { GameSessionStore } from './game-session-store';
+import type { BotVsBotSessionMeta } from '../session/game-session-meta';
+import type { GameSessionStore } from '../session/game-session-store';
 import { requireBotVsBotSession } from './require-bot-vs-bot-session';
 
 /**

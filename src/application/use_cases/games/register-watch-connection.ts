@@ -1,10 +1,10 @@
 import type { DataErrorSignature, GameWatchConnection } from '@ports';
-import { gameNotFound } from '@application/composable/game-session/session/game-not-found';
+import { gameNotFound } from '@application/composable/game-session/access/game-not-found';
 import { getWatchers } from '@application/composable/game-session/fanout/get-watchers';
 import { enqueue } from '@application/composable/game-session/session/enqueue';
 import type { GameSessionStore } from '@application/composable/game-session/session/game-session-store';
 import { loadAuthoritativeGame } from '@application/composable/game-session/session/load-authoritative-game';
-import { requireBotVsBotSession } from '@application/composable/game-session/session/require-bot-vs-bot-session';
+import { requireBotVsBotSession } from '@application/composable/game-session/access/require-bot-vs-bot-session';
 
 /**
  * Admit the creator's bot-vs-bot socket and send its opening snapshot.

@@ -1,21 +1,8 @@
-import type {
-  GameSessionUseCasesPort,
-  LoggerPort,
-  WsRouteRegistry,
-} from '@ports';
+import type { GameSessionUseCasesPort, WsRouteRegistry } from '@ports';
 import { createGameWsRoutes } from './game-ws-routes';
+import { recordingLogger } from '@testing';
 
-const logger: LoggerPort = {
-  error: (): void => {
-    /* unused */
-  },
-  info: (): void => {
-    /* unused */
-  },
-  warn: (): void => {
-    /* unused */
-  },
-};
+const logger = recordingLogger();
 
 const useCases = (): GameSessionUseCasesPort => ({}) as GameSessionUseCasesPort; // route factory only wires handlers; not invoked here
 

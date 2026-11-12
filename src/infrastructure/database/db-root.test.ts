@@ -1,17 +1,7 @@
-import type { LoggerPort } from '@ports';
 import { createDbRoot } from './db-root';
+import { recordingLogger } from '@testing';
 
-const logger: LoggerPort = {
-  error: (): void => {
-    /* unused */
-  },
-  info: (): void => {
-    /* unused */
-  },
-  warn: (): void => {
-    /* unused */
-  },
-};
+const logger = recordingLogger();
 
 describe('createDbRoot function', () => {
   it(

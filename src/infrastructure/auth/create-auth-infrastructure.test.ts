@@ -1,17 +1,7 @@
-import type { LoggerPort } from '@ports';
 import { createAuthInfrastructure } from './create-auth-infrastructure';
+import { recordingLogger } from '@testing';
 
-const logger: LoggerPort = {
-  error: (): void => {
-    /* unused */
-  },
-  info: (): void => {
-    /* unused */
-  },
-  warn: (): void => {
-    /* unused */
-  },
-};
+const logger = recordingLogger();
 
 describe('createAuthInfrastructure function', () => {
   it(

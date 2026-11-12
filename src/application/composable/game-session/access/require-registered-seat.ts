@@ -1,7 +1,7 @@
 import type { DataErrorSignature, GameSeatConnection } from '@ports';
 import { getConnections } from '../fanout/get-connections';
-import type { VsBotSessionMeta } from './game-session-meta';
-import type { GameSessionStore } from './game-session-store';
+import type { VsBotSessionMeta } from '../session/game-session-meta';
+import type { GameSessionStore } from '../session/game-session-store';
 import { requireVsBotSeat } from './require-vs-bot-seat';
 
 /**

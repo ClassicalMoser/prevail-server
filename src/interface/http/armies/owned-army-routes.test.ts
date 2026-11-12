@@ -1,23 +1,10 @@
 import assert from 'node:assert/strict';
 import { getOwnedArmiesContract } from '@classicalmoser/prevail-contracts/contracts';
-import type {
-  LoggerPort,
-  OwnedArmyUseCasesPort,
-  WireRouteRequest,
-} from '@ports';
+import type { OwnedArmyUseCasesPort, WireRouteRequest } from '@ports';
 import { createOwnedArmyRoutes } from './owned-army-routes';
+import { recordingLogger } from '@testing';
 
-const logger: LoggerPort = {
-  error: (): void => {
-    /* unused */
-  },
-  info: (): void => {
-    /* unused */
-  },
-  warn: (): void => {
-    /* unused */
-  },
-};
+const logger = recordingLogger();
 
 const useCases = (): OwnedArmyUseCasesPort =>
   ({

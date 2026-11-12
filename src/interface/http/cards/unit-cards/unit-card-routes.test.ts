@@ -1,23 +1,10 @@
 import assert from 'node:assert/strict';
 import { getCurrentUnitCardsContract } from '@classicalmoser/prevail-contracts/contracts';
-import type {
-  LoggerPort,
-  UnitCardUseCasesPort,
-  WireRouteRequest,
-} from '@ports';
+import type { UnitCardUseCasesPort, WireRouteRequest } from '@ports';
 import { createUnitCardRoutes } from './unit-card-routes';
+import { recordingLogger } from '@testing';
 
-const logger: LoggerPort = {
-  error: (): void => {
-    /* unused */
-  },
-  info: (): void => {
-    /* unused */
-  },
-  warn: (): void => {
-    /* unused */
-  },
-};
+const logger = recordingLogger();
 
 const useCases = (): UnitCardUseCasesPort =>
   ({

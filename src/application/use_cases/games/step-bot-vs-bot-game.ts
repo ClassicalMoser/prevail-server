@@ -3,7 +3,7 @@ import { playBotVsBotChoice } from '@application/composable/game-session/bot/pla
 import type { BotVsBotStepOutcome } from '@application/composable/game-session/bot/play-bot-vs-bot-choice';
 import { enqueue } from '@application/composable/game-session/session/enqueue';
 import type { GameSessionStore } from '@application/composable/game-session/session/game-session-store';
-import { requireRegisteredWatcher } from '@application/composable/game-session/session/require-registered-watcher';
+import { requireRegisteredWatcher } from '@application/composable/game-session/access/require-registered-watcher';
 
 /** Why a step that played nothing is refused, by what the step found. */
 const refusals: Record<

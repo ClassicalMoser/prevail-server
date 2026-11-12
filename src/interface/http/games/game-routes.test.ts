@@ -1,22 +1,9 @@
 import assert from 'node:assert/strict';
-import type {
-  GameSessionUseCasesPort,
-  LoggerPort,
-  WireRouteRequest,
-} from '@ports';
+import type { GameSessionUseCasesPort, WireRouteRequest } from '@ports';
 import { createGameRoutes } from './game-routes';
+import { recordingLogger } from '@testing';
 
-const logger: LoggerPort = {
-  error: (): void => {
-    /* unused */
-  },
-  info: (): void => {
-    /* unused */
-  },
-  warn: (): void => {
-    /* unused */
-  },
-};
+const logger = recordingLogger();
 
 const useCases = (): GameSessionUseCasesPort =>
   ({

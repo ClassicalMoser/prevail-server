@@ -1,20 +1,11 @@
 import assert from 'node:assert/strict';
 import { setTimeout as delay } from 'node:timers/promises';
 import { whiteInGameWsContract } from '@classicalmoser/prevail-contracts';
-import type { InGameSeatWsHandler, LoggerPort } from '@ports';
+import type { InGameSeatWsHandler } from '@ports';
 import { implementInGameSeatWs } from './implement-in-game-seat-ws';
+import { recordingLogger } from '@testing';
 
-const logger: LoggerPort = {
-  error: (): void => {
-    /* Test stub */
-  },
-  info: (): void => {
-    /* Test stub */
-  },
-  warn: (): void => {
-    /* Test stub */
-  },
-};
+const logger = recordingLogger();
 
 const validGameId = '550e8400-e29b-41d4-a716-446655440000';
 

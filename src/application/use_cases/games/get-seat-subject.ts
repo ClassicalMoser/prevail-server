@@ -1,6 +1,6 @@
 import type { PlayerSide } from '@classicalmoser/prevail-rules/domain';
 import type { GameSessionStore } from '@application/composable/game-session/session/game-session-store';
-import { subjectForSeat } from '@application/composable/game-session/session/subject-for-seat';
+import { subjectForSeat } from '@application/composable/game-session/access/subject-for-seat';
 
 /**
  * Subject that may use a seat, when the game exists in this process.

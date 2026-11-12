@@ -1,9 +1,9 @@
 import type { DataErrorSignature, GameWatchConnection } from '@ports';
-import { gameNotFound } from '@application/composable/game-session/session/game-not-found';
+import { gameNotFound } from '@application/composable/game-session/access/game-not-found';
 import { enqueue } from '@application/composable/game-session/session/enqueue';
 import type { GameSessionStore } from '@application/composable/game-session/session/game-session-store';
 import { loadAuthoritativeGame } from '@application/composable/game-session/session/load-authoritative-game';
-import { requireRegisteredWatcher } from '@application/composable/game-session/session/require-registered-watcher';
+import { requireRegisteredWatcher } from '@application/composable/game-session/access/require-registered-watcher';
 
 /**
  * Resend the current authoritative snapshot to a registered watcher.
