@@ -9,64 +9,30 @@ import type {
   InGameSeatWsHandler,
   LoggerPort,
   RegisteredWsRoute,
+  RequestAuth,
+  WireWsConnection,
   WsSeatConnectionContext,
 } from '@ports';
-import { handleError, runDetached } from '@utils';
-import { readInboundEnvelope } from './read-inbound-envelope';
+import type { FailValidationResult } from '@classicalmoser/prevail-rules/domain';
+import { createInboundHandler } from './create-inbound-handler';
+import type { InboundHandler } from './create-inbound-handler';
+import { implementWsRoute } from './implement-ws-route';
+import type { WsOutcome } from './ws-types';
 
-interface SeatOpenResultOk<THandle> {
-  ok: true;
-  connectionHandle: THandle;
-}
-
-interface SeatOpenResultFail {
-  ok: false;
-  closeCode?: number;
-  reason: string;
-}
-
-type SeatOpenResult<THandle> = SeatOpenResultOk<THandle> | SeatOpenResultFail;
-
-const openSeatConnection = async <
-  TParams extends Record<string, unknown>,
-  TInboundPlayerChoice,
-  THandle,
->(input: {
-  handlers: InGameSeatWsHandler<TParams, TInboundPlayerChoice, THandle>;
-  context: WsSeatConnectionContext<TParams>;
-  sendJson: (message: unknown) => void;
-  path: string;
-  logger: LoggerPort;
-}): Promise<SeatOpenResult<THandle>> => {
-  try {
-    return await input.handlers.onOpen(input.context, input.sendJson);
-  } catch (error) {
-    handleError({
-      context: `opening WS ${input.path}`,
-      error,
-      logger: input.logger,
-      message: `Failed to open ${input.path}`,
-      status: 500,
-    });
-    return {
-      closeCode: 1011,
-      ok: false,
-      reason: 'Internal error',
-    };
+/**
+ * Rename a seat handler's refusal to the shared outcome shape.
+ *
+ * @param result - What the seat handler answered.
+ * @returns The same answer, with the refusal under `rejection`.
+ */
+const toOutcome = (
+  result: { ok: true } | { ok: false; choiceRejected: FailValidationResult },
+): WsOutcome => {
+  if (result.ok) {
+    return { ok: true };
   }
-};
-
-const sendChoiceRejected = (
-  sendJson: (message: unknown) => void,
-  errorReason: string,
-): void => {
-  sendJson({
-    payload: {
-      errorReason,
-      result: false,
-    },
-    type: 'choiceRejected',
-  });
+  const refused: WsOutcome = { ok: false, rejection: result.choiceRejected };
+  return refused;
 };
 
 /**
@@ -102,134 +68,68 @@ const implementInGameSeatWs = <
   >,
   logger: LoggerPort,
   handlers: InGameSeatWsHandler<TParams, TInboundPlayerChoice, THandle>,
-): RegisteredWsRoute => ({
-  path: contract.path,
-  auth: contract.auth,
-  onConnection: async (wire, socket): Promise<void> => {
-    const paramsParsed = contract.validators.params.safeParse(wire.params);
-    if (!paramsParsed.success) {
-      socket.close(1008, 'Invalid params');
-      return;
-    }
-
-    if (wire.auth === undefined) {
-      socket.close(1008, 'Unauthorized');
-      return;
-    }
-
-    const context = {
-      auth: wire.auth,
+): RegisteredWsRoute => {
+  // The side is fixed by the path, so no message can name a seat to play as.
+  const buildContext = (
+    admitted: { params: TParams; auth: RequestAuth },
+    wire: WireWsConnection,
+  ): WsSeatConnectionContext<TParams> => {
+    const context: WsSeatConnectionContext<TParams> = {
+      auth: admitted.auth,
       headers: wire.headers,
-      params: paramsParsed.data,
+      params: admitted.params,
       side: contract.side,
     };
+    return context;
+  };
 
-    const sendJson = (message: unknown): void => {
-      socket.send(JSON.stringify(message));
-    };
+  // A seat plays a choice for its own side.
+  const playerChoice: InboundHandler<
+    WsSeatConnectionContext<TParams>,
+    THandle
+  > = createInboundHandler({
+    run: async (choice: TInboundPlayerChoice, context, connectionHandle) => {
+      const result = await handlers.onPlayerChoice(
+        context,
+        choice,
+        connectionHandle,
+      );
+      return toOutcome(result);
+    },
+    schema: contract.validators.inbound.playerChoice,
+  });
 
-    const openResult = await openSeatConnection({
-      context,
-      handlers,
-      logger,
-      path: contract.path,
-      sendJson,
-    });
+  // A seat asks for the game as it is allowed to see it, to resync.
+  const requestGameSnapshot: InboundHandler<
+    WsSeatConnectionContext<TParams>,
+    THandle
+  > = createInboundHandler({
+    emptyPayloadAllowed: true,
+    run: async (_data, context, connectionHandle) => {
+      const result = await handlers.onRequestGameSnapshot(
+        context,
+        connectionHandle,
+      );
+      return toOutcome(result);
+    },
+    schema: contract.validators.inbound.requestGameSnapshot,
+  });
 
-    if (!openResult.ok) {
-      socket.close(openResult.closeCode ?? 1008, openResult.reason);
-      return;
-    }
-
-    const { connectionHandle } = openResult;
-
-    socket.onMessage((raw) => {
-      const envelope = readInboundEnvelope(raw);
-      if (!envelope.ok) {
-        sendChoiceRejected(sendJson, envelope.errorReason);
-        return;
-      }
-
-      const { type, payload } = envelope;
-
-      if (type === 'playerChoice') {
-        const choiceParsed =
-          contract.validators.inbound.playerChoice.safeParse(payload);
-        if (!choiceParsed.success) {
-          sendChoiceRejected(sendJson, 'Invalid playerChoice');
-          return;
-        }
-
-        runDetached(async () => {
-          try {
-            const result = await handlers.onPlayerChoice(
-              context,
-              choiceParsed.data,
-              connectionHandle,
-            );
-            if (!result.ok) {
-              sendJson({
-                payload: result.choiceRejected,
-                type: 'choiceRejected',
-              });
-            }
-          } catch (error) {
-            handleError({
-              context: `handling playerChoice on ${contract.path}`,
-              error,
-              logger,
-              message: `Failed to handle playerChoice on ${contract.path}`,
-              status: 500,
-            });
-            sendChoiceRejected(sendJson, 'Internal error');
-          }
-        });
-        return;
-      }
-
-      if (type === 'requestGameSnapshot') {
-        const snapshotParsed =
-          contract.validators.inbound.requestGameSnapshot.safeParse(
-            payload ?? {},
-          );
-        if (!snapshotParsed.success) {
-          sendChoiceRejected(sendJson, 'Invalid requestGameSnapshot');
-          return;
-        }
-
-        runDetached(async () => {
-          try {
-            const result = await handlers.onRequestGameSnapshot(
-              context,
-              connectionHandle,
-            );
-            if (!result.ok) {
-              sendJson({
-                payload: result.choiceRejected,
-                type: 'choiceRejected',
-              });
-            }
-          } catch (error) {
-            handleError({
-              context: `handling requestGameSnapshot on ${contract.path}`,
-              error,
-              logger,
-              message: `Failed to handle requestGameSnapshot on ${contract.path}`,
-              status: 500,
-            });
-            sendChoiceRejected(sendJson, 'Internal error');
-          }
-        });
-        return;
-      }
-
-      sendChoiceRejected(sendJson, 'Invalid inbound message');
-    });
-
-    socket.onClose(() => {
-      handlers.onClose(context, connectionHandle);
-    });
-  },
-});
+  const route = implementWsRoute({
+    auth: contract.auth,
+    buildContext,
+    close: handlers.onClose,
+    inbound: new Map([
+      ['playerChoice', playerChoice],
+      ['requestGameSnapshot', requestGameSnapshot],
+    ]),
+    logger,
+    open: handlers.onOpen,
+    paramsSchema: contract.validators.params,
+    path: contract.path,
+    rejectedType: 'choiceRejected',
+  });
+  return route;
+};
 
 export { implementInGameSeatWs };

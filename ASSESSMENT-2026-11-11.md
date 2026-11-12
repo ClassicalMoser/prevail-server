@@ -24,7 +24,7 @@ The gate: `pnpm validate` clean and `pnpm test` passing.
 These are the cleanup's own backlog, in the order [`AUDIT_PROCESS.md`](./AUDIT_PROCESS.md) would take them.
 
 1. **Twins.**
-   - `interface/ws/implement-in-game-seat-ws.ts` and `implement-in-game-bot-vs-bot-ws.ts` share their open wrapper, their message runner, and their inbound dispatch.
+   - Done: the seat and bot-vs-bot socket implementations now share `implementWsRoute` and its helpers (`findAdmittedConnection`, `openWsConnection`, `routeWsMessage`, `runWsMessage`, `sendRejection`). Each keeps only its own message table.
    - `create-vs-bot-game.ts` and `create-bot-vs-bot-game.ts` share army lookup, composition check, saving the game, and opening the event stream. They answer a missing army with different messages.
    - The seat and watcher versions of register, unregister, and send-snapshot repeat one pattern.
 2. **Factory closures that hold the implementations**: `createOwnedArmyStorage` (~170 lines), and the command-card and unit-card storage adapters.
@@ -32,7 +32,8 @@ These are the cleanup's own backlog, in the order [`AUDIT_PROCESS.md`](./AUDIT_P
 4. **`use_cases/`** is the one directory name not in kebab-case. It is historical; changing it is the author's call.
 5. **`certify-card-versions.ts`** holds the only type assertion in production code.
 6. **`return <call>`** appears in HTTP route handlers, `register-ws.ts`, and `storage-op.ts`.
-7. **Commentary density** is under 20% in `composition`, `ports` and `testing`.
+7. **Logger stubs.** About a dozen suites each define their own `LoggerPort` stub. `recordingLogger` in `@testing` replaces them; move each suite over.
+8. **Commentary density** is under 20% in `composition`, `ports` and `testing`.
 
 ## Deferred
 

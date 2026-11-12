@@ -10,109 +10,30 @@ import type {
   InGameBotVsBotWsHandler,
   LoggerPort,
   RegisteredWsRoute,
+  RequestAuth,
+  WireWsConnection,
   WsWatchConnectionContext,
 } from '@ports';
-import { handleError, runDetached } from '@utils';
-import { readInboundEnvelope } from './read-inbound-envelope';
-
-type WatchOpenResult<THandle> = Awaited<
-  ReturnType<
-    InGameBotVsBotWsHandler<Record<string, unknown>, THandle>['onOpen']
-  >
->;
-
-type WatchMessageResult = Awaited<
-  ReturnType<InGameBotVsBotWsHandler<Record<string, unknown>>['onStep']>
->;
+import type { FailValidationResult } from '@classicalmoser/prevail-rules/domain';
+import { createInboundHandler } from './create-inbound-handler';
+import type { InboundHandler } from './create-inbound-handler';
+import { implementWsRoute } from './implement-ws-route';
+import type { WsOutcome } from './ws-types';
 
 /**
- * Send a `stepRejected` with only a reason. The board is unchanged.
+ * Rename a watcher handler's refusal to the shared outcome shape.
  *
- * @param sendJson - Socket writer.
- * @param errorReason - Why the message did nothing.
+ * @param result - What the watcher handler answered.
+ * @returns The same answer, with the refusal under `rejection`.
  */
-const sendStepRejected = (
-  sendJson: (message: unknown) => void,
-  errorReason: string,
-): void => {
-  sendJson({
-    payload: {
-      errorReason,
-      result: false,
-    },
-    type: 'stepRejected',
-  });
-};
-
-/**
- * Run the open handler, turning a throw into an internal-error close.
- *
- * @param input - Handlers, validated context, socket writer, path, logger.
- * @returns The handler's result, or a 1011 close on a throw.
- */
-const openWatchConnection = async <
-  TParams extends Record<string, unknown>,
-  THandle,
->(input: {
-  handlers: InGameBotVsBotWsHandler<TParams, THandle>;
-  context: WsWatchConnectionContext<TParams>;
-  sendJson: (message: unknown) => void;
-  path: string;
-  logger: LoggerPort;
-}): Promise<WatchOpenResult<THandle>> => {
-  try {
-    return await input.handlers.onOpen(input.context, input.sendJson);
-  } catch (error) {
-    handleError({
-      context: `opening WS ${input.path}`,
-      error,
-      logger: input.logger,
-      message: `Failed to open ${input.path}`,
-      status: 500,
-    });
-    return {
-      closeCode: 1011,
-      ok: false,
-      reason: 'Internal error',
-    };
+const toOutcome = (
+  result: { ok: true } | { ok: false; stepRejected: FailValidationResult },
+): WsOutcome => {
+  if (result.ok) {
+    return { ok: true };
   }
-};
-
-/**
- * Run one watcher message handler off the socket's message loop.
- *
- * A refused message sends its `stepRejected` payload. A throw is logged and
- * answered with an internal-error `stepRejected`.
- *
- * @param input - The handler call, socket writer, message type, path, logger.
- */
-const runWatchMessage = (input: {
-  handle: () => Promise<WatchMessageResult>;
-  sendJson: (message: unknown) => void;
-  type: string;
-  path: string;
-  logger: LoggerPort;
-}): void => {
-  runDetached(async () => {
-    try {
-      const result = await input.handle();
-      if (!result.ok) {
-        input.sendJson({
-          payload: result.stepRejected,
-          type: 'stepRejected',
-        });
-      }
-    } catch (error) {
-      handleError({
-        context: `handling ${input.type} on ${input.path}`,
-        error,
-        logger: input.logger,
-        message: `Failed to handle ${input.type} on ${input.path}`,
-        status: 500,
-      });
-      sendStepRejected(input.sendJson, 'Internal error');
-    }
-  });
+  const refused: WsOutcome = { ok: false, rejection: result.stepRejected };
+  return refused;
 };
 
 /**
@@ -144,92 +65,64 @@ const implementInGameBotVsBotWs = <
   >,
   logger: LoggerPort,
   handlers: InGameBotVsBotWsHandler<TParams, THandle>,
-): RegisteredWsRoute => ({
-  path: contract.path,
-  auth: contract.auth,
-  onConnection: async (wire, socket): Promise<void> => {
-    const paramsParsed = contract.validators.params.safeParse(wire.params);
-    if (!paramsParsed.success) {
-      socket.close(1008, 'Invalid params');
-      return;
-    }
-    if (wire.auth === undefined) {
-      socket.close(1008, 'Unauthorized');
-      return;
-    }
-
+): RegisteredWsRoute => {
+  // A watcher has no seat, so its context is only who and what it asked for.
+  const buildContext = (
+    admitted: { params: TParams; auth: RequestAuth },
+    wire: WireWsConnection,
+  ): WsWatchConnectionContext<TParams> => {
     const context: WsWatchConnectionContext<TParams> = {
-      auth: wire.auth,
+      auth: admitted.auth,
       headers: wire.headers,
-      params: paramsParsed.data,
+      params: admitted.params,
     };
-    const sendJson = (message: unknown): void => {
-      socket.send(JSON.stringify(message));
-    };
+    return context;
+  };
 
-    const openResult = await openWatchConnection({
-      context,
-      handlers,
-      logger,
-      path: contract.path,
-      sendJson,
-    });
-    if (!openResult.ok) {
-      socket.close(openResult.closeCode ?? 1008, openResult.reason);
-      return;
-    }
-    const { connectionHandle } = openResult;
+  // A step plays one bot choice; its events arrive through fanout.
+  const step: InboundHandler<
+    WsWatchConnectionContext<TParams>,
+    THandle
+  > = createInboundHandler({
+    emptyPayloadAllowed: true,
+    run: async (_data, context, connectionHandle) => {
+      const result = await handlers.onStep(context, connectionHandle);
+      return toOutcome(result);
+    },
+    schema: contract.validators.inbound.step,
+  });
 
-    socket.onMessage((raw) => {
-      const envelope = readInboundEnvelope(raw);
-      if (!envelope.ok) {
-        sendStepRejected(sendJson, envelope.errorReason);
-        return;
-      }
-      const { type, payload } = envelope;
-      const messageInput = { logger, path: contract.path, sendJson, type };
+  // A resync replies with the authoritative snapshot.
+  const requestGameSnapshot: InboundHandler<
+    WsWatchConnectionContext<TParams>,
+    THandle
+  > = createInboundHandler({
+    emptyPayloadAllowed: true,
+    run: async (_data, context, connectionHandle) => {
+      const result = await handlers.onRequestGameSnapshot(
+        context,
+        connectionHandle,
+      );
+      return toOutcome(result);
+    },
+    schema: contract.validators.inbound.requestGameSnapshot,
+  });
 
-      // A step plays one bot choice; its events arrive through fanout.
-      if (type === 'step') {
-        const stepParsed = contract.validators.inbound.step.safeParse(
-          payload ?? {},
-        );
-        if (!stepParsed.success) {
-          sendStepRejected(sendJson, 'Invalid step');
-          return;
-        }
-        runWatchMessage({
-          ...messageInput,
-          handle: async () => handlers.onStep(context, connectionHandle),
-        });
-        return;
-      }
-
-      // A resync replies with the authoritative snapshot.
-      if (type === 'requestGameSnapshot') {
-        const snapshotParsed =
-          contract.validators.inbound.requestGameSnapshot.safeParse(
-            payload ?? {},
-          );
-        if (!snapshotParsed.success) {
-          sendStepRejected(sendJson, 'Invalid requestGameSnapshot');
-          return;
-        }
-        runWatchMessage({
-          ...messageInput,
-          handle: async () =>
-            handlers.onRequestGameSnapshot(context, connectionHandle),
-        });
-        return;
-      }
-
-      sendStepRejected(sendJson, 'Invalid inbound message');
-    });
-
-    socket.onClose(() => {
-      handlers.onClose(context, connectionHandle);
-    });
-  },
-});
+  const route = implementWsRoute({
+    auth: contract.auth,
+    buildContext,
+    close: handlers.onClose,
+    inbound: new Map([
+      ['step', step],
+      ['requestGameSnapshot', requestGameSnapshot],
+    ]),
+    logger,
+    open: handlers.onOpen,
+    paramsSchema: contract.validators.params,
+    path: contract.path,
+    rejectedType: 'stepRejected',
+  });
+  return route;
+};
 
 export { implementInGameBotVsBotWs };
