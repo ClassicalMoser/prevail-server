@@ -22,6 +22,8 @@ const getCommandCardsByIds = async (
     const none: DataErrorSignature<CommandCard[]> = { success: true, data: [] };
     return none;
   }
+  // Newest version per id, certified or not; the army builder filters by the
+  // current-cards list, not here.
   const versions = await getCommandCardsByIdsQuery(sql, ids);
   const loaded: DataErrorSignature<CommandCard[]> = {
     success: true,

@@ -22,6 +22,8 @@ const getUnitCardsByIds = async (
     const none: DataErrorSignature<UnitType[]> = { success: true, data: [] };
     return none;
   }
+  // Newest version per id, certified or not; the army builder filters by the
+  // current-cards list, not here.
   const versions = await getUnitCardsByIdsQuery(sql, ids);
   const loaded: DataErrorSignature<UnitType[]> = {
     success: true,

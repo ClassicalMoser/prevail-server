@@ -24,6 +24,7 @@ const loadCommandCardsById = async (
     commandCardIds.length === 0
       ? []
       : await getCommandCardsByIdsQuery(sql, [...commandCardIds]);
+  // Keyed by card id so the join rows saved on the army can look up their card.
   const entries = versions.map((version): [string, CommandCard] => [
     version.command_card_id,
     commandCardVersionMapperToDomain(version),

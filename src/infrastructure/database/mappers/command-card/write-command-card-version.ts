@@ -20,6 +20,8 @@ import { parseVersionTriple } from '../version/parse-version-triple';
 const writeCommandCardVersionMapper = (
   card: CommandCard,
 ): WriteCommandCardVersionDb => {
+  // Authors publish through here, so reject a card the rules would not accept
+  // before it becomes a version that players can load.
   const validatedCard = commandCardSchema.parse(card);
   const versionTriple = parseVersionTriple(validatedCard.version);
   const definition: PartialCard = {

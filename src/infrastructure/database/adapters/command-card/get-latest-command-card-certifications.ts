@@ -23,6 +23,7 @@ const getLatestCommandCardCertifications = async (
 ): Promise<DataErrorSignature<CommandCardCertificationStatus[]>> => {
   const rows: CommandCardCertificationStatusDb[] =
     await getLatestCommandCardCertificationsQuery(sql);
+  // The flag comes from the row; the card itself is the newest version, certified or not.
   const statuses = rows.map((row) => ({
     card: commandCardVersionMapperToDomain(row),
     certified: row.certified,

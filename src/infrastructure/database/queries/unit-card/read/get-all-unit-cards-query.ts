@@ -12,6 +12,9 @@ import type { Sql } from '@infrastructure/database/sql-type';
  * Mapping into domain unit types happens in `mappers/`.
  */
 
+// Catalog list of every unit card id with its newest version's name and version.
+// LEFT JOIN keeps cards that have no version yet so authors still see them.
+// Newest-created card first.
 const getAllUnitCardsQuery = async (sql: Sql): Promise<UnitCardListItemDb[]> =>
   await sql`SELECT
       uc.unit_card_id,

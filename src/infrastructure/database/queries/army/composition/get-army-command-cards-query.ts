@@ -12,6 +12,8 @@ import type { Sql } from '@infrastructure/database/sql-type';
  * Display name and composition are columns. Domain mapping happens in `mappers/`.
  */
 
+// The saved command-card ids only; their definitions come from the catalog at
+// read time.
 const getArmyCommandCardsQuery = async (
   sql: Sql,
   armyId: string,

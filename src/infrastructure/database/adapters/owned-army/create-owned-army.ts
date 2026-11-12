@@ -21,6 +21,7 @@ const createOwnedArmy = async (
   ownerAuthSub: string,
   armyName: string,
 ): Promise<DataErrorSignature<string>> => {
+  // armies.user_id is a local user id, not the Auth0 subject, so resolve it first.
   const user = await userStorage.ensureByAuthSub(ownerAuthSub);
   if (!user.success) {
     return user;

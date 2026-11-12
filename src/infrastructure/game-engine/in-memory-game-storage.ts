@@ -19,6 +19,7 @@ const createInMemoryGameStorage = (): GameStorage => {
       if (game === undefined) {
         return;
       }
+      // A stored game is only handed back to a caller asking for its own mode.
       if (game.gameMode !== gameMode) {
         const response = fail('Game mode mismatch');
         return response;
@@ -41,6 +42,7 @@ const createInMemoryGameStorage = (): GameStorage => {
         const response = fail('Game not found');
         return response;
       }
+      // A seen (per-player) view must never overwrite the full authoritative state.
       if (gameState.visibility !== 'authoritative') {
         const response = fail('Only authoritative game state is stored');
         return response;

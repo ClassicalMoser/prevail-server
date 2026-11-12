@@ -10,6 +10,8 @@ import type { Sql } from '@infrastructure/database/sql-type';
  * Mapping into domain cards happens in `mappers/`.
  */
 
+// Reserves a card id before any version exists, so an author can write versions
+// under a stable id.
 const createEmptyCommandCardQuery = async (
   sql: Sql,
 ): Promise<{ command_card_id: string }[]> =>

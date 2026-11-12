@@ -19,6 +19,7 @@ const deleteCommandCardVersion = async (
   sql: Sql,
   card: CommandCard,
 ): Promise<DataErrorSignature<void>> => {
+  // The table stores the version as three numbers; the domain card carries the dotted text.
   const { major, minor, patch } = parseVersionTriple(card.version);
   await deleteCommandCardVersionQuery({
     sql,

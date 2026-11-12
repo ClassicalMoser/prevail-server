@@ -15,6 +15,7 @@ import type { Sql } from '@infrastructure/database/sql-type';
 const getAllCommandCards = async (
   sql: Sql,
 ): Promise<DataErrorSignature<CatalogCardListItem[]>> => {
+  // Includes cards with no version yet, so authors can see ids they reserved.
   const rows: CommandCardListItemDb[] = await getAllCommandCardsQuery(sql);
   const loaded: DataErrorSignature<CatalogCardListItem[]> = {
     success: true,

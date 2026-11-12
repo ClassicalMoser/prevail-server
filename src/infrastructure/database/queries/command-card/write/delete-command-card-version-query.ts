@@ -10,6 +10,8 @@ import type { Sql } from '@infrastructure/database/sql-type';
  * Mapping into domain cards happens in `mappers/`.
  */
 
+// A version is addressed by its full major.minor.patch triple, matching the
+// natural-key unique index on command_card_versions.
 const deleteCommandCardVersionQuery = async (params: {
   sql: Sql;
   commandCardId: string;

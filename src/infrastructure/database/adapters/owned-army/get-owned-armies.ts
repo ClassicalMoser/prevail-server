@@ -35,6 +35,8 @@ const getOwnedArmies = async (
       ownerAuthSub,
       listRow.army_id,
     );
+    // Re-fetched through the owner-scoped row query so hydration gets the same
+    // ownership and archived checks as a single-army read.
     // A row can vanish between the list and the lookup (archived meanwhile).
     if (rows.length > 0) {
       armies.push(await hydrateArmy(sql, rows[0]));

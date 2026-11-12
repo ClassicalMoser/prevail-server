@@ -24,6 +24,7 @@ const loadUnitTypesById = async (
     unitCardIds.length === 0
       ? []
       : await getUnitCardsByIdsQuery(sql, [...unitCardIds]);
+  // Keyed by card id so the join rows saved on the army can look up their unit type.
   const entries = versions.map((version): [string, UnitType] => [
     version.unit_card_id,
     unitCardVersionMapperToDomain(version),

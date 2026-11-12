@@ -2,6 +2,7 @@ import { cp, mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 
+/** A temp Typst project root for one render, and the call that removes it. */
 interface RenderWorkspace {
   workspaceDir: string;
   cleanup: () => Promise<void>;
@@ -32,6 +33,7 @@ const createRenderWorkspace = async (
     path.join(tmpdir(), 'prevail-card-render-'),
   );
 
+  // The card layouts, icons and font are everything a template may reference.
   await copyAsset(assetsDir, workspaceDir, 'templates');
   await copyAsset(assetsDir, workspaceDir, 'icons');
   await copyAsset(assetsDir, workspaceDir, 'Cinzel-Regular.ttf');

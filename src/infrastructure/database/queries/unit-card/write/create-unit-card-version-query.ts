@@ -15,6 +15,8 @@ import type { Sql } from '@infrastructure/database/sql-type';
  * Mapping into domain unit types happens in `mappers/`.
  */
 
+// Versions are only ever added, never edited: a new definition is a new row, so
+// armies and certifications that reference older versions stay valid.
 const createUnitCardVersionQuery = async (
   sql: Sql,
   writeVersion: WriteUnitCardVersionDb,

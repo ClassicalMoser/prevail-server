@@ -29,12 +29,14 @@ const fetchUnitArtwork = async (
   destinationPath: string,
   allowedMediaOrigin: string,
 ): Promise<DataErrorSignature<boolean>> => {
+  // Artwork URLs are author-supplied; the server only fetches from the media origin.
   const originResult = assertAllowedMediaOrigin(imageUrl, allowedMediaOrigin);
   if (!originResult.success) {
     return originResult;
   }
 
   try {
+    // `manual` so a redirect cannot send the server to a host the origin check never saw.
     const response = await fetch(imageUrl, { redirect: 'manual' });
     if (response.status >= 300 && response.status < 400) {
       const redirectRejected = toFetchError(
@@ -51,6 +53,8 @@ const fetchUnitArtwork = async (
       return fetchFailed;
     }
 
+    // Cheap early rejection before downloading the body; the byte check below
+    // covers a server that omits or understates the header.
     const contentLength = response.headers.get('content-length');
     if (
       typeof contentLength === 'string' &&

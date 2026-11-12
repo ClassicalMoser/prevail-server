@@ -1,6 +1,7 @@
 import type { DataErrorSignature, LoggerPort } from '@ports';
 import { handleError } from '@utils';
 
+/** What `storageOp` needs to run one storage call and report a failure. */
 interface StorageOpInput<T> {
   logger: LoggerPort;
   context: string;

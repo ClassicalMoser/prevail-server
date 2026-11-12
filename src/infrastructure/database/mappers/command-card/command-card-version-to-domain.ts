@@ -20,6 +20,7 @@ import { formatVersionTriple } from '../version/format-version-triple';
 const commandCardVersionMapperToDomain = (
   version: CommandCardVersionDb,
 ): CommandCard => {
+  // The definition is JSONB; postgres.js may hand it back as text or object.
   const partialCard: PartialCard = parseIfJson(version.command_card_definition);
   const versionLabel = formatVersionTriple({
     major: version.version_major,

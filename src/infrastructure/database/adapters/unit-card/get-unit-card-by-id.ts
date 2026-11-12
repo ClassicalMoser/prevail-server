@@ -17,6 +17,7 @@ const getUnitCardById = async (
   sql: Sql,
   id: string,
 ): Promise<DataErrorSignature<UnitType>> => {
+  // Newest version of the card, so display and authoring see the latest edit.
   const rows: UnitCardVersionDb[] = await getUnitCardByIdQuery(sql, id);
   if (rows.length === 0) {
     return notFound('Unit card not found');

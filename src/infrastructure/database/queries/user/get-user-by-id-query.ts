@@ -12,6 +12,8 @@ import type { Sql } from '@infrastructure/database/sql-type';
  * The mapper turns a row into the port `User`.
  */
 
+// Resolves the local user id stored on an army back to its row, so the
+// owner of an army can be named without going through the Auth0 subject.
 const getUserByIdQuery = async (sql: Sql, userId: string): Promise<UserDb[]> =>
   await sql`
     SELECT user_id, user_auth_sub

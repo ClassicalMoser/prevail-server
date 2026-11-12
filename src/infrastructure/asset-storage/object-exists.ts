@@ -42,6 +42,8 @@ const objectExists = async (
     );
     return true;
   } catch (error: unknown) {
+    // Only a definite 404 means "not uploaded yet"; other errors must not
+    // trigger re-uploads or mark an asset missing during an R2 outage.
     if (isNotFound(error)) {
       return false;
     }

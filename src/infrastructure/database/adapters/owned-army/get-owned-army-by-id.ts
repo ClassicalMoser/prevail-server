@@ -26,6 +26,7 @@ const getOwnedArmyById = async (
   if (rows.length === 0) {
     return notFound('Army not found');
   }
+  // The row holds only identity; composition and card definitions are loaded now.
   const army = await hydrateArmy(sql, rows[0]);
   const loaded: DataErrorSignature<Army> = { success: true, data: army };
   return loaded;

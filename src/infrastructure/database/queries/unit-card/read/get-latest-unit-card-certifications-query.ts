@@ -12,6 +12,9 @@ import type { Sql } from '@infrastructure/database/sql-type';
  * Mapping into domain unit types happens in `mappers/`.
  */
 
+// For authors: the newest version of every unit card plus whether that version
+// is certified against the latest rules. LEFT JOINs keep uncertified versions so
+// they show as `certified = false` instead of disappearing.
 const getLatestUnitCardCertificationsQuery = async (
   sql: Sql,
 ): Promise<UnitCardCertificationStatusDb[]> =>

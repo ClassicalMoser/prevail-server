@@ -18,6 +18,9 @@ import { querySql } from '@infrastructure/database/query-sql';
  * @param params - Army id, owner id, and the new display name.
  * @returns The updated army row, or an empty list when none matched.
  */
+// Rename an army. The WHERE clause is the ownership check: it matches only a
+// live army belonging to this user, so a rename of someone else's or an archived
+// army returns no row and the caller stops before touching the composition.
 const updateArmyQuery = async (
   client: SqlClient,
   params: {

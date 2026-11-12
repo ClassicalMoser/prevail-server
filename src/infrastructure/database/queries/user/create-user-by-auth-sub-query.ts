@@ -12,6 +12,9 @@ import type { Sql } from '@infrastructure/database/sql-type';
  * The mapper turns a row into the port `User`.
  */
 
+// A local user row appears on a player's first write (their first army). A
+// concurrent duplicate insert violates the unique index on `user_auth_sub`, and
+// `ensureByAuthSub` handles that by re-reading.
 const createUserByAuthSubQuery = async (
   sql: Sql,
   authSub: string,

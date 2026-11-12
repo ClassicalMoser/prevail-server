@@ -30,6 +30,8 @@ const createInMemoryEventStreamStorage = (
       }
       const next = [...current, event];
       streams.set(key, next);
+      // Fan the event out to connected sockets only after it is stored, so a
+      // watcher that reconnects reads the same stream.
       hooks.onEventAppended?.(gameId, roundNumber, event);
       const response = ok(next);
       return response;
@@ -57,6 +59,7 @@ const createInMemoryEventStreamStorage = (
         const response = fail('Event stream not initialized');
         return response;
       }
+      // Keeps events before `firstEventToRemove`; that event and all later ones go.
       const next = current.slice(0, firstEventToRemove);
       streams.set(key, next);
       const response = ok(next);

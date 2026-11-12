@@ -62,6 +62,8 @@ const renderUnitCard = async (
   try {
     const { workspaceDir } = workspace;
 
+    // Artwork is fetched before compiling because Typst cannot reach the network;
+    // a rejected origin or failed download stops the render with that error.
     const unitImageResult = await resolveUnitImage(
       workspaceDir,
       unitType.imageUrl,
@@ -71,6 +73,7 @@ const renderUnitCard = async (
       return unitImageResult;
     }
 
+    // `unitImage` tells the template whether the downloaded artwork file exists.
     const renderDetails: RenderDetails = {
       ...details,
       unitImage: unitImageResult.data,
@@ -85,6 +88,8 @@ const renderUnitCard = async (
       JSON.stringify(renderDetails, undefined, 2),
     );
 
+    // `details.format` (svg, pdf) and bleed come from the print request: the same
+    // card is rendered flat for screen or with bleed for the print shop.
     const rendered = await runTypstCompile(
       workspaceDir,
       templatePathInWorkspace(workspaceDir, 'unit.typ'),
@@ -99,6 +104,7 @@ const renderUnitCard = async (
       status: 500,
     };
   } finally {
+    // Each render has its own temp directory; always remove it, success or not.
     await workspace.cleanup();
   }
 };

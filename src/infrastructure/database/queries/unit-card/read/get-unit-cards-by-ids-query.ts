@@ -12,6 +12,9 @@ import type { Sql } from '@infrastructure/database/sql-type';
  * Mapping into domain unit types happens in `mappers/`.
  */
 
+// The newest version of each named unit card, used to rebuild an army from its
+// saved ids. DISTINCT ON takes the highest version per card; certification is not
+// checked here.
 const getUnitCardsByIdsQuery = async (
   sql: Sql,
   unitCardIds: string[],

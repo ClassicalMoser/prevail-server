@@ -86,10 +86,13 @@ const createAuth0Adapter = (
           accessToken: token,
         });
 
+        // The subject is the player's identity and owns their armies; a token
+        // without one cannot be tied to anyone.
         if (typeof claims.sub !== 'string') {
           return unauthorized;
         }
 
+        // 403 not 401: the player is known but the route's contract requires more.
         if (
           !hasPermissions(toPermissions(claims), required.permissionsRequired)
         ) {
@@ -98,6 +101,8 @@ const createAuth0Adapter = (
 
         return { subject: claims.sub };
       } catch (error) {
+        // A bad, expired or wrongly addressed token is the client's problem (401);
+        // anything else is an outage on our side and is logged as 500.
         if (
           error instanceof VerifyAccessTokenError ||
           error instanceof InvalidRequestError

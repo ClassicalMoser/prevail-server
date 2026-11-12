@@ -13,6 +13,10 @@ import type { Sql } from '@infrastructure/database/sql-type';
 import { loadCommandCardsById } from './load-command-cards-by-id';
 import { loadUnitTypesById } from './load-unit-types-by-id';
 
+// TODO(misleading): the JSDoc below says the latest certified cards are loaded,
+// but loadUnitTypesById and loadCommandCardsById use the by-ids queries, which
+// take the newest version without checking certification. The by-ids queries'
+// WHERE clauses would settle it.
 /**
  * Rebuild an owned army from its row plus current catalog definitions.
  *

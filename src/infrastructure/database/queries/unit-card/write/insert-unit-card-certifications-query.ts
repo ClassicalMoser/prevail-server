@@ -10,6 +10,10 @@ import type { Sql } from '@infrastructure/database/sql-type';
  * Mapping into domain unit types happens in `mappers/`.
  */
 
+// Certify the newest version of each named unit card against one rules version.
+// DISTINCT ON picks the highest version per card, because the version an author
+// just published is the one to certify. ON CONFLICT DO NOTHING makes
+// re-certifying idempotent.
 const insertUnitCardCertificationsQuery = async (
   sql: Sql,
   unitCardIds: string[],

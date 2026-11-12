@@ -12,6 +12,8 @@ import type { Sql } from '@infrastructure/database/sql-type';
  * Display name and composition are columns. Domain mapping happens in `mappers/`.
  */
 
+// New armies start empty; composition rows are written afterwards by a save.
+// `user_id` is the local user resolved from the caller's auth subject.
 const createArmyQuery = async (
   sql: Sql,
   params: {

@@ -10,6 +10,8 @@ import type { Sql } from '@infrastructure/database/sql-type';
  * Mapping into domain unit types happens in `mappers/`.
  */
 
+// A version is addressed by its full major.minor.patch triple, matching the
+// natural-key unique index on unit_card_versions.
 const deleteUnitCardVersionQuery = async (params: {
   sql: Sql;
   unitCardId: string;

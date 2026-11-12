@@ -10,6 +10,8 @@ import type { Sql } from '@infrastructure/database/sql-type';
  * Mapping into domain unit types happens in `mappers/`.
  */
 
+// Sweeps ids handed out by an empty-card create that never received a version;
+// NOT EXISTS keeps any card that has at least one version.
 const deleteEmptyUnitCardsQuery = async (sql: Sql): Promise<void> => {
   await sql`DELETE FROM unit_cards uc
     WHERE NOT EXISTS (

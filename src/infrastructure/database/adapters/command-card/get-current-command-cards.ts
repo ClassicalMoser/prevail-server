@@ -16,6 +16,7 @@ import type { Sql } from '@infrastructure/database/sql-type';
 const getCurrentCommandCards = async (
   sql: Sql,
 ): Promise<DataErrorSignature<CommandCard[]>> => {
+  // The query already limits to versions certified against the latest rules.
   const versions = await getCurrentCommandCardsQuery(sql);
   const loaded: DataErrorSignature<CommandCard[]> = {
     success: true,

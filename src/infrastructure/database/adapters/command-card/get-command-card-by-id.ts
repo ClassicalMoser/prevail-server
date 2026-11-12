@@ -17,6 +17,7 @@ const getCommandCardById = async (
   sql: Sql,
   id: string,
 ): Promise<DataErrorSignature<CommandCard>> => {
+  // Newest version of the card, so display and authoring see the latest edit.
   const rows: CommandCardVersionDb[] = await getCommandCardByIdQuery(sql, id);
   if (rows.length === 0) {
     return notFound('Command card not found');

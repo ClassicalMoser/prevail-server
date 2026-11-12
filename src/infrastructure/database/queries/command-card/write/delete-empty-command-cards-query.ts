@@ -10,6 +10,8 @@ import type { Sql } from '@infrastructure/database/sql-type';
  * Mapping into domain cards happens in `mappers/`.
  */
 
+// Sweeps ids handed out by an empty-card create that never received a version;
+// NOT EXISTS keeps any card that has at least one version.
 const deleteEmptyCommandCardsQuery = async (sql: Sql): Promise<void> => {
   await sql`DELETE FROM command_cards cc
     WHERE NOT EXISTS (

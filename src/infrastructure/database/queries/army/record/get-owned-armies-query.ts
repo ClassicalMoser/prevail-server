@@ -12,6 +12,9 @@ import type { Sql } from '@infrastructure/database/sql-type';
  * Display name and composition are columns. Domain mapping happens in `mappers/`.
  */
 
+// The army builder's list. The join to users is by Auth0 subject so the list is
+// scoped to the caller: nobody can read another player's armies. Archived armies
+// are soft-deleted and hidden; newest first so a fresh army appears at the top.
 const getOwnedArmiesQuery = async (
   sql: Sql,
   authSub: string,

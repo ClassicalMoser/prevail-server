@@ -61,6 +61,7 @@ const assertAllowedMediaOrigin = (
     return allowedOrigin;
   }
 
+  // Scheme, host and port must all match the configured media origin.
   if (imageOrigin.origin !== allowedOrigin.origin) {
     const originRejected = toOriginError('Image URL origin is not allowed');
     return originRejected;

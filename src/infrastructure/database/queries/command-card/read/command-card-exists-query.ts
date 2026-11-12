@@ -10,6 +10,8 @@ import type { Sql } from '@infrastructure/database/sql-type';
  * Mapping into domain cards happens in `mappers/`.
  */
 
+// Checks the card id exists before a version is written under it, so an unknown
+// id is a 404 rather than a foreign key error.
 const commandCardExistsQuery = async (
   sql: Sql,
   commandCardId: string,

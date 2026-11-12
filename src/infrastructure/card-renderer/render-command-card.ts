@@ -39,6 +39,8 @@ const renderCommandCard = async (
   const workspace = await createRenderWorkspace(deps.assetsDir);
 
   try {
+    // JSON inputs go in the workspace because the Typst template reads them by
+    // relative path under --root; the card data is never interpolated into args.
     const { workspaceDir } = workspace;
     await writeFile(
       path.join(workspaceDir, 'command-card-data.json'),
@@ -49,6 +51,8 @@ const renderCommandCard = async (
       JSON.stringify(details, undefined, 2),
     );
 
+    // `details.format` (svg, pdf) and bleed come from the print request: the same
+    // card is rendered flat for screen or with bleed for the print shop.
     const rendered = await runTypstCompile(
       workspaceDir,
       templatePathInWorkspace(workspaceDir, 'command.typ'),
@@ -63,6 +67,7 @@ const renderCommandCard = async (
       status: 500,
     };
   } finally {
+    // Each render has its own temp directory; always remove it, success or not.
     await workspace.cleanup();
   }
 };

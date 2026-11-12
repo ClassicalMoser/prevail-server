@@ -12,6 +12,9 @@ import type { Sql } from '@infrastructure/database/sql-type';
  * Mapping into domain cards happens in `mappers/`.
  */
 
+// The newest version of each named card, used to rebuild an army from its saved
+// ids. DISTINCT ON takes the highest version per card; certification is not
+// checked here. Ordered by initiative, the order command cards are played in.
 const getCommandCardsByIdsQuery = async (
   sql: Sql,
   commandCardIds: string[],

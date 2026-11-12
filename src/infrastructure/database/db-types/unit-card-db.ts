@@ -5,11 +5,13 @@ type PartialUnitType = Pick<
   'traits' | 'stats' | 'cost' | 'limit' | 'morale'
 >;
 
+/** One `unit_cards` row: the stable id a card's versions hang from. */
 interface UnitCardDb {
   unit_card_id: string;
   created_at: Date;
 }
 
+/** One stored version of a unit card, as read back from postgres. */
 interface UnitCardVersionDb {
   unit_card_id: string;
   unit_card_version_id: string;
@@ -21,6 +23,7 @@ interface UnitCardVersionDb {
   version_patch: number;
 }
 
+/** Columns for inserting a unit card version; the definition is serialized JSON. */
 interface WriteUnitCardVersionDb {
   unit_card_id: string;
   unit_card_artwork_url: string | null;
@@ -31,6 +34,7 @@ interface WriteUnitCardVersionDb {
   version_patch: number;
 }
 
+/** A unit card version with whether it is certified against the latest rules. */
 interface UnitCardCertificationStatusDb extends UnitCardVersionDb {
   certified: boolean;
 }

@@ -20,6 +20,8 @@ const runTypstCompile = async (
   templatePath: string,
   format: string,
 ): Promise<Buffer> => {
+  // execFile with an argument array (no shell) keeps paths and format from being
+  // interpreted as commands.
   const { stdout } = await execFile(
     'typst',
     [

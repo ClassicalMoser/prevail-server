@@ -13,6 +13,8 @@ import { querySql } from '@infrastructure/database/query-sql';
  * Display name and composition are columns. Domain mapping happens in `mappers/`.
  */
 
+// One join row per command card; quantity is 1 because the domain army lists
+// command cards by identity. Run inside the save transaction.
 const insertArmyCommandCardQuery = async (
   client: SqlClient,
   row: ArmyCommandCardDb,

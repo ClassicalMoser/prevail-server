@@ -22,6 +22,7 @@ const buildCommandCards = (
     }
     return [card];
   });
+  // Initiative order is the order command cards are played in a round.
   const sorted = sortCommandCardsByInitiative(resolved);
   return sorted;
 };

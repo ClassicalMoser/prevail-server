@@ -44,6 +44,8 @@ const certifyWithLatestRules = async (
     return missing;
   }
 
+  // The insert certifies each card's newest version, so what an author just
+  // published becomes buildable once this succeeds.
   await insertCertifications(
     sql,
     cardIds,

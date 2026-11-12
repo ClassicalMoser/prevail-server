@@ -15,6 +15,9 @@ import type { Sql } from '@infrastructure/database/sql-type';
  * highest card version among those certifications. The outer order reads
  * initiative out of the JSON definition so the list matches round order.
  */
+// The cards a player may build with: for each card, the newest version certified
+// against the latest rules. An uncertified or stale-certified version is never
+// offered, so a rules change hides cards until they are certified again.
 const getCurrentCommandCardsQuery = async (
   sql: Sql,
 ): Promise<CommandCardVersionDb[]> =>

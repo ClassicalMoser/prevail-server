@@ -21,19 +21,19 @@ infrastructure/
 
 ## Database (`database/`)
 
-| Piece        | Role                                                                                                       |
-| ------------ | ---------------------------------------------------------------------------------------------------------- |
-| `queries/`   | Tagged SQL, grouped by table (`army/record`, `army/composition`, card `read` and `write`)                  |
-| `db-types/`  | Row shapes as returned by postgres                                                                         |
-| `mappers/`   | One function per file, grouped (`army`, `command-card`, `unit-card`, `version`). The barrel is `index.ts`. |
-| `adapters/`  | Implement `*Storage` ports                                                                                 |
-| `db-root.ts` | Builds `StoragePort` from a connection string                                                              |
+| Piece        | Role                                                                                                                                                                       |
+| ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `queries/`   | Tagged SQL, grouped by table (`army/record`, `army/composition`, card `read` and `write`)                                                                                  |
+| `db-types/`  | Row shapes as returned by postgres                                                                                                                                         |
+| `mappers/`   | One function per file, grouped (`army`, `command-card`, `unit-card`, `version`). The barrel is `index.ts`.                                                                 |
+| `adapters/`  | Implement `*Storage` ports. Each store is a folder with one file per operation and a factory that wraps them in `storageOp` (`owned-army/`, `command-card/`, `unit-card/`) |
+| `db-root.ts` | Builds `StoragePort` from a connection string                                                                                                                              |
 
 ### Pattern
 
 1. Queries return DB row types only.
 2. Mappers convert to rules / `@domain` / port shapes. One primary export per file. Direct `prevail-rules` imports are fine. See [`../../STYLE.md`](../../STYLE.md).
-3. Adapters catch errors with `handleError`, return `DataErrorSignature`.
+3. Each adapter operation is its own function that returns a `DataErrorSignature` for expected failures and lets unexpected errors throw. The adapter's factory wraps every operation in `storageOp`, which logs a throw through `handleError` and answers a 500, so that catch exists once.
 4. Multi-step writes (e.g. replace army junction rows) stay transactional when the SQL client allows — prefer clarity over clever helpers.
 
 ### Owned armies + users

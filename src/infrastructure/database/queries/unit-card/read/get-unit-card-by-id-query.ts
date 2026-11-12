@@ -12,6 +12,8 @@ import type { Sql } from '@infrastructure/database/sql-type';
  * Mapping into domain unit types happens in `mappers/`.
  */
 
+// The newest version of one unit card, certified or not (ORDER BY version DESC
+// LIMIT 1). For authoring and display; the player catalog uses the certified query.
 const getUnitCardByIdQuery = async (
   sql: Sql,
   unitCardId: string,

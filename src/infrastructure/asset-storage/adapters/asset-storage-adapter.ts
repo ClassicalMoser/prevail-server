@@ -3,6 +3,7 @@ import type { AssetStorage, UploadResult } from '@ports';
 import { objectExists } from '../object-exists';
 import { putImmutable } from '../put-immutable';
 
+/** The R2 bucket and client the asset storage port writes to. */
 interface AssetStorageConfig {
   bucket: string;
   client: S3Client;

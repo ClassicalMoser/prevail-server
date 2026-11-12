@@ -13,6 +13,8 @@ import { querySql } from '@infrastructure/database/query-sql';
  * Display name and composition are columns. Domain mapping happens in `mappers/`.
  */
 
+// One join row per unit type, with its count as `quantity`. Run inside the save
+// transaction after the old rows are deleted.
 const insertArmyUnitCardQuery = async (
   client: SqlClient,
   row: ArmyUnitCardDb,

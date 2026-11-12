@@ -22,6 +22,7 @@ const createInMemoryRoundSnapshotStorage = (
     },
     saveRoundSnapshot: async (gameId, roundNumber, gameState) => {
       snapshots.set(streamKey(gameId, roundNumber), gameState);
+      // The saved snapshot is the reconcile point sockets resync from.
       hooks.onRoundSnapshotSaved?.(gameId, roundNumber, gameState);
       const response = okVoid();
       return response;

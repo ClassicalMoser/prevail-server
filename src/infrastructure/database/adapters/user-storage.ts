@@ -71,12 +71,14 @@ const createUserStorage = (logger: LoggerPort, sql: Sql): UserStorage => ({
     authSub: string,
   ): Promise<DataErrorSignature<User>> => {
     try {
+      // Read first: most requests are from a returning player, so avoid the insert.
       const existing: UserDb[] = await getUserByAuthSubQuery(sql, authSub);
       if (existing.length > 0) {
         return { success: true, data: userMapperToDomain(existing[0]) };
       }
 
       try {
+        // First sight of this subject: give the player a local user to own armies.
         const created: UserDb[] = await createUserByAuthSubQuery(sql, authSub);
         return { success: true, data: userMapperToDomain(created[0]) };
       } catch (insertError) {

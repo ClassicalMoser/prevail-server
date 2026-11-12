@@ -11,6 +11,8 @@ import { querySql } from '@infrastructure/database/query-sql';
  * Display name and composition are columns. Domain mapping happens in `mappers/`.
  */
 
+// Command-card half of the wholesale replace; runs in the same transaction as the
+// unit-card delete and the inserts so a failed save leaves the old list intact.
 const deleteArmyCommandCardsQuery = async (
   client: SqlClient,
   armyId: string,

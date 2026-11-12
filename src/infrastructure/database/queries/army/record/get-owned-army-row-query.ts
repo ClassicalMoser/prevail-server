@@ -12,6 +12,9 @@ import type { Sql } from '@infrastructure/database/sql-type';
  * Display name and composition are columns. Domain mapping happens in `mappers/`.
  */
 
+// One army row, only when the subject owns it and it is not archived. Another
+// player's army, an archived one and a missing one are indistinguishable here on
+// purpose, so the caller cannot probe which army ids exist.
 const getOwnedArmyRowQuery = async (
   sql: Sql,
   authSub: string,

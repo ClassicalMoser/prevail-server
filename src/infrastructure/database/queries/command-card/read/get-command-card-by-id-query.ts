@@ -12,6 +12,8 @@ import type { Sql } from '@infrastructure/database/sql-type';
  * Mapping into domain cards happens in `mappers/`.
  */
 
+// The newest version of one card, certified or not (ORDER BY version DESC LIMIT 1).
+// For authoring and display; the player-facing catalog uses the certified query.
 const getCommandCardByIdQuery = async (
   sql: Sql,
   commandCardId: string,

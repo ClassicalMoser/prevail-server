@@ -30,6 +30,8 @@ const createCommandCardVersion = async (
   sql: Sql,
   card: CommandCard,
 ): Promise<DataErrorSignature<CommandCard>> => {
+  // Versions are written under an id an author already reserved; an unknown id
+  // is a client error (404), not a database failure.
   const existing = await commandCardExistsQuery(sql, card.id);
   if (existing.length === 0) {
     return notFound('Command card not found');

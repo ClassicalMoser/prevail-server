@@ -1,3 +1,4 @@
+/** Auth0 tenant settings the token verifier needs. */
 interface AuthInfrastructureConfig {
   /** Auth0 tenant domain, e.g. `your-tenant.auth0.com` */
   domain: string;

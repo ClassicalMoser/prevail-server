@@ -12,6 +12,9 @@ import type { Sql } from '@infrastructure/database/sql-type';
  * Mapping into domain unit types happens in `mappers/`.
  */
 
+// The unit cards a player may build with: for each card, the newest version
+// certified against the latest rules. An uncertified or stale-certified version
+// is never offered, so a rules change hides cards until they are certified again.
 const getCurrentUnitCardsQuery = async (
   sql: Sql,
 ): Promise<UnitCardVersionDb[]> =>

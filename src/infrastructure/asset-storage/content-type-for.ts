@@ -10,6 +10,7 @@ import type { AssetType } from '@ports';
  * @returns MIME type for the PutObject ContentType header.
  */
 const contentTypeFor = (assetType: AssetType): string => {
+  // The header decides how a browser or print tool opens the stored file.
   switch (assetType) {
     case 'svg': {
       return 'image/svg+xml';

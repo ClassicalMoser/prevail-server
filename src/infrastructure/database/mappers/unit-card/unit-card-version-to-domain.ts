@@ -19,6 +19,7 @@ import { formatVersionTriple } from '../version/format-version-triple';
 const unitCardVersionMapperToDomain = (
   version: UnitCardVersionDb,
 ): UnitType => {
+  // The definition is JSONB; postgres.js may hand it back as text or object.
   const partialUnitType: PartialUnitType = parseIfJson(
     version.unit_card_definition,
   );

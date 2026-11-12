@@ -12,6 +12,8 @@ import type { Sql } from '@infrastructure/database/sql-type';
  * Display name and composition are columns. Domain mapping happens in `mappers/`.
  */
 
+// The saved unit ids and counts only. Unit stats are looked up from the catalog
+// separately, so an army does not freeze the card as it was when saved.
 const getArmyUnitCardsQuery = async (
   sql: Sql,
   armyId: string,

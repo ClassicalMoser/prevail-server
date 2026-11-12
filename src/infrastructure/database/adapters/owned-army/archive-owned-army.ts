@@ -20,6 +20,8 @@ const archiveOwnedArmy = async (
   ownerAuthSub: string,
   armyId: string,
 ): Promise<DataErrorSignature<void>> => {
+  // The query matches only the caller's live army, so no row means missing,
+  // already archived, or not theirs; all three look the same to the caller.
   const rows = await archiveArmyQuery(sql, ownerAuthSub, armyId);
   if (rows.length === 0) {
     return notFound('Army not found');

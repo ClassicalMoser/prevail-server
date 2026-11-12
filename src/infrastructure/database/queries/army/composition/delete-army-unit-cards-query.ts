@@ -16,6 +16,8 @@ import { querySql } from '@infrastructure/database/query-sql';
  * @param client - Connection or open transaction.
  * @param armyId - Army whose unit rows are removed.
  */
+// First half of replacing an army's composition: the saved list replaces the old
+// one wholesale. Takes a SqlClient so it runs inside the save transaction.
 const deleteArmyUnitCardsQuery = async (
   client: SqlClient,
   armyId: string,

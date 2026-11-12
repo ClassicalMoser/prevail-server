@@ -12,6 +12,10 @@ import type { Sql } from '@infrastructure/database/sql-type';
  * Mapping into domain cards happens in `mappers/`.
  */
 
+// Catalog list of every card id with its newest version's name and version. LEFT
+// JOIN keeps cards that have no version yet so authors still see them (the
+// mapper turns their null version into null). Ordered by initiative, the order
+// command cards are played in, with unversioned cards last.
 const getAllCommandCardsQuery = async (
   sql: Sql,
 ): Promise<CommandCardListItemDb[]> =>

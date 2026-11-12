@@ -10,6 +10,8 @@ import type { Sql } from '@infrastructure/database/sql-type';
  * Mapping into domain unit types happens in `mappers/`.
  */
 
+// Reserves a unit card id before any version exists, so an author can write
+// versions under a stable id.
 const createEmptyUnitCardQuery = async (
   sql: Sql,
 ): Promise<{ unit_card_id: string }[]> =>

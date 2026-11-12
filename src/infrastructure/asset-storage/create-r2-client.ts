@@ -1,5 +1,6 @@
 import { S3Client } from '@aws-sdk/client-s3';
 
+/** Endpoint and credentials for the Cloudflare R2 account holding card assets. */
 interface R2ClientConfig {
   endpoint: string;
   accessKeyId: string;

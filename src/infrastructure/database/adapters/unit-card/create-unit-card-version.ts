@@ -30,6 +30,8 @@ const createUnitCardVersion = async (
   sql: Sql,
   unitType: UnitType,
 ): Promise<DataErrorSignature<UnitType>> => {
+  // Versions are written under an id an author already reserved; an unknown id
+  // is a client error (404), not a database failure.
   const existing = await unitCardExistsQuery(sql, unitType.id);
   if (existing.length === 0) {
     return notFound('Unit card not found');

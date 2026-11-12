@@ -16,6 +16,7 @@ import type { Sql } from '@infrastructure/database/sql-type';
 const getCurrentUnitCards = async (
   sql: Sql,
 ): Promise<DataErrorSignature<UnitType[]>> => {
+  // The query already limits to versions certified against the latest rules.
   const versions = await getCurrentUnitCardsQuery(sql);
   const loaded: DataErrorSignature<UnitType[]> = {
     success: true,

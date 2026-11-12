@@ -25,6 +25,7 @@ const updateOwnedArmy = async (
   armyId: string,
   write: OwnedArmyWrite,
 ): Promise<DataErrorSignature<void>> => {
+  // The save is keyed by local user id; the ownership check lives in the update query.
   const user = await userStorage.ensureByAuthSub(ownerAuthSub);
   if (!user.success) {
     return user;
