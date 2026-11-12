@@ -18,6 +18,7 @@ export {
   recordSchema,
 } from './predicate-schema';
 export { recordedSql } from './recorded-sql';
+export { seatConnection } from './seat-connection';
 export { recordingLogger } from './recording-logger';
 export type { RecordingLogger } from './recording-logger';
 export type { RecordedSql, RecordedSqlCall } from './recorded-sql';

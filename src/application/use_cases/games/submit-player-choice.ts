@@ -5,7 +5,7 @@ import type {
 import type { DataErrorSignature } from '@ports';
 import { enqueue } from '@application/composable/game-session/session/enqueue';
 import type { GameSessionStore } from '@application/composable/game-session/session/game-session-store';
-import { subjectForSeat } from '@application/composable/game-session/session/subject-for-seat';
+import { requireVsBotSeat } from '@application/composable/game-session/session/require-vs-bot-seat';
 import { takeBotTurns } from '@application/composable/game-session/bot/take-bot-turns';
 
 interface SubmitPlayerChoiceInput {
@@ -29,50 +29,48 @@ interface SubmitPlayerChoiceInput {
 const submitPlayerChoice = async (
   store: GameSessionStore,
   input: SubmitPlayerChoiceInput,
-): Promise<DataErrorSignature<void>> =>
-  enqueue(store, input.gameId, async () => {
-    const meta = store.metaByGameId.get(input.gameId);
-    if (meta === undefined || meta.kind !== 'vsBot') {
-      return { message: 'Game not found', status: 404, success: false };
-    }
+): Promise<DataErrorSignature<void>> => {
+  const submitted: DataErrorSignature<void> = await enqueue(
+    store,
+    input.gameId,
+    async (): Promise<DataErrorSignature<void>> => {
+      // Only the seat's owner may play for it.
+      const access = requireVsBotSeat(store, input);
+      if (!access.success) {
+        return access;
+      }
+      const meta = access.data;
 
-    const expectedSubject = subjectForSeat(meta, input.side);
-    if (input.subject !== expectedSubject) {
-      return {
-        message: 'Seat not assigned to this player',
-        status: 403,
-        success: false,
-      };
-    }
+      // A choice names the player it is for. It must be the seat's own side,
+      // or a socket on one seat could play the other's cards.
+      if (input.playerChoice.player !== input.side) {
+        return {
+          message: 'Player choice side does not match seat',
+          status: 400,
+          success: false,
+        };
+      }
 
-    if (input.playerChoice.player !== input.side) {
-      return {
-        message: 'Player choice side does not match seat',
-        status: 400,
-        success: false,
-      };
-    }
+      // The rules engine is the only judge of whether the choice is legal.
+      const result = await store.runner.handlePlayerChoiceSubmission(
+        input.gameId,
+        meta.gameMode,
+        input.playerChoice,
+      );
+      if (!result.result) {
+        return { message: result.errorReason, status: 400, success: false };
+      }
 
-    const result = await store.runner.handlePlayerChoiceSubmission(
-      input.gameId,
-      meta.gameMode,
-      input.playerChoice,
-    );
+      // After the human plays, the bot answers until the human owes again.
+      if (input.side === meta.humanSide) {
+        await takeBotTurns(store, input.gameId);
+      }
 
-    if (!result.result) {
-      return {
-        message: result.errorReason,
-        status: 400,
-        success: false,
-      };
-    }
-
-    if (input.side === meta.humanSide) {
-      await takeBotTurns(store, input.gameId);
-    }
-
-    return { data: undefined, success: true };
-  });
+      return { data: undefined, success: true };
+    },
+  );
+  return submitted;
+};
 
 export type { SubmitPlayerChoiceInput };
 export { submitPlayerChoice };

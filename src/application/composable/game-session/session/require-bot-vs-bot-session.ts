@@ -1,5 +1,6 @@
 import type { BotVsBotSessionMeta } from './game-session-meta';
 import type { DataErrorSignature } from '@ports';
+import { gameNotFound } from './game-not-found';
 import type { GameSessionStore } from './game-session-store';
 
 /**
@@ -20,11 +21,7 @@ const requireBotVsBotSession = (
 ): DataErrorSignature<BotVsBotSessionMeta> => {
   const meta = store.metaByGameId.get(gameId);
   if (meta === undefined || meta.kind !== 'botVsBot') {
-    const missing: DataErrorSignature<BotVsBotSessionMeta> = {
-      message: 'Game not found',
-      status: 404,
-      success: false,
-    };
+    const missing: DataErrorSignature<BotVsBotSessionMeta> = gameNotFound();
     return missing;
   }
   if (meta.creatorSubject !== subject) {

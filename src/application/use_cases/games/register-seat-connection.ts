@@ -1,10 +1,11 @@
 import type { DataErrorSignature, GameSeatConnection } from '@ports';
 import { enqueue } from '@application/composable/game-session/session/enqueue';
 import { getConnections } from '@application/composable/game-session/fanout/get-connections';
+import { gameNotFound } from '@application/composable/game-session/session/game-not-found';
 import type { GameSessionStore } from '@application/composable/game-session/session/game-session-store';
 import { loadAuthoritativeGame } from '@application/composable/game-session/session/load-authoritative-game';
+import { requireVsBotSeat } from '@application/composable/game-session/session/require-vs-bot-seat';
 import { sendGameSnapshotToConnection } from '@application/composable/game-session/fanout/send-game-snapshot-to-connection';
-import { subjectForSeat } from '@application/composable/game-session/session/subject-for-seat';
 import { takeBotTurns } from '@application/composable/game-session/bot/take-bot-turns';
 
 /**
@@ -22,23 +23,19 @@ const registerSeatConnection = async (
   store: GameSessionStore,
   connection: GameSeatConnection,
 ): Promise<DataErrorSignature<void>> => {
-  const meta = store.metaByGameId.get(connection.gameId);
-  if (meta === undefined || meta.kind !== 'vsBot') {
-    return { message: 'Game not found', status: 404, success: false };
+  // Only the human who made the game may open their own seat.
+  const access = requireVsBotSeat(store, connection);
+  if (!access.success) {
+    return access;
   }
-  const expectedSubject = subjectForSeat(meta, connection.side);
-  if (connection.subject !== expectedSubject) {
-    return {
-      message: 'Seat not assigned to this player',
-      status: 403,
-      success: false,
-    };
-  }
+  const meta = access.data;
 
   const registered: DataErrorSignature<void> = await enqueue(
     store,
     connection.gameId,
     async (): Promise<DataErrorSignature<void>> => {
+      // If the bot owes a choice the human is waiting on, play it first so
+      // the snapshot the human opens with is not already stale.
       if (connection.side === meta.humanSide) {
         await takeBotTurns(store, connection.gameId);
       }
@@ -48,8 +45,10 @@ const registerSeatConnection = async (
         meta.gameMode,
       );
       if (afterBots === undefined) {
-        return { message: 'Game not found', status: 404, success: false };
+        return gameNotFound();
       }
+      // Join the fan-out set before sending, inside the queue, so no event
+      // lands between the snapshot and the first streamed message.
       getConnections(store, connection.gameId).add(connection);
       sendGameSnapshotToConnection(connection, afterBots);
       return { data: undefined, success: true };

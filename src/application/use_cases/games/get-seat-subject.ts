@@ -10,6 +10,9 @@ import { subjectForSeat } from '@application/composable/game-session/session/sub
  * @param side - White or black.
  * @returns The subject, or undefined when the game is not hosted here.
  */
+// TODO(misleading): `get` answers undefined here, which DESIGN.md calls `find`.
+// The name is the inbound port's method, so renaming it is a port change; the
+// author decides whether the port should say `findSeatSubject`.
 const getSeatSubject = (
   store: GameSessionStore,
   gameId: string,

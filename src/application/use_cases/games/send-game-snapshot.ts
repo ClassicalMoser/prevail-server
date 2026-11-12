@@ -1,9 +1,9 @@
 import type { DataErrorSignature, GameSeatConnection } from '@ports';
-import { getConnections } from '@application/composable/game-session/fanout/get-connections';
+import { gameNotFound } from '@application/composable/game-session/session/game-not-found';
 import type { GameSessionStore } from '@application/composable/game-session/session/game-session-store';
 import { loadAuthoritativeGame } from '@application/composable/game-session/session/load-authoritative-game';
+import { requireRegisteredSeat } from '@application/composable/game-session/session/require-registered-seat';
 import { sendGameSnapshotToConnection } from '@application/composable/game-session/fanout/send-game-snapshot-to-connection';
-import { subjectForSeat } from '@application/composable/game-session/session/subject-for-seat';
 
 /**
  * Resend the current seat-visible snapshot to an already registered socket.
@@ -18,35 +18,22 @@ const sendGameSnapshot = async (
   store: GameSessionStore,
   connection: GameSeatConnection,
 ): Promise<DataErrorSignature<void>> => {
-  const meta = store.metaByGameId.get(connection.gameId);
-  if (meta === undefined || meta.kind !== 'vsBot') {
-    return { message: 'Game not found', status: 404, success: false };
-  }
-  const expectedSubject = subjectForSeat(meta, connection.side);
-  if (connection.subject !== expectedSubject) {
-    return {
-      message: 'Seat not assigned to this player',
-      status: 403,
-      success: false,
-    };
-  }
-  if (!getConnections(store, connection.gameId).has(connection)) {
-    return {
-      message: 'Seat connection is not registered',
-      status: 400,
-      success: false,
-    };
+  const access = requireRegisteredSeat(store, connection);
+  if (!access.success) {
+    return access;
   }
 
   const authoritative = await loadAuthoritativeGame(
     store,
     connection.gameId,
-    meta.gameMode,
+    access.data.gameMode,
   );
   if (authoritative === undefined) {
-    return { message: 'Game not found', status: 404, success: false };
+    return gameNotFound();
   }
 
+  // The snapshot is projected to the seat's view, so the opponent's hand
+  // stays hidden even on a resync.
   sendGameSnapshotToConnection(connection, authoritative);
   return { data: undefined, success: true };
 };

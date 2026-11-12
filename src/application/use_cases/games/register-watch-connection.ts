@@ -1,4 +1,5 @@
 import type { DataErrorSignature, GameWatchConnection } from '@ports';
+import { gameNotFound } from '@application/composable/game-session/session/game-not-found';
 import { getWatchers } from '@application/composable/game-session/fanout/get-watchers';
 import { enqueue } from '@application/composable/game-session/session/enqueue';
 import type { GameSessionStore } from '@application/composable/game-session/session/game-session-store';
@@ -40,7 +41,7 @@ const registerWatchConnection = async (
         access.data.gameMode,
       );
       if (game === undefined) {
-        return { message: 'Game not found', status: 404, success: false };
+        return gameNotFound();
       }
       getWatchers(store, connection.gameId).add(connection);
       connection.send({ payload: game.gameState, type: 'gameSnapshot' });
