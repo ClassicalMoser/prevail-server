@@ -1,95 +1,64 @@
-import type { BotVsBotStepData } from '@classicalmoser/prevail-contracts';
 import { getLegalPlayerChoiceOptions } from '@classicalmoser/prevail-rules/domain';
 import type { GameSessionStore } from '../session/game-session-store';
-import { loadAuthoritativeGame } from '../session/load-authoritative-game';
 import { drainToPlayerChoice } from './drain-to-player-choice';
 import { sampleEitherSideChoice } from './sample-either-side-choice';
+
+/**
+ * What one bot-vs-bot step did.
+ *
+ * `played`: a choice was played; the game may now be over. `gameOver`: the
+ * game was already over, and nothing was played. `stuck`: the bot or the
+ * engine failed, and nothing was played. `missing`: the game is gone.
+ */
+type BotVsBotStepOutcome = 'played' | 'gameOver' | 'stuck' | 'missing';
 
 /**
  * Play one bot choice for whichever side the prompt belongs to.
  *
  * Effects before the choice are drained first, and effects the choice causes
- * are drained after it, so the returned game is the next decision or the end
- * of the game. A game that is already over returns `gameOver` with no choice.
- * A selector or submit failure sets `stuck` and later calls return that same
- * position without playing.
+ * are drained after it, so the next step starts at a decision or the end of
+ * the game. Every event reaches watchers through fanout as it is appended;
+ * this only reports what happened. A bot or submit failure sets `stuck`, and
+ * later steps play nothing.
  *
  * @param store - Live-game memory.
  * @param gameId - Bot-vs-bot game to advance.
- * @returns The step result, or undefined when the game is not a bot-vs-bot session.
+ * @returns What the step did. A game that is not bot-vs-bot is `missing`.
  */
 const playBotVsBotChoice = async (
   store: GameSessionStore,
   gameId: string,
-): Promise<BotVsBotStepData | undefined> => {
+): Promise<BotVsBotStepOutcome> => {
   const meta = store.metaByGameId.get(gameId);
   if (meta === undefined || meta.kind !== 'botVsBot') {
-    return undefined;
+    return 'missing';
   }
-
   if (meta.stuck) {
-    const game = await loadAuthoritativeGame(store, gameId, meta.gameMode);
-    if (game === undefined) {
-      return undefined;
-    }
-    const stuck: BotVsBotStepData = {
-      choice: null,
-      game,
-      status: 'stuck',
-    };
-    return stuck;
+    return 'stuck';
   }
 
+  // Effects owed before anyone chooses run first.
   const opened = await drainToPlayerChoice(store, gameId, meta.gameMode);
-  if (opened.status === 'missing') {
-    return undefined;
-  }
-  if (opened.status === 'gameOver') {
-    const ended: BotVsBotStepData = {
-      choice: null,
-      game: opened.game,
-      status: 'gameOver',
-    };
-    return ended;
-  }
-  if (opened.status === 'stuck') {
-    meta.stuck = true;
-    const stuck: BotVsBotStepData = {
-      choice: null,
-      game: opened.game,
-      status: 'stuck',
-    };
-    return stuck;
+  if (opened.status !== 'ready') {
+    if (opened.status === 'stuck') {
+      meta.stuck = true;
+    }
+    return opened.status;
   }
 
   const options = getLegalPlayerChoiceOptions(opened.game.gameState);
-  if (options === null) {
-    meta.stuck = true;
-    const stuck: BotVsBotStepData = {
-      choice: null,
-      game: opened.game,
-      status: 'stuck',
-    };
-    return stuck;
-  }
-
-  const choice = sampleEitherSideChoice({
-    options,
-    state: opened.game.gameState,
-  });
+  const choice =
+    options === null
+      ? undefined
+      : sampleEitherSideChoice({ options, state: opened.game.gameState });
   if (choice === undefined) {
     console.error('playBotVsBotChoice: no bot choice for', {
-      choiceType: options.choiceType,
+      choiceType: options?.choiceType,
       gameId,
-      playerSource: options.playerSource,
+      playerSource: options?.playerSource,
     });
     meta.stuck = true;
-    const stuck: BotVsBotStepData = {
-      choice: null,
-      game: opened.game,
-      status: 'stuck',
-    };
-    return stuck;
+    return 'stuck';
   }
 
   const submitted = await store.runner.handlePlayerChoiceSubmission(
@@ -103,32 +72,19 @@ const playBotVsBotChoice = async (
       gameId,
     });
     meta.stuck = true;
-    const stuck: BotVsBotStepData = {
-      choice: null,
-      game: opened.game,
-      status: 'stuck',
-    };
-    return stuck;
+    return 'stuck';
   }
 
+  // The effects this choice caused run now, so watchers see them with it.
   const closed = await drainToPlayerChoice(store, gameId, meta.gameMode);
   if (closed.status === 'missing') {
-    return undefined;
+    return 'missing';
   }
-  if (closed.status === 'gameOver') {
-    const ended: BotVsBotStepData = {
-      choice,
-      game: closed.game,
-      status: 'gameOver',
-    };
-    return ended;
+  if (closed.status === 'stuck') {
+    meta.stuck = true;
   }
-  const continued: BotVsBotStepData = {
-    choice,
-    game: closed.game,
-    status: 'awaitingChoice',
-  };
-  return continued;
+  return 'played';
 };
 
+export type { BotVsBotStepOutcome };
 export { playBotVsBotChoice };

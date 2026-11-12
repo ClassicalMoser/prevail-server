@@ -2,12 +2,14 @@ import { projectEventForVisibility } from '@classicalmoser/prevail-rules/domain'
 import type { Event } from '@classicalmoser/prevail-rules/domain';
 import type { GameSessionStore } from '../session/game-session-store';
 import { sendToSeat } from './send-to-seat';
+import { sendToWatchers } from './send-to-watchers';
 
 /**
- * Project one appended event to both seats.
+ * Project one appended event to both seats, and send it whole to watchers.
  *
- * Each side sees only the visibility the rules allow. A player choice and a
- * game effect stay different outbound message types.
+ * Each side sees only the visibility the rules allow. A bot-vs-bot watcher
+ * has no seat and sees the authoritative event. A player choice and a game
+ * effect stay different outbound message types.
  *
  * @param store - Live-game memory.
  * @param gameId - Game the event was appended to.
@@ -41,6 +43,20 @@ const fanoutEvent = (
         store,
       });
     }
+  }
+  // Watchers follow the same stream as a seat, unprojected.
+  if (event.eventType === 'playerChoice') {
+    sendToWatchers({
+      gameId,
+      message: { payload: event, type: 'playerChoice' },
+      store,
+    });
+  } else {
+    sendToWatchers({
+      gameId,
+      message: { payload: event, type: 'gameEffect' },
+      store,
+    });
   }
 };
 

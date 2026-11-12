@@ -1,6 +1,6 @@
 import type { ChooseCardEvent } from '@classicalmoser/prevail-rules/domain';
 import type { GameSeatConnection, GameSessionOutbound } from '@ports';
-import { gameSessionStore, tempCommandCards } from '@testing';
+import { gameSessionStore, tempCommandCards, watcher } from '@testing';
 import { fanoutEvent } from './fanout-event';
 
 const seat = (
@@ -58,6 +58,32 @@ describe('fanoutEvent function', () => {
         card: 'hidden',
         player: 'white',
       });
+    },
+  );
+
+  it(
+    'sends a watcher the chooseCard event with its card',
+    { timeout: 5000 },
+    () => {
+      expect.hasAssertions();
+
+      const watching = watcher('game-1');
+      const store = gameSessionStore({
+        watchers: new Map([['game-1', new Set([watching.connection])]]),
+      });
+      const choice: ChooseCardEvent = {
+        card: tempCommandCards[0],
+        choiceType: 'chooseCard',
+        eventType: 'playerChoice',
+        player: 'white',
+      };
+
+      fanoutEvent(store, 'game-1', choice);
+
+      // A watcher is not a seat, so nothing is hidden from it.
+      expect(watching.sent).toStrictEqual([
+        { payload: choice, type: 'playerChoice' },
+      ]);
     },
   );
 });

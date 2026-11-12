@@ -47,6 +47,8 @@ export type {
   GameSeatConnection,
   GameSessionOutbound,
   GameSessionUseCasesPort,
+  GameWatchConnection,
+  GameWatchOutbound,
 } from './use-cases';
 export type {
   CommandCardRendererPort,
@@ -57,9 +59,11 @@ export type {
 export type { AssetStorage, AssetType, UploadResult } from './asset-storage';
 export type {
   AnyInGameSeatContract,
+  InGameBotVsBotWsHandler,
   InGameSeatWsHandler,
   RegisteredWsRoute,
   WireWsConnection,
   WsRouteRegistry,
   WsSeatConnectionContext,
+  WsWatchConnectionContext,
 } from './ws-port';

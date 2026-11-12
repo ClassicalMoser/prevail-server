@@ -43,10 +43,9 @@ application/
 │   ├── assets/         # R2 keys and asset projection
 │   ├── cards/          # Card version projection and certification
 │   ├── game-session/
-│   │   ├── bot/        # Bot identity and the turn loop
+│   │   ├── bot/        # Bot identity, the turn loop, and the seat view handed to the rules bot
 │   │   ├── fanout/     # Seat delivery
 │   │   └── session/    # Store, queue, and authoritative loads
-│   └── player-choice/  # Samples a legal choice; individual picks live in pick/
 └── index.ts
 ```
 

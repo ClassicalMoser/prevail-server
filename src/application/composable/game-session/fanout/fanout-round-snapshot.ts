@@ -3,9 +3,11 @@ import type { GameState } from '@classicalmoser/prevail-rules/domain';
 import type { GameSessionStore } from '../session/game-session-store';
 import { loadAuthoritativeGame } from '../session/load-authoritative-game';
 import { sendToSeat } from './send-to-seat';
+import { sendToWatchers } from './send-to-watchers';
 
 /**
- * Push a seat-visible snapshot after a round is saved.
+ * Push a seat-visible snapshot after a round is saved, and the
+ * authoritative one to bot-vs-bot watchers.
  *
  * The round number and state arguments are the engine hook's signature.
  * The snapshot is loaded again so both seats see the stored game, not the
@@ -48,6 +50,11 @@ const fanoutRoundSnapshot = async (input: {
       store,
     });
   }
+  sendToWatchers({
+    gameId,
+    message: { payload: authoritative.gameState, type: 'gameSnapshot' },
+    store,
+  });
 };
 
 export { fanoutRoundSnapshot };

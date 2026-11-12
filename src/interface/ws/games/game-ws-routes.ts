@@ -1,6 +1,7 @@
 import type { GameWsParams } from '@classicalmoser/prevail-contracts';
 import {
   blackInGameWsContract,
+  botVsBotInGameWsContract,
   whiteInGameWsContract,
 } from '@classicalmoser/prevail-contracts';
 import type { PlayerChoiceEvent } from '@classicalmoser/prevail-rules/domain';
@@ -13,7 +14,9 @@ import type {
   WsRouteRegistry,
   WsSeatConnectionContext,
 } from '@ports';
+import { implementInGameBotVsBotWs } from '../implement-in-game-bot-vs-bot-ws';
 import { implementInGameSeatWs } from '../implement-in-game-seat-ws';
+import { createWatchHandlers } from './create-watch-handlers';
 
 type SeatOpenResult = Awaited<
   ReturnType<
@@ -128,7 +131,8 @@ const createSeatHandlers = (
 });
 
 /**
- * WebSocket seat routes for white and black in a live game.
+ * WebSocket routes for a live game: the white and black seats, and the
+ * socket that watches and steps a bot-vs-bot game.
  *
  * @param gameSessionUseCases - Game session use cases for seat lifecycle.
  * @param logger - Passed into the seat implementers for unexpected failures.
@@ -147,6 +151,11 @@ const createGameWsRoutes = (
     blackInGameWsContract,
     logger,
     createSeatHandlers('black', gameSessionUseCases),
+  ),
+  implementInGameBotVsBotWs(
+    botVsBotInGameWsContract,
+    logger,
+    createWatchHandlers(gameSessionUseCases),
   ),
 ];
 

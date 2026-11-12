@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted (2026-08-07)
+Accepted (2026-08-07). The **Bot actor** section is superseded by [0005](./0005-rules-bot.md); the create contract stands.
 
 ## Context
 

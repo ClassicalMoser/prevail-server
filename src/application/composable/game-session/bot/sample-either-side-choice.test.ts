@@ -1,53 +1,60 @@
 import assert from 'node:assert/strict';
+import {
+  createInitialGameState,
+  getLegalPlayerChoiceOptions,
+} from '@classicalmoser/prevail-rules/domain';
 import type { LegalPlayerChoiceOptions } from '@classicalmoser/prevail-rules/domain';
-import { createEmptyGameState } from '@classicalmoser/prevail-rules/domain';
-import type { RandomSource } from '@application/composable/player-choice/random-source';
+import {
+  blackMiniStarterArmy,
+  whiteMiniStarterArmy,
+} from '@classicalmoser/prevail-rules/sampleValues';
 import { sampleEitherSideChoice } from './sample-either-side-choice';
-import { tempCommandCards } from '@testing';
 
-/** Always picks the first candidate (index 0). */
-const firstAlways: RandomSource = {
-  nextFloat: () => 0,
-};
+/** A fresh mini game. It opens with white owing its setup. */
+const openingState = createInitialGameState({
+  blackArmy: blackMiniStarterArmy,
+  gameMode: 'mini',
+  whiteArmy: whiteMiniStarterArmy,
+});
 
 describe('sampleEitherSideChoice function', () => {
   it(
-    'plays white when both sides still have a choose-card event',
+    'answers the opening setup for white, the side that owes it',
     { timeout: 5000 },
     () => {
       expect.hasAssertions();
 
-      const whiteCard = tempCommandCards[0];
-      const blackCard = tempCommandCards[1];
-      assert.ok(whiteCard !== undefined);
-      assert.ok(blackCard !== undefined);
+      const options = getLegalPlayerChoiceOptions(openingState);
+      assert.ok(options !== null);
 
-      const options: LegalPlayerChoiceOptions = {
+      const choice = sampleEitherSideChoice({ options, state: openingState });
+
+      expect(choice).toMatchObject({
+        choiceType: 'setupUnits',
+        player: 'white',
+      });
+    },
+  );
+
+  it(
+    'returns undefined when both sides have laid their cards',
+    { timeout: 5000 },
+    () => {
+      expect.hasAssertions();
+
+      // A card prompt with no card events left: no seat still owes.
+      const allDown: LegalPlayerChoiceOptions = {
         choiceType: 'chooseCard',
-        events: [
-          {
-            card: whiteCard,
-            choiceType: 'chooseCard',
-            eventType: 'playerChoice',
-            player: 'white',
-          },
-          {
-            card: blackCard,
-            choiceType: 'chooseCard',
-            eventType: 'playerChoice',
-            player: 'black',
-          },
-        ],
+        events: [],
         playerSource: 'bothPlayers',
       };
 
       const choice = sampleEitherSideChoice({
-        options,
-        random: firstAlways,
-        state: createEmptyGameState('mini'),
+        options: allDown,
+        state: openingState,
       });
 
-      expect(choice).toMatchObject({ player: 'white' });
+      expect(choice).toBeUndefined();
     },
   );
 });

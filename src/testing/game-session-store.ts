@@ -53,6 +53,7 @@ const gameSessionStore = (
   ownedArmyStorage: idleArmyStorage(),
   runner: idleRunner(),
   submitQueues: new Map(),
+  watchers: new Map(),
   ...patch,
 });
 

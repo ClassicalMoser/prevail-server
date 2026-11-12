@@ -18,16 +18,16 @@ import type { GameSessionStore } from '@application/composable/game-session/sess
 const ownedArmyFailure = (
   status: number,
   sideLabel: 'White' | 'Black',
-): DataErrorSignature<Game> => {
+): DataErrorSignature<string> => {
   if (status === 404) {
-    const missing: DataErrorSignature<Game> = {
+    const missing: DataErrorSignature<string> = {
       message: `${sideLabel} army must be an army owned by the creating player`,
       status: 400,
       success: false,
     };
     return missing;
   }
-  const failure: DataErrorSignature<Game> = {
+  const failure: DataErrorSignature<string> = {
     message: 'Army could not be loaded',
     status,
     success: false,
@@ -38,20 +38,21 @@ const ownedArmyFailure = (
 /**
  * Create a bot-vs-bot game from two armies the subject owns.
  *
- * No choice is played. The returned game is the opening position. Both
+ * No choice is played. The creator watches and steps the game over the
+ * bot-vs-bot socket, which opens with the authoritative snapshot. Both
  * armies must pass `body.gameMode` composition before the game is saved.
- * Session meta records the creator so later reads and steps can authorize.
+ * Session meta records the creator so the socket can authorize.
  *
  * @param store - Live-game memory.
  * @param subject - Auth subject of the creating player.
  * @param body - Mode and army ids from the create contract.
- * @returns The authoritative opening game, or an error envelope.
+ * @returns The new game id, or an error envelope.
  */
 const createBotVsBotGame = async (
   store: GameSessionStore,
   subject: string,
   body: CreateBotVsBotGameBody,
-): Promise<DataErrorSignature<Game>> => {
+): Promise<DataErrorSignature<string>> => {
   const whiteOwned = await store.ownedArmyStorage.getOwnedArmyById(
     subject,
     body.whiteArmyId,
@@ -127,7 +128,7 @@ const createBotVsBotGame = async (
     stuck: false,
   });
 
-  return { data: game, success: true };
+  return { data: gameId, success: true };
 };
 
 export { createBotVsBotGame };

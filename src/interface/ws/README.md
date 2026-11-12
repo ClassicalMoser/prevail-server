@@ -39,12 +39,20 @@ Opponent `chooseCard` (and commit\*) card fields are redacted to `'hidden'` via 
 
 ## Entry point: create vs-bot game
 
-`POST /games/vs-bot` (`createVsBotGameContract`) creates an in-memory **mini or standard** game from the caller's two owned army ids (`whiteArmyId` / `blackArmyId`) and returns the game id. The bot seat auto-plays random legal choices when it is their turn. The authenticated human connects to:
+`POST /games/vs-bot` (`createVsBotGameContract`) creates an in-memory **mini or standard** game from the caller's two owned army ids (`whiteArmyId` / `blackArmyId`) and returns the game id. The bot seat plays the rules bot (`prevail-rules/bot`) when it is the bot's turn. The authenticated human connects to:
 
 - `/ws/games/id/:gameId/white` or
 - `/ws/games/id/:gameId/black`
 
 matching `humanSide` from the create body. Wrong seat / subject → connection closed.
+
+## Entry point: create bot-vs-bot game
+
+`POST /games/bot-vs-bot` (`createBotVsBotGameContract`) creates an in-memory game from the caller's two owned army ids and returns the game id. The creator then connects to:
+
+- `/ws/games/id/:gameId/bot-vs-bot` (`botVsBotInGameWsContract`, built with `implementInGameBotVsBotWs`)
+
+It is the same stream a seat gets, with two differences. There is no seat, so nothing is projected: the snapshot and events are authoritative. And the watcher drives play: inbound `step` plays one bot choice for whichever side owes it, and the choice and its effects arrive as `playerChoice` / `gameEffect`. A step that plays nothing (game over, or the bots are stuck) answers `stepRejected`, as does a malformed message. `requestGameSnapshot` resyncs. Only the creator may connect.
 
 ## Mounting (composition)
 

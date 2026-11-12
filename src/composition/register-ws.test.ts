@@ -45,7 +45,6 @@ describe('websocket route registration', () => {
         /* No-op */
       },
       path: '/ws/test',
-      side: 'white',
     };
 
     const app = Fastify();
@@ -81,7 +80,6 @@ describe('websocket route registration', () => {
           );
         },
         path: '/ws/test',
-        side: 'white',
       };
 
       const app = Fastify();
@@ -122,7 +120,6 @@ describe('websocket route registration', () => {
           );
         },
         path: '/ws/test-query',
-        side: 'white',
       };
 
       const app = Fastify();

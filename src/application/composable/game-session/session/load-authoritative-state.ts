@@ -1,6 +1,6 @@
 import type {
   GameModeName,
-  GameState,
+  AuthoritativeGameState,
 } from '@classicalmoser/prevail-rules/domain';
 import type { GameSessionStore } from './game-session-store';
 import { loadAuthoritativeGame } from './load-authoritative-game';
@@ -17,7 +17,7 @@ const loadAuthoritativeState = async (
   store: GameSessionStore,
   gameId: string,
   gameMode: GameModeName,
-): Promise<GameState | undefined> => {
+): Promise<AuthoritativeGameState | undefined> => {
   const authoritative = await loadAuthoritativeGame(store, gameId, gameMode);
   return authoritative?.gameState;
 };

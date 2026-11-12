@@ -17,12 +17,14 @@ Each ADR uses a light Nygard-style template:
 
 ## Index
 
-| ADR                                            | Title                                            |
-| ---------------------------------------------- | ------------------------------------------------ |
-| [0001](./0001-event-stream-round-reconcile.md) | Event-stream + round-reconcile over WebSocket    |
-| [0002](./0002-in-memory-session-hosting.md)    | In-memory engine ports and session fanout wiring |
-| [0003](./0003-vs-bot-entry-and-random-bot.md)  | Vs-bot create contract and random bot actor      |
-| [0004](./0004-contract-driven-ws-seats.md)     | Contract-driven seat-bound WebSocket routes      |
+| ADR                                            | Title                                              |
+| ---------------------------------------------- | -------------------------------------------------- |
+| [0001](./0001-event-stream-round-reconcile.md) | Event-stream + round-reconcile over WebSocket      |
+| [0002](./0002-in-memory-session-hosting.md)    | In-memory engine ports and session fanout wiring   |
+| [0003](./0003-vs-bot-entry-and-random-bot.md)  | Vs-bot create contract and random bot actor        |
+| [0004](./0004-contract-driven-ws-seats.md)     | Contract-driven seat-bound WebSocket routes        |
+| [0005](./0005-rules-bot.md)                    | The bot's decisions come from `prevail-rules/bot`  |
+| [0006](./0006-bot-vs-bot-over-websocket.md)    | Bot-vs-bot is watched and stepped over a WebSocket |
 
 ## Accepted for now (not debt)
 

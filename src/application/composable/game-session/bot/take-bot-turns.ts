@@ -3,10 +3,11 @@ import {
   getLegalPlayerChoiceOptions,
 } from '@classicalmoser/prevail-rules/domain';
 import { setTimeout as delay } from 'node:timers/promises';
-import { selectRandomPlayerChoice } from '@application/composable/player-choice/select-random-player-choice';
 import type { GameSessionStore } from '../session/game-session-store';
 import { loadAuthoritativeState } from '../session/load-authoritative-state';
 import { otherSide } from '../session/other-side';
+import { findOwingSeats } from './find-owing-seats';
+import { trySeatChoice } from './try-seat-choice';
 
 /**
  * Submit bot choices until the next choice belongs to the human.
@@ -63,14 +64,11 @@ const takeBotTurns = async (
       if (!advanced.result) {
         return;
       }
-    } else if (options.playerSource === meta.humanSide) {
+    } else if (!findOwingSeats(options).includes(botSide)) {
+      // The human owes this choice, or both chose cards and the bot's is down.
       return;
     } else {
-      const choice = selectRandomPlayerChoice({
-        actingPlayer: botSide,
-        options,
-        state,
-      });
+      const choice = trySeatChoice({ seat: botSide, state });
       if (choice === undefined) {
         console.error('takeBotTurns: no bot choice for', {
           choiceType: options.choiceType,

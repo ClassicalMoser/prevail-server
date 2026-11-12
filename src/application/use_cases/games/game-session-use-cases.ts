@@ -8,13 +8,15 @@ import { DEFAULT_BOT_TURN_GAP_MS } from '@application/composable/game-session/bo
 import { fanoutEvent } from '@application/composable/game-session/fanout/fanout-event';
 import { fanoutRoundSnapshot } from '@application/composable/game-session/fanout/fanout-round-snapshot';
 import type { GameSessionStore } from '@application/composable/game-session/session/game-session-store';
-import { getBotVsBotGame } from './get-bot-vs-bot-game';
 import { getSeatSubject } from './get-seat-subject';
 import { registerSeatConnection } from './register-seat-connection';
+import { registerWatchConnection } from './register-watch-connection';
 import { sendGameSnapshot } from './send-game-snapshot';
+import { sendWatchSnapshot } from './send-watch-snapshot';
 import { stepBotVsBotGame } from './step-bot-vs-bot-game';
 import { submitPlayerChoice } from './submit-player-choice';
 import { unregisterSeatConnection } from './unregister-seat-connection';
+import { unregisterWatchConnection } from './unregister-watch-connection';
 
 interface GameSessionUseCasesDeps {
   enginePorts: EnginePorts;
@@ -54,6 +56,7 @@ const createGameSessionUseCases = (
     ownedArmyStorage: deps.ownedArmyStorage,
     runner: createGameRunner(deps.enginePorts),
     submitQueues: new Map(),
+    watchers: new Map(),
   };
 
   return {
@@ -63,17 +66,19 @@ const createGameSessionUseCases = (
     fanoutEvent: (gameId, event) => fanoutEvent(store, gameId, event),
     fanoutRoundSnapshot: (gameId, roundNumber, gameState) =>
       fanoutRoundSnapshot({ gameId, gameState, roundNumber, store }),
-    getBotVsBotGame: (subject, gameId) =>
-      getBotVsBotGame(store, subject, gameId),
     getSeatSubject: (gameId, side) => getSeatSubject(store, gameId, side),
     registerSeatConnection: (connection) =>
       registerSeatConnection(store, connection),
+    registerWatchConnection: (connection) =>
+      registerWatchConnection(store, connection),
     sendGameSnapshot: (connection) => sendGameSnapshot(store, connection),
-    stepBotVsBotGame: (subject, gameId) =>
-      stepBotVsBotGame(store, subject, gameId),
+    sendWatchSnapshot: (connection) => sendWatchSnapshot(store, connection),
+    stepBotVsBotGame: (connection) => stepBotVsBotGame(store, connection),
     submitPlayerChoice: (input) => submitPlayerChoice(store, input),
     unregisterSeatConnection: (connection) =>
       unregisterSeatConnection(store, connection),
+    unregisterWatchConnection: (connection) =>
+      unregisterWatchConnection(store, connection),
   };
 };
 

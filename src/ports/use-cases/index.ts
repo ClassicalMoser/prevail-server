@@ -9,4 +9,6 @@ export type {
   GameSeatConnection,
   GameSessionOutbound,
   GameSessionUseCasesPort,
+  GameWatchConnection,
+  GameWatchOutbound,
 } from './game-session-use-cases';

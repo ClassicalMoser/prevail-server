@@ -1,11 +1,9 @@
 import type {
-  BotVsBotStepData,
   CreateBotVsBotGameBody,
   CreateVsBotGameBody,
 } from '@classicalmoser/prevail-contracts';
 import type {
   FailValidationResult,
-  Game,
   PlayerChoiceEvent,
   PlayerSide,
 } from '@classicalmoser/prevail-rules/domain';
@@ -26,27 +24,57 @@ interface GameSeatConnection {
   send: (message: GameSessionOutbound) => void;
 }
 
+/**
+ * Outbound payload delivered to a socket watching a bot-vs-bot game.
+ *
+ * Nothing is projected: both seats are bots, so the watcher sees the
+ * authoritative events and state.
+ */
+type GameWatchOutbound =
+  | { type: 'playerChoice'; payload: unknown }
+  | { type: 'gameEffect'; payload: unknown }
+  | { type: 'gameSnapshot'; payload: unknown }
+  | { type: 'stepRejected'; payload: FailValidationResult };
+
+/** Socket handle watching a bot-vs-bot game. It has no seat. */
+interface GameWatchConnection {
+  gameId: string;
+  subject: string;
+  send: (message: GameWatchOutbound) => void;
+}
+
 interface GameSessionUseCasesPort {
   /** Creates a human-vs-bot game; returns the new game id. */
   createVsBotGame: (
     subject: string,
     body: CreateVsBotGameBody,
   ) => Promise<DataErrorSignature<string>>;
-  /** Creates a bot-vs-bot game; returns the authoritative opening game. */
+  /** Creates a bot-vs-bot game; returns the new game id. */
   createBotVsBotGame: (
     subject: string,
     body: CreateBotVsBotGameBody,
-  ) => Promise<DataErrorSignature<Game>>;
-  /** Returns the current authoritative bot-vs-bot game without playing. */
-  getBotVsBotGame: (
-    subject: string,
-    gameId: string,
-  ) => Promise<DataErrorSignature<Game>>;
-  /** Plays one bot choice for whichever side the prompt belongs to. */
+  ) => Promise<DataErrorSignature<string>>;
+  /**
+   * Registers the creator's bot-vs-bot socket for authoritative fanout and
+   * sends its current `gameSnapshot` as the first outbound message.
+   */
+  registerWatchConnection: (
+    connection: GameWatchConnection,
+  ) => Promise<DataErrorSignature<void>>;
+  /**
+   * Plays one bot choice for whichever side the prompt belongs to. The choice
+   * and its effects reach the watcher through fanout. A step that plays
+   * nothing (game over, or stuck) is a failure.
+   */
   stepBotVsBotGame: (
-    subject: string,
-    gameId: string,
-  ) => Promise<DataErrorSignature<BotVsBotStepData>>;
+    connection: GameWatchConnection,
+  ) => Promise<DataErrorSignature<void>>;
+  /** Sends the current authoritative `gameSnapshot` to a registered watcher. */
+  sendWatchSnapshot: (
+    connection: GameWatchConnection,
+  ) => Promise<DataErrorSignature<void>>;
+  /** Removes a watcher from fanout. */
+  unregisterWatchConnection: (connection: GameWatchConnection) => void;
   /** Submits a player choice for an in-memory game. */
   submitPlayerChoice: (input: {
     gameId: string;
@@ -79,4 +107,6 @@ export type {
   GameSeatConnection,
   GameSessionOutbound,
   GameSessionUseCasesPort,
+  GameWatchConnection,
+  GameWatchOutbound,
 };

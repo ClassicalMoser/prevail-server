@@ -1,8 +1,6 @@
 import {
   createBotVsBotGameContract,
   createVsBotGameContract,
-  getBotVsBotGameContract,
-  stepBotVsBotGameContract,
 } from '@classicalmoser/prevail-contracts';
 import type {
   GameSessionUseCasesPort,
@@ -10,7 +8,6 @@ import type {
   RouteRegistry,
 } from '@ports';
 import {
-  implementGetRoute,
   implementPostRoute,
   missingAuth,
   requireSubject,
@@ -19,8 +16,8 @@ import {
 /**
  * HTTP routes for live game sessions.
  *
- * Vs-bot returns a game id and continues on a seat socket. Bot-vs-bot
- * returns the authoritative game and advances one choice per step.
+ * Both return a game id. Vs-bot continues on a seat socket; bot-vs-bot
+ * continues on the bot-vs-bot socket, which watches and steps the game.
  *
  * @param gameSessionUseCases - Game session use cases.
  * @param logger - Passed into the route helpers for unexpected failures.
@@ -46,30 +43,6 @@ const createGameRoutes = (
         return missingAuth;
       }
       return gameSessionUseCases.createBotVsBotGame(subject, request.body);
-    },
-  }),
-  implementGetRoute(getBotVsBotGameContract, logger, {
-    handler: async (request, auth) => {
-      const subject = requireSubject(auth);
-      if (subject === undefined) {
-        return missingAuth;
-      }
-      return gameSessionUseCases.getBotVsBotGame(
-        subject,
-        request.params.gameId,
-      );
-    },
-  }),
-  implementPostRoute(stepBotVsBotGameContract, logger, {
-    handler: async (request, auth) => {
-      const subject = requireSubject(auth);
-      if (subject === undefined) {
-        return missingAuth;
-      }
-      return gameSessionUseCases.stepBotVsBotGame(
-        subject,
-        request.params.gameId,
-      );
     },
   }),
 ];

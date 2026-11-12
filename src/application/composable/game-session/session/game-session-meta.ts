@@ -18,8 +18,9 @@ interface VsBotSessionMeta {
 /**
  * Process-local record for a bot-vs-bot game.
  *
- * The creating subject may read and step the game. There is no seat.
- * `stuck` stays set after the selector fails so a later step does not play.
+ * The creating subject may watch and step the game over its socket. There
+ * is no seat. `stuck` stays set after the bot fails so a later step does
+ * not play.
  */
 interface BotVsBotSessionMeta {
   kind: 'botVsBot';

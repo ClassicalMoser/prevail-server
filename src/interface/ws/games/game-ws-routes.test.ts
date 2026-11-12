@@ -20,13 +20,19 @@ const logger: LoggerPort = {
 const useCases = (): GameSessionUseCasesPort => ({}) as GameSessionUseCasesPort; // route factory only wires handlers; not invoked here
 
 describe('createGameWsRoutes function', () => {
-  it('builds white then black seat WebSocket routes', { timeout: 5000 }, () => {
-    expect.hasAssertions();
+  it(
+    'builds the white seat, black seat, and bot-vs-bot routes',
+    { timeout: 5000 },
+    () => {
+      expect.hasAssertions();
 
-    const routes: WsRouteRegistry = createGameWsRoutes(useCases(), logger);
+      const routes: WsRouteRegistry = createGameWsRoutes(useCases(), logger);
 
-    expect(routes).toHaveLength(2);
-    expect(routes[0]?.side).toBe('white');
-    expect(routes[1]?.side).toBe('black');
-  });
+      expect(routes.map((route) => route.path)).toStrictEqual([
+        '/ws/games/id/:gameId/white',
+        '/ws/games/id/:gameId/black',
+        '/ws/games/id/:gameId/bot-vs-bot',
+      ]);
+    },
+  );
 });

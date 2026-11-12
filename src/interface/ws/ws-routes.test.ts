@@ -21,17 +21,17 @@ const useCases = (): GameSessionUseCasesPort => ({}) as GameSessionUseCasesPort;
 
 describe('createWsRoutes function', () => {
   it(
-    'registers the white and black in-game seat routes',
+    'registers the seat routes and the bot-vs-bot route',
     { timeout: 5000 },
     () => {
       expect.hasAssertions();
 
       const routes: WsRouteRegistry = createWsRoutes(useCases(), logger);
 
-      expect(routes).toHaveLength(2);
-      expect(routes.map((route) => route.side)).toStrictEqual([
-        'white',
-        'black',
+      expect(routes.map((route) => route.path)).toStrictEqual([
+        '/ws/games/id/:gameId/white',
+        '/ws/games/id/:gameId/black',
+        '/ws/games/id/:gameId/bot-vs-bot',
       ]);
     },
   );

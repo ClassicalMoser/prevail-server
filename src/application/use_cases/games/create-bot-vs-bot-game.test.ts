@@ -11,14 +11,15 @@ import { createGameSessionUseCases } from './game-session-use-cases';
 
 describe('createBotVsBotGame function', () => {
   it(
-    'returns the opening game in the requested mode',
+    'returns the id of a game saved in the requested mode',
     { timeout: 5000 },
     async () => {
       expect.hasAssertions();
 
+      const enginePorts = createInMemoryEnginePorts();
       const runtime = createGameSessionUseCases({
         botTurnGapMs: 0,
-        enginePorts: createInMemoryEnginePorts(),
+        enginePorts,
         ownedArmyStorage: ownedArmyStorage({
           [blackArmyId]: standardArmy(blackArmyId),
           [whiteArmyId]: standardArmy(whiteArmyId),
@@ -31,12 +32,16 @@ describe('createBotVsBotGame function', () => {
         whiteArmyId,
       });
 
-      expect(created).toMatchObject({
-        data: { gameMode: 'standard', id: expect.any(String) },
-        success: true,
-      });
       assert.ok(created.success);
-      expect(created.data.gameState.winner).toBeUndefined();
+      const saved = await enginePorts.gameStorage.getGame(
+        created.data,
+        'standard',
+      );
+
+      expect(saved).toMatchObject({
+        data: { gameMode: 'standard', id: created.data },
+        result: true,
+      });
     },
   );
 

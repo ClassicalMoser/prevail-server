@@ -20,14 +20,21 @@ interface WsSeatConnectionContext<TParams extends Record<string, unknown>> {
   side: 'white' | 'black';
 }
 
+/** Validated bot-vs-bot watcher context passed to handlers. It has no seat. */
+interface WsWatchConnectionContext<TParams extends Record<string, unknown>> {
+  params: TParams;
+  headers: Readonly<Record<string, string | undefined>>;
+  auth: RequestAuth;
+}
+
 /**
  * A WebSocket route ready for registration with the WS adapter.
  *
- * Built by `implementInGameSeatWs` from a prevail-contracts seat definition.
+ * Built by `implementInGameSeatWs` or `implementInGameBotVsBotWs` from a
+ * prevail-contracts definition.
  */
 interface RegisteredWsRoute {
   path: string;
-  side: 'white' | 'black';
   auth: RouteAuth;
   /**
    * Called after upgrade auth + params validation.
@@ -78,6 +85,38 @@ interface InGameSeatWsHandler<
   ) => void;
 }
 
+/** Result of a watcher message: done, or the `stepRejected` payload to send. */
+type WatchMessageResult =
+  | { ok: true }
+  | { ok: false; stepRejected: FailValidationResult };
+
+interface InGameBotVsBotWsHandler<
+  TParams extends Record<string, unknown>,
+  THandle = unknown,
+> {
+  onOpen: (
+    context: WsWatchConnectionContext<TParams>,
+    send: (message: unknown) => void,
+  ) => Promise<
+    | { ok: true; connectionHandle: THandle }
+    | { ok: false; closeCode?: number; reason: string }
+  >;
+  /** Watcher asked to play one bot choice. */
+  onStep: (
+    context: WsWatchConnectionContext<TParams>,
+    connectionHandle: THandle,
+  ) => Promise<WatchMessageResult>;
+  /** Watcher asked for the current authoritative game (resync). */
+  onRequestGameSnapshot: (
+    context: WsWatchConnectionContext<TParams>,
+    connectionHandle: THandle,
+  ) => Promise<WatchMessageResult>;
+  onClose: (
+    context: WsWatchConnectionContext<TParams>,
+    connectionHandle: THandle,
+  ) => void;
+}
+
 type AnyInGameSeatContract = InGameSeatContract<
   'white' | 'black',
   Record<string, unknown>,
@@ -90,9 +129,11 @@ type AnyInGameSeatContract = InGameSeatContract<
 
 export type {
   AnyInGameSeatContract,
+  InGameBotVsBotWsHandler,
   InGameSeatWsHandler,
   RegisteredWsRoute,
   WireWsConnection,
   WsRouteRegistry,
   WsSeatConnectionContext,
+  WsWatchConnectionContext,
 };

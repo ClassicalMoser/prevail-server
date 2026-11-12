@@ -12,21 +12,7 @@ import type {
   WsSeatConnectionContext,
 } from '@ports';
 import { handleError, runDetached } from '@utils';
-
-const parseInboundJson = (
-  raw: string,
-): { ok: true; value: unknown } | { ok: false } => {
-  try {
-    const value: unknown = JSON.parse(raw);
-    const parsed: { ok: true; value: unknown } = { ok: true, value };
-    return parsed;
-  } catch {
-    return { ok: false };
-  }
-};
-
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null && !Array.isArray(value);
+import { readInboundEnvelope } from './read-inbound-envelope';
 
 interface SeatOpenResultOk<THandle> {
   ok: true;
@@ -118,7 +104,6 @@ const implementInGameSeatWs = <
   handlers: InGameSeatWsHandler<TParams, TInboundPlayerChoice, THandle>,
 ): RegisteredWsRoute => ({
   path: contract.path,
-  side: contract.side,
   auth: contract.auth,
   onConnection: async (wire, socket): Promise<void> => {
     const paramsParsed = contract.validators.params.safeParse(wire.params);
@@ -159,21 +144,13 @@ const implementInGameSeatWs = <
     const { connectionHandle } = openResult;
 
     socket.onMessage((raw) => {
-      const parsedJson = parseInboundJson(raw);
-      if (!parsedJson.ok) {
-        sendChoiceRejected(sendJson, 'Invalid JSON');
+      const envelope = readInboundEnvelope(raw);
+      if (!envelope.ok) {
+        sendChoiceRejected(sendJson, envelope.errorReason);
         return;
       }
 
-      if (
-        !isRecord(parsedJson.value) ||
-        typeof parsedJson.value.type !== 'string'
-      ) {
-        sendChoiceRejected(sendJson, 'Invalid inbound message');
-        return;
-      }
-
-      const { type, payload } = parsedJson.value;
+      const { type, payload } = envelope;
 
       if (type === 'playerChoice') {
         const choiceParsed =
