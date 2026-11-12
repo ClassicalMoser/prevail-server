@@ -18,6 +18,8 @@ export {
   recordSchema,
 } from './predicate-schema';
 export { recordedSql } from './recorded-sql';
+export { rowsForStatement } from './rows-for-statement';
+export { recordedTransactionSql } from './recorded-transaction-sql';
 export { seatConnection } from './seat-connection';
 export { recordingLogger } from './recording-logger';
 export type { RecordingLogger } from './recording-logger';

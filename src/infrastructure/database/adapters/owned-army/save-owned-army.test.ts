@@ -1,7 +1,11 @@
-import type { LoggerPort, OwnedArmyWrite, User, UserStorage } from '@ports';
-import type { ArmyCommandCardDb, ArmyDb, ArmyUnitCardDb } from '../db-types';
-import type { Sql } from '../sql-type';
-import { createOwnedArmyStorage } from './owned-army-storage';
+import type { OwnedArmyWrite } from '@ports';
+import type {
+  ArmyCommandCardDb,
+  ArmyDb,
+  ArmyUnitCardDb,
+} from '@infrastructure/database/db-types';
+import type { Sql } from '@infrastructure/database/sql-type';
+import { saveOwnedArmy } from './save-owned-army';
 import { tempCommandCards, tempUnits } from '@testing';
 
 /**
@@ -128,36 +132,6 @@ const rollbackClient = (army: StoredArmy, attempted: string[]): Sql => {
   return client;
 };
 
-const logger: LoggerPort = {
-  error: (): void => {
-    /* records database failures; this test asserts the envelope */
-  },
-  info: (): void => {
-    /* records database failures; this test asserts the envelope */
-  },
-  warn: (): void => {
-    /* records database failures; this test asserts the envelope */
-  },
-};
-
-const owner: User = {
-  userId: 'user-1',
-  authSub: 'auth0|owner',
-};
-
-const unused = async (): Promise<never> => {
-  throw new Error('not used by updateOwnedArmy');
-};
-
-const ownerStorage: UserStorage = {
-  getByUserId: unused,
-  getByAuthSub: unused,
-  ensureByAuthSub: async () => ({
-    success: true,
-    data: owner,
-  }),
-};
-
 const renamedWrite = (): OwnedArmyWrite => {
   const unitType = tempUnits[0];
   const commandCard = tempCommandCards[0];
@@ -187,7 +161,7 @@ const originalArmy = (): StoredArmy => ({
   ],
 });
 
-describe('updateOwnedArmy function', () => {
+describe('saveOwnedArmy function', () => {
   it(
     'leaves the army name and rows unchanged when a composition insert fails',
     { timeout: 5000 },
@@ -197,24 +171,16 @@ describe('updateOwnedArmy function', () => {
       const army = originalArmy();
       const before = copyArmy(army);
       const attempted: string[] = [];
-      const storage = createOwnedArmyStorage(
-        logger,
-        rollbackClient(army, attempted),
-        ownerStorage,
-      );
       const write = renamedWrite();
 
-      const result = await storage.updateOwnedArmy(
-        owner.authSub,
-        armyId,
-        write,
-      );
+      await expect(
+        saveOwnedArmy(rollbackClient(army, attempted), {
+          userId: 'user-1',
+          armyId,
+          write,
+        }),
+      ).rejects.toThrow('command card insert failed');
 
-      expect(result).toStrictEqual({
-        success: false,
-        message: 'Failed to update owned army in database',
-        status: 500,
-      });
       expect(attempted).toStrictEqual([
         'update armies',
         'delete army_unit_cards',

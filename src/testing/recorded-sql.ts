@@ -23,10 +23,15 @@ interface RecordedSql {
  * signature `Sql` requires; the cast is on the next line for that reason.
  *
  * @param rows - Rows the tag resolves. An empty list means the statement
- * matched nothing.
+ * matched nothing. A function answers per statement, from its text, for code
+ * that runs several different queries.
  * @returns The recorded calls and a client the query can run.
  */
-const recordedSql = (rows: readonly postgres.Row[] = []): RecordedSql => {
+const recordedSql = (
+  rows:
+    | readonly postgres.Row[]
+    | ((text: string) => readonly postgres.Row[]) = [],
+): RecordedSql => {
   const calls: RecordedSqlCall[] = [];
   const tag = (
     strings: TemplateStringsArray,
@@ -35,7 +40,8 @@ const recordedSql = (rows: readonly postgres.Row[] = []): RecordedSql => {
     const text = strings.join('?').replaceAll(/\s+/gu, ' ').trim();
     const call: RecordedSqlCall = { text, values };
     calls.push(call);
-    const produced = rows.map((row) => ({ ...row }));
+    const answered = typeof rows === 'function' ? rows(text) : rows;
+    const produced = answered.map((row) => ({ ...row }));
     return Promise.resolve(produced);
   };
   const sql = tag as postgres.Sql; // template-tag double; Sql also owns the pool
