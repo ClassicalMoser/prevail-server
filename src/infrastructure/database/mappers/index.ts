@@ -8,6 +8,7 @@ export { commandCardVersionMapperToDomain } from './command-card/command-card-ve
 export { mapCommandCardVersions } from './command-card/map-command-card-versions';
 export { sortCommandCardsByInitiative } from './command-card/sort-command-cards-by-initiative';
 export { writeCommandCardVersionMapper } from './command-card/write-command-card-version';
+export { mapUnitCardVersions } from './unit-card/map-unit-card-versions';
 export { unitCardListItemMapper } from './unit-card/unit-card-list-item';
 export { unitCardVersionMapperToDomain } from './unit-card/unit-card-version-to-domain';
 export { writeUnitCardVersionMapper } from './unit-card/write-unit-card-version';

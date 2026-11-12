@@ -10,6 +10,9 @@ import type { Sql } from '@infrastructure/database/sql-type';
  * Mapping into domain cards happens in `mappers/`.
  */
 
+// TODO(composition): rules versions are not command-card data, and the unit-card
+// adapter calls this too. It belongs in its own queries folder; the author
+// decides whether to add one.
 const getLatestRulesVersionIdQuery = async (
   sql: Sql,
 ): Promise<{ rules_version_id: string }[]> =>
