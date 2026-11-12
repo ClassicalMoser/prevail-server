@@ -1,63 +1,8 @@
-import type { FastifyInstance, FastifyReply } from 'fastify';
-import type {
-  AuthPort,
-  ErrorSignature,
-  RegisteredRoute,
-  RouteInvokeResult,
-  WireRouteRequest,
-} from '@ports';
-import {
-  extractBearerToken,
-  isDataSignature,
-  isErrorSignature,
-  normalizeRequestHeaders,
-} from '@utils';
-
-const unauthorized: ErrorSignature = {
-  success: false,
-  message: 'Unauthorized',
-  status: 401,
-};
-
-const jsonContentType = 'application/json' as const;
-
-/**
- * Maps a handler return envelope to the HTTP wire format.
- *
- * Success with JSON body: `JSON.stringify`d payload so primitive values (e.g. a
- * bare string id) are emitted as valid JSON. Fastify forwards string payloads
- * verbatim, so without this an unquoted value would be sent as invalid JSON.
- * Success with media body: raw payload with `successContentType`.
- * Success without body: HTTP 204 only.
- * Error: `{ message }` with `envelope.status`.
- */
-const sendRouteResult = (
-  reply: FastifyReply,
-  envelope: RouteInvokeResult,
-  route: RegisteredRoute,
-): FastifyReply => {
-  if (isErrorSignature(envelope)) {
-    return reply.status(envelope.status).send({ message: envelope.message });
-  }
-
-  if (route.successStatus === 204) {
-    return reply.status(204).send();
-  }
-
-  if (isDataSignature(envelope)) {
-    const payload =
-      route.successContentType === jsonContentType
-        ? JSON.stringify(envelope.data)
-        : envelope.data;
-
-    return reply
-      .type(route.successContentType)
-      .status(route.successStatus)
-      .send(payload);
-  }
-
-  return reply;
-};
+import type { FastifyInstance } from 'fastify';
+import type { AuthPort, RegisteredRoute, WireRouteRequest } from '@ports';
+import { normalizeRequestHeaders } from '@utils';
+import { authenticateHttpRequest } from './authenticate-http-request';
+import { sendRouteResult } from './send-route-result';
 
 /**
  * Mounts a {@link RouteRegistry} onto a Fastify instance.
@@ -84,31 +29,18 @@ const registerRoutes = (
           headers: normalizeRequestHeaders(fastifyRequest.headers),
         };
 
+        // A route that needs auth is refused before its handler runs.
         if (route.auth.authRequired) {
-          const token = extractBearerToken(wireRequest.headers);
-          if (token === undefined) {
-            const sentUnauthorized = sendRouteResult(
-              fastifyReply,
-              unauthorized,
-              route,
-            );
-            return sentUnauthorized;
+          const caller = await authenticateHttpRequest(
+            authPort,
+            route.auth,
+            wireRequest.headers,
+          );
+          if ('success' in caller) {
+            const sentRefusal = sendRouteResult(fastifyReply, caller, route);
+            return sentRefusal;
           }
-
-          const authResult = await authPort.checkToken(token, route.auth);
-          if ('success' in authResult) {
-            const sentAuthFailure = sendRouteResult(
-              fastifyReply,
-              authResult,
-              route,
-            );
-            return sentAuthFailure;
-          }
-
-          wireRequest = {
-            ...wireRequest,
-            auth: { subject: authResult.subject },
-          };
+          wireRequest = { ...wireRequest, auth: caller };
         }
 
         const result = await route.invoke(wireRequest);
