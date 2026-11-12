@@ -1,36 +1,22 @@
-import { unitTypeSchema } from '@classicalmoser/prevail-rules/domain';
+import type { UnitType } from '@classicalmoser/prevail-rules/domain';
 import type {
-  AssetStorage,
-  CertificationResults,
   DataErrorSignature,
   ErrorSignature,
   NoContentSignature,
-  UnitCardRendererPort,
-  UnitCardStorage,
   UnitCardUseCasesPort,
 } from '@ports';
 import { mapVoidToNoContent } from '@ports';
-import type { CardListItem } from '@classicalmoser/prevail-contracts';
-import type { UnitType } from '@classicalmoser/prevail-rules/domain';
-import {
-  allUnitCardAssetsExist,
-  certifyCardVersions,
-  ensureUnitCardProjection,
-  projectUnitCardVersion,
-  toContractCardListItem,
-} from '@application/composable';
-
-interface UnitCardUseCasesDeps {
-  unitCardStorage: UnitCardStorage;
-  unitCardRenderer: UnitCardRendererPort;
-  assetStorage: AssetStorage;
-}
+import { createUnitCardVersion } from './create-unit-card-version';
+import { getAllUnitCards } from './get-all-unit-cards';
+import { previewUnitCard } from './preview-unit-card';
+import { updateUnitCardCertifications } from './update-unit-card-certifications';
+import type { UnitCardUseCasesDeps } from './unit-card-use-cases-deps';
 
 /**
  * Catalog and preview use cases for unit cards.
  *
- * List responses become contract list items. Version writes project SVG, PDF,
- * and bleed assets. Preview renders one SVG in memory and does not store it.
+ * Each use case with its own policy is its own file; this builds the port from
+ * them. A method that only hands the call to storage stays here as one line.
  *
  * @param deps - Storage, renderer, and asset ports.
  * @returns The unit-card use-case port.
@@ -40,16 +26,7 @@ const createUnitCardUseCases = (
 ): UnitCardUseCasesPort => ({
   getCurrentUnitCards: async (): Promise<DataErrorSignature<UnitType[]>> =>
     deps.unitCardStorage.getCurrentUnitCards(),
-  getAllUnitCards: async (): Promise<DataErrorSignature<CardListItem[]>> => {
-    const result = await deps.unitCardStorage.getAllUnitCards();
-    if (!result.success) {
-      return result;
-    }
-    return {
-      success: true,
-      data: result.data.map(toContractCardListItem),
-    };
-  },
+  getAllUnitCards: () => getAllUnitCards(deps),
   getUnitCardById: async (id: string): Promise<DataErrorSignature<UnitType>> =>
     deps.unitCardStorage.getUnitCardById(id),
   getUnitCardsByIds: async (
@@ -58,68 +35,12 @@ const createUnitCardUseCases = (
     deps.unitCardStorage.getUnitCardsByIds(ids),
   createEmptyUnitCard: async (): Promise<DataErrorSignature<string>> =>
     deps.unitCardStorage.createEmptyUnitCard(),
-  createUnitCardVersion: async (
-    unitType: UnitType,
-  ): Promise<DataErrorSignature<UnitType>> => {
-    const insertResult =
-      await deps.unitCardStorage.createUnitCardVersion(unitType);
-    if (!insertResult.success) {
-      return insertResult;
-    }
-
-    const projectResult = await projectUnitCardVersion(
-      {
-        assetStorage: deps.assetStorage,
-        unitCardRenderer: deps.unitCardRenderer,
-      },
-      { ...unitType, ...insertResult.data },
-    );
-    if (!projectResult.success) {
-      await deps.unitCardStorage.deleteUnitCardVersion(insertResult.data);
-      return projectResult;
-    }
-
-    return insertResult;
-  },
+  createUnitCardVersion: (unitType) => createUnitCardVersion(deps, unitType),
   deleteEmptyUnitCards: async (): Promise<
     ErrorSignature | NoContentSignature
   > => mapVoidToNoContent(await deps.unitCardStorage.deleteEmptyUnitCards()),
-  updateUnitCardCertifications: async (): Promise<
-    DataErrorSignature<CertificationResults>
-  > =>
-    certifyCardVersions<UnitType>({
-      getLatest: () => deps.unitCardStorage.getLatestUnitCardCertifications(),
-      isSchemaValid: (card) => unitTypeSchema.safeParse(card).success,
-      allAssetsExist: async (card) =>
-        allUnitCardAssetsExist(deps.assetStorage, card),
-      ensureProjection: async (card) =>
-        ensureUnitCardProjection(
-          {
-            assetStorage: deps.assetStorage,
-            unitCardRenderer: deps.unitCardRenderer,
-          },
-          card,
-        ),
-      certify: (ids) => deps.unitCardStorage.certifyUnitCardVersions(ids),
-      cardId: (card) => card.id,
-    }),
-  previewUnitCard: async (
-    unitType: UnitType,
-  ): Promise<DataErrorSignature<string>> => {
-    const renderResult = await deps.unitCardRenderer.renderUnitCard(unitType, {
-      bleed: false,
-      format: 'svg',
-      unitImage: false,
-    });
-    if (!renderResult.success) {
-      return renderResult;
-    }
-
-    return {
-      success: true,
-      data: renderResult.data.toString('utf8'),
-    };
-  },
+  updateUnitCardCertifications: () => updateUnitCardCertifications(deps),
+  previewUnitCard: (unitType) => previewUnitCard(deps, unitType),
 });
 
 export type { UnitCardUseCasesDeps };

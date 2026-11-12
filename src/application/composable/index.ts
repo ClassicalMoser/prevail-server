@@ -23,6 +23,7 @@ export { renderDetailsForAssetType } from './assets/render-details-for-asset-typ
 export { buildUnitIdToNameMap } from './cards/build-unit-id-to-name-map';
 export type { CommandCardProjectionDeps } from './cards/command/command-card-project-ops';
 export { allCommandCardAssetsExist } from './cards/command/all-command-card-assets-exist';
+export { prepareCommandCardProjection } from './cards/command/prepare-command-card-projection';
 export { ensureCommandCardProjection } from './cards/command/ensure-command-card-projection';
 export { projectCommandCardVersion } from './cards/command/project-command-card-version';
 export type { UnitCardProjectionDeps } from './cards/unit/unit-card-project-ops';

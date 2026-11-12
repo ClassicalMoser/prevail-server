@@ -25,6 +25,7 @@ describe('certifyCardVersions function', () => {
           success: true,
         }),
         isSchemaValid: (card) => card.id !== 'invalid',
+        prepare: async () => ({ data: undefined, success: true }),
       });
 
       expect(certifiedIds).toStrictEqual(['ready']);
@@ -65,6 +66,7 @@ describe('certifyCardVersions function', () => {
           success: true,
         }),
         isSchemaValid: () => true,
+        prepare: async () => ({ data: undefined, success: true }),
       });
 
       expect(healed).toStrictEqual(['needs-heal']);
