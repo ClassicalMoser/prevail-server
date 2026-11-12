@@ -9,6 +9,7 @@ import type { ProjectCardAssetsOps } from '@application/composable/assets/projec
 import { renderDetailsForAssetType } from '@application/composable/assets/render-details-for-asset-type';
 import { unitCardAssetTargets } from '@application/composable/assets/unit-card-asset-keys';
 
+/** What drawing a unit card needs: asset store and renderer. */
 interface UnitCardProjectionDeps {
   assetStorage: AssetStorage;
   unitCardRenderer: UnitCardRendererPort;
@@ -29,6 +30,7 @@ const unitCardProjectOps = (
     unitType: UnitType,
     target: CardAssetTarget,
   ): Promise<DataErrorSignature<Buffer>> => {
+    // The asset type picks bleed and format, so one card yields screen and print files.
     const rendered = await deps.unitCardRenderer.renderUnitCard(
       unitType,
       renderDetailsForAssetType(target.type),

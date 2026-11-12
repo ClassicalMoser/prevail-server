@@ -43,9 +43,11 @@ application/
 │   ├── assets/         # R2 keys and asset projection
 │   ├── cards/          # Card version projection and certification
 │   ├── game-session/
+│   │   ├── access/     # Who may touch a game: seat and watcher guards, 404 envelope
 │   │   ├── bot/        # Bot identity, the turn loop, and the seat view handed to the rules bot
-│   │   ├── fanout/     # Seat delivery
-│   │   └── session/    # Store, queue, and authoritative loads
+│   │   ├── create/     # Steps shared by the two create use cases
+│   │   ├── fanout/     # Seat and watcher delivery
+│   │   └── session/    # Store, meta, queue, and authoritative loads
 └── index.ts
 ```
 

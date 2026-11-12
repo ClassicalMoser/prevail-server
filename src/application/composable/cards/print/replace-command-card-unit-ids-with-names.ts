@@ -25,6 +25,7 @@ const replaceCommandCardUnitIdsWithNames = (
   card: CommandCard,
   unitIdToNameMap: UnitIdToNameMap,
 ): PrintCommandCard => {
+  // The command's unit restriction (which units may be ordered) prints by name.
   const command = card.command;
   const commandRestrictions = command.restrictions;
   const commandRestrictionsWithNames = replaceRestrictionUnitIds(
@@ -36,12 +37,14 @@ const replaceCommandCardUnitIdsWithNames = (
     restrictions: commandRestrictionsWithNames,
   };
 
+  // The round effect has its own restriction, which also names units.
   const roundEffect = card.roundEffect;
   const roundEffectWithNames = replaceRoundEffectUnitIds(
     roundEffect,
     unitIdToNameMap,
   );
 
+  // Unit support names the unit type that gets the card's support bonus.
   const unitSupport = card.unitSupport;
   const unitSupportWithNames = replaceUnitSupportIdWithName(
     unitSupport,

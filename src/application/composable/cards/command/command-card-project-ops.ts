@@ -11,6 +11,7 @@ import { renderDetailsForAssetType } from '@application/composable/assets/render
 import type { UnitIdToNameMap } from '../print/unit-id-to-name-map';
 import { replaceCommandCardUnitIdsWithNames } from '../print/replace-command-card-unit-ids-with-names';
 
+/** What drawing a command card needs: asset store, renderer, and unit names for print. */
 interface CommandCardProjectionDeps {
   assetStorage: AssetStorage;
   commandCardRenderer: CommandCardRendererPort;
@@ -32,10 +33,12 @@ const commandCardProjectOps = (
     card: CommandCard,
     target: CardAssetTarget,
   ): Promise<DataErrorSignature<Buffer>> => {
+    // The stored card names units by id; the printed card must show their names.
     const printCard = replaceCommandCardUnitIdsWithNames(
       card,
       deps.unitIdToNameMap,
     );
+    // The asset type picks bleed and format, so one card yields screen and print files.
     const rendered = await deps.commandCardRenderer.renderCommandCard(
       printCard,
       renderDetailsForAssetType(target.type),

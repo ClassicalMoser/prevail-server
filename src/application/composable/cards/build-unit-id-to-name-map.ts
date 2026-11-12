@@ -15,6 +15,7 @@ const buildUnitIdToNameMap = async (
   unitCardStorage: UnitCardStorage,
   unitIds: string[],
 ): Promise<DataErrorSignature<UnitIdToNameMap>> => {
+  // Most command cards name no unit type; skip the storage round trip then.
   if (unitIds.length === 0) {
     return { success: true, data: new Map() };
   }
@@ -25,9 +26,12 @@ const buildUnitIdToNameMap = async (
     return result;
   }
 
+  // Storage silently omits unknown ids, so absence is detected below.
   const map = new Map(result.data.map((unit) => [unit.id, unit.name]));
   for (const id of uniqueIds) {
     if (!map.has(id)) {
+      // A card pointing at a unit that does not exist cannot be printed
+      // truthfully, so publishing or certifying it must fail.
       return {
         success: false,
         message: `Unit card not found: ${id}`,

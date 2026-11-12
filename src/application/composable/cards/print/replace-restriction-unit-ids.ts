@@ -21,6 +21,7 @@ const replaceRestrictionUnitIds = (
     return restrictions;
   }
 
+  // Rebuild the variant by hand so only unit-type restrictions carry the names.
   const unitRestrictionNames = replaceUnitIdsWithNames(
     restrictions.unitRestrictions,
     unitIdToNameMap,

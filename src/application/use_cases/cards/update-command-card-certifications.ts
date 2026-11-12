@@ -32,11 +32,13 @@ const updateCommandCardCertifications = async (
       deps.commandCardStorage.getLatestCommandCardCertifications(),
     // A card the schema rejects can never be played, so it is left uncertified.
     isSchemaValid: (card) => commandCardSchema.safeParse(card).success,
+    // Unit names are needed to draw any missing file, so resolve them up front.
     prepare: (statuses) => prepareCommandCardProjection(deps, statuses),
     allAssetsExist: (card) =>
       allCommandCardAssetsExist(deps.assetStorage, card),
     ensureProjection: (card, projectionDeps) =>
       ensureCommandCardProjection(projectionDeps, card),
+    // Only certified command cards may be used in armies.
     certify: (ids) => deps.commandCardStorage.certifyCommandCardVersions(ids),
     cardId: (card) => card.id,
   });

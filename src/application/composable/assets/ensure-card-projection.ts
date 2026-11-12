@@ -37,6 +37,7 @@ const ensureCardProjection = async <TCard>(
   ops: ProjectCardAssetsOps<TCard>,
   card: TCard,
 ): Promise<DataErrorSignature<void>> => {
+  // Only the holes are filled; existing keys are published files and stay as written.
   const missing = await findMissingCardAssetTargets(ops, card);
   for (const target of missing) {
     const renderResult = await ops.render(card, target);
@@ -45,6 +46,8 @@ const ensureCardProjection = async <TCard>(
       target,
       renderResult,
     );
+    // Stop at the first failure so certification does not stamp a card that
+    // is still missing files.
     if (!result.success) {
       return result;
     }

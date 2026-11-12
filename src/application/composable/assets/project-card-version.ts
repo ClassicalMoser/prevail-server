@@ -16,6 +16,7 @@ const projectCardAsset = async <TCard>(
   card: TCard,
   target: CardAssetTarget,
 ): Promise<DataErrorSignature<void>> => {
+  // Draw first, then store: the upload only happens for a render that worked.
   const renderResult = await ops.render(card, target);
   const stored = await putRenderedAsset(ops.assetStorage, target, renderResult);
   return stored;
@@ -35,8 +36,11 @@ const projectCardVersion = async <TCard>(
   ops: ProjectCardAssetsOps<TCard>,
   card: TCard,
 ): Promise<DataErrorSignature<void>> => {
+  // One file per format (screen svg, trim pdf, bleed pdf) so the card can be
+  // viewed and printed both ways.
   for (const target of ops.targets(card)) {
     const result = await projectCardAsset(ops, card, target);
+    // The caller deletes the new version when this fails, so stop early.
     if (!result.success) {
       return result;
     }

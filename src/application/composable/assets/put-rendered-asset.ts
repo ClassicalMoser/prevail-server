@@ -29,10 +29,14 @@ const putRenderedAsset = async (
   target: CardAssetTarget,
   renderResult: DataErrorSignature<Buffer>,
 ): Promise<DataErrorSignature<void>> => {
+  // Nothing to store when the card could not be drawn; the author sees the
+  // renderer's failure rather than an empty file under a published key.
   if (!renderResult.success) {
     return renderResult;
   }
 
+  // putImmutable: keys are content-addressed by card id and version, so a
+  // re-render never overwrites a file a player may already have printed.
   try {
     await assetStorage.putImmutable(target.key, renderResult.data, target.type);
     return { success: true, data: undefined };

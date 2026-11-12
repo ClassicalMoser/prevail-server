@@ -9,6 +9,7 @@ import type {
 import { createOwnedArmyUseCases } from './armies';
 import { createCommandCardUseCases, createUnitCardUseCases } from './cards';
 
+/** The ports the whole use-case tree is built from. */
 interface UseCasesRootDeps {
   storagePort: StoragePort;
   commandCardRenderer: CommandCardRendererPort;
@@ -27,6 +28,7 @@ interface UseCasesRootDeps {
  * @returns The aggregate use-cases port consumed by HTTP/WS registries.
  */
 const createUseCasesRoot = (deps: UseCasesRootDeps): UseCasesPort => ({
+  // Command cards need unit storage too: a printed card shows unit names.
   commandCardUseCases: createCommandCardUseCases({
     commandCardStorage: deps.storagePort.commandCardStorage,
     unitCardStorage: deps.storagePort.unitCardStorage,
@@ -38,9 +40,11 @@ const createUseCasesRoot = (deps: UseCasesRootDeps): UseCasesPort => ({
     unitCardRenderer: deps.unitCardRenderer,
     assetStorage: deps.assetStorage,
   }),
+  // Army storage alone: the army use cases take no card ports.
   ownedArmyUseCases: createOwnedArmyUseCases({
     ownedArmyStorage: deps.storagePort.ownedArmyStorage,
   }),
+  // The live game session is built elsewhere and passed through untouched.
   gameSessionUseCases: deps.gameSessionUseCases,
 });
 

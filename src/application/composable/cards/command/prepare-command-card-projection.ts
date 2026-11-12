@@ -39,6 +39,8 @@ const prepareCommandCardProjection = async (
     return nameMap;
   }
 
+  // Hand back the full projection deps so each card in the batch draws with
+  // the same names, and the certify step needs no unit lookups of its own.
   const prepared: DataErrorSignature<CommandCardProjectionDeps> = {
     success: true,
     data: {

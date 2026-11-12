@@ -37,6 +37,8 @@ const unitIdsFromRestrictions = (restrictions: Restrictions): string[] => {
  * @returns Unique unit type ids referenced on the card.
  */
 const getCommandCardUnitIds = (card: CommandCard): string[] => {
+  // Gather from every place a card can name a unit, so the print name lookup
+  // misses none and a printed card never shows a raw id.
   const commandUnitRestrictionIds = unitIdsFromRestrictions(
     card.command.restrictions,
   );

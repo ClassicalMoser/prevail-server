@@ -31,9 +31,11 @@ const createUnitCardVersion = async (
       assetStorage: deps.assetStorage,
       unitCardRenderer: deps.unitCardRenderer,
     },
+    // Merge storage's answer (id, version) so asset keys use the assigned version.
     { ...unitType, ...insertResult.data },
   );
   if (!projectResult.success) {
+    // Roll back: an unprintable version must not stay in the catalog.
     await deps.unitCardStorage.deleteUnitCardVersion(insertResult.data);
     return projectResult;
   }

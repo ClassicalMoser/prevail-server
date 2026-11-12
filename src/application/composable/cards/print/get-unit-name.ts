@@ -12,6 +12,7 @@ import type { UnitIdToNameMap } from './unit-id-to-name-map';
  */
 const getUnitName = (unitIdToNameMap: UnitIdToNameMap, id: string): string => {
   const name = unitIdToNameMap.get(id);
+  // A raw unit id on a printed card would be wrong; fail the render instead.
   if (name === undefined) {
     throw new Error(`Unit ID ${id} not found in name map`);
   }

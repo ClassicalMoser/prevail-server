@@ -13,6 +13,7 @@ import type {
 } from '@ports';
 import { mapVoidToEmptyObject, mapVoidToNoContent } from '@ports';
 
+/** The storage the army use cases run on. */
 interface OwnedArmyUseCasesDeps {
   ownedArmyStorage: OwnedArmyStorage;
 }
@@ -34,6 +35,7 @@ const createOwnedArmyUseCases = (
   getOwnedArmies: async (
     ownerAuthSub: string,
   ): Promise<DataErrorSignature<Army[]>> => {
+    // Scoped by owner: a player sees only their own armies.
     const armies = await deps.ownedArmyStorage.getOwnedArmies(ownerAuthSub);
     return armies;
   },
@@ -52,6 +54,7 @@ const createOwnedArmyUseCases = (
   createOwnedArmy: async (
     ownerAuthSub: string,
   ): Promise<DataErrorSignature<string>> => {
+    // A new army starts untitled so the builder has a row to save into at once.
     const armyId = await deps.ownedArmyStorage.createOwnedArmy(
       ownerAuthSub,
       UNTITLED_ARMY_NAME,
@@ -64,6 +67,8 @@ const createOwnedArmyUseCases = (
     armyId: string,
     body: ArmyWriteBody,
   ): Promise<DataErrorSignature<EmptyObject>> => {
+    // The client sends a whole army each save; map the contract's field names
+    // onto the storage write.
     const write = {
       armyName: body.name,
       units: body.units,
@@ -82,6 +87,9 @@ const createOwnedArmyUseCases = (
     ownerAuthSub: string,
     armyId: string,
   ): Promise<ErrorSignature | NoContentSignature> => {
+    // A player removes an army from their list by archiving it (a soft delete);
+    // storage rejects later edits to an archived army.
+    // TODO(composition): confirm whether archived armies stay referenced by past games.
     const archived = await deps.ownedArmyStorage.archiveOwnedArmy(
       ownerAuthSub,
       armyId,

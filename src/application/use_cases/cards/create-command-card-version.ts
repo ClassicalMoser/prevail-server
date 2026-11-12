@@ -35,6 +35,7 @@ const createCommandCardVersion = async (
     getCommandCardUnitIds(insertResult.data),
   );
   if (!nameMapResult.success) {
+    // Roll back: an unprintable version must not stay in the catalog.
     await deps.commandCardStorage.deleteCommandCardVersion(insertResult.data);
     return nameMapResult;
   }
@@ -46,9 +47,11 @@ const createCommandCardVersion = async (
       commandCardRenderer: deps.commandCardRenderer,
       unitIdToNameMap: nameMapResult.data,
     },
+    // Merge storage's answer (id, version) so asset keys use the assigned version.
     { ...card, ...insertResult.data },
   );
   if (!projectResult.success) {
+    // Roll back: an unprintable version must not stay in the catalog.
     await deps.commandCardStorage.deleteCommandCardVersion(insertResult.data);
     return projectResult;
   }

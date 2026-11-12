@@ -1,12 +1,15 @@
 import type { AssetType } from '@ports';
 
+/** Which catalog a card belongs to; it is the first folder in the asset key. */
 type CardAssetKind = 'command' | 'unit';
 
+/** One file a card version must have in storage: its key and which format it is. */
 interface CardAssetTarget {
   type: AssetType;
   key: string;
 }
 
+/** Everything that identifies one stored card file: kind, card, version and format. */
 interface CardAssetKeyInput {
   kind: CardAssetKind;
   cardId: string;
@@ -32,6 +35,8 @@ const cardAssetKey = ({
   version,
   assetType,
 }: CardAssetKeyInput): string => {
+  // Id plus version make the key unique per published version, which is what
+  // lets assets be immutable: a new version is a new key, never an overwrite.
   const base = `${cardId}_${version}`;
   switch (assetType) {
     case 'svg': {

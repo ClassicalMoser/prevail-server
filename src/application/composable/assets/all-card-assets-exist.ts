@@ -14,6 +14,7 @@ const allCardAssetsExist = async <TCard>(
   ops: Pick<ProjectCardAssetsOps<TCard>, 'assetStorage' | 'targets'>,
   card: TCard,
 ): Promise<boolean> => {
+  // One missing format is enough to call the version unprinted.
   for (const target of ops.targets(card)) {
     if (!(await ops.assetStorage.objectExists(target.key))) {
       return false;

@@ -22,6 +22,7 @@ import type { UnitCardUseCasesDeps } from './unit-card-use-cases-deps';
 const updateUnitCardCertifications = async (
   deps: UnitCardUseCasesDeps,
 ): Promise<DataErrorSignature<CertificationResults>> => {
+  // Healing draws missing files with the same renderer used at publish time.
   const projectionDeps = {
     assetStorage: deps.assetStorage,
     unitCardRenderer: deps.unitCardRenderer,
@@ -34,6 +35,7 @@ const updateUnitCardCertifications = async (
     prepare: async () => ({ success: true, data: undefined }),
     allAssetsExist: (card) => allUnitCardAssetsExist(deps.assetStorage, card),
     ensureProjection: (card) => ensureUnitCardProjection(projectionDeps, card),
+    // Only certified unit cards may be used in armies.
     certify: (ids) => deps.unitCardStorage.certifyUnitCardVersions(ids),
     cardId: (card) => card.id,
   });

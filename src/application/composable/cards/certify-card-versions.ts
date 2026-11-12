@@ -1,11 +1,16 @@
 import type { CertificationResults } from '@classicalmoser/prevail-contracts';
 import type { DataErrorSignature } from '@ports';
 
+/** A card version with whether it is already certified for army building. */
 interface CardCertificationStatus<TCard> {
   card: TCard;
   certified: boolean;
 }
 
+/**
+ * What certification needs from one catalog (command or unit) so the same
+ * policy runs over both without knowing either's storage or renderer.
+ */
 interface CertifyCardVersionsOps<TCard, TContext> {
   getLatest: () => Promise<
     DataErrorSignature<CardCertificationStatus<TCard>[]>
@@ -48,6 +53,8 @@ const certifyCardVersions = async <TCard, TContext>(
     return beforeResult;
   }
 
+  // Already-certified cards are left alone, and a card the rules schema rejects
+  // is never a candidate: certified means players may put it in an army.
   const schemaValidStatuses = beforeResult.data
     .filter(({ certified }) => !certified)
     .filter(({ card }) => ops.isSchemaValid(card));
@@ -59,6 +66,8 @@ const certifyCardVersions = async <TCard, TContext>(
   }
   const context = prepareResult.data;
 
+  // Heal first: a card whose assets are missing (an interrupted publish) gets
+  // them drawn now, so it is not held back from certification for good.
   for (const entry of schemaValidStatuses) {
     if (!(await ops.allAssetsExist(entry.card, context))) {
       const healResult = await ops.ensureProjection(entry.card, context);
@@ -68,6 +77,8 @@ const certifyCardVersions = async <TCard, TContext>(
     }
   }
 
+  // Re-check after healing: a card is certified only if every asset is really
+  // there, because a card nobody can print must not reach an army.
   const readyToCertify: string[] = [];
   for (const { card } of schemaValidStatuses) {
     if (await ops.allAssetsExist(card, context)) {
@@ -80,6 +91,8 @@ const certifyCardVersions = async <TCard, TContext>(
     return certifyResult;
   }
 
+  // Report from storage, not from our own list, so the author sees the true
+  // catalog state including cards certified before this run.
   const afterResult = await ops.getLatest();
   if (!afterResult.success) {
     return afterResult;

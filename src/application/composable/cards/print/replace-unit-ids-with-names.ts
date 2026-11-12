@@ -12,6 +12,7 @@ const replaceUnitIdsWithNames = (
   unitIds: string[],
   unitIdToNameMap: UnitIdToNameMap,
 ): string[] => {
+  // Order is kept: the card lists its allowed units in the author's order.
   const names = unitIds.map((id) => getUnitName(unitIdToNameMap, id));
   return names;
 };
